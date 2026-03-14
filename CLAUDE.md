@@ -91,6 +91,12 @@ This file provides guidance to Claude Code when working with code in this reposi
 - `bon-theme` — light/dark
 - `bon-lang` — שפה נבחרת
 
+## Libraries
+
+| ספרייה | מטרה | אופן שימוש |
+|--------|------|-----------|
+| [TradingView Lightweight Charts](https://github.com/tradingview/lightweight-charts) | גרפי מחיר | CDN, Apache 2.0 |
+
 ## Key Conventions
 
 - כל ה-API calls דרך corsproxy.io (CORS) או allorigins.win כ-fallback
