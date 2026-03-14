@@ -13,27 +13,27 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 - מבנה מרובה קבצים — ללא build system, ללא npm
 - Vanilla JS + CSS
-- localStorage לאחסון (watchlist, היסטוריית חיפושים)
+- localStorage לאחסון (watchlist, היסטוריית חיפושים, cache)
 - GitHub Pages לדפלוי
 
 ## מבנה קבצים
 
 ```
 buyornot/
-├── index.html        # מבנה HTML בלבד
+├── index.html          # מבנה HTML בלבד
 ├── css/
-│   ├── main.css      # עיצוב כללי, משתני צבע, light/dark
-│   ├── home.css      # דף הבית
-│   ├── results.css   # דף תוצאות
-│   └── compare.css   # דף השוואה
+│   ├── main.css        # עיצוב כללי, משתני צבע, light/dark
+│   ├── home.css        # דף הבית
+│   ├── results.css     # דף תוצאות
+│   └── compare.css     # דף השוואה
 └── js/
-    ├── app.js        # ניהול ניווט בין דפים, אתחול
-    ├── api.js        # כל קריאות ה-API + corsproxy
-    ├── scoring.js    # מנוע הציון המשוקלל
-    ├── chart.js      # TradingView Lightweight Charts
-    ├── watchlist.js  # watchlist + התראות
-    ├── compare.js    # השוואת מניות
-    └── i18n.js       # תרגומים עברית/אנגלית
+    ├── app.js          # ניהול ניווט בין דפים, אתחול
+    ├── api.js          # כל קריאות ה-API + corsproxy + cache
+    ├── scoring.js      # מנוע הציון המשוקלל + benchmarks לפי סקטור
+    ├── chart.js        # TradingView Lightweight Charts
+    ├── watchlist.js    # watchlist + התראות in-app
+    ├── compare.js      # השוואת מניות (עד 3)
+    └── i18n.js         # תרגומים עברית/אנגלית
 ```
 
 ## Architecture
@@ -41,7 +41,7 @@ buyornot/
 ### מבנה הדף
 
 **Home Page:**
-- Search bar גדול במרכז (Google-style)
+- Search bar גדול במרכז (Google-style) עם autocomplete (S&P 500 + ת"א 125)
 - 5 מניות טרנדינג מתחת עם badge: 🔴/🟡/🟢
 - Light/Dark mode toggle
 - שפה: עברית כברירת מחדל, toggle לאנגלית
@@ -49,9 +49,11 @@ buyornot/
 **Results Page:**
 - Gauge/speedometer אנימטי עם ציון 0–100 — בולט בראש הדף
 - אינדיקטור: 🔴 0–40 / 🟡 41–65 / 🟢 66–100
-- גרף מחיר מלא עם טווחים: 1W / 1M / 3M / 6M / 1Y / 3Y / 5Y
-- טבלת קריטריונים (ראה למטה)
+- גרף מחיר מלא (TradingView) עם טווחים: 1W / 1M / 3M / 6M / 1Y / 3Y / 5Y
+- טבלת קריטריונים — מוצגת תמיד, כל קריטריון עם tooltip הסבר
 - כפתור השוואה (עד 3 מניות)
+- כפתור שיתוף ניתוח
+- מניה שלא נמצאה → הודעת שגיאה ברורה
 
 **Comparison Page:**
 - גרפים זה ליד זה
@@ -59,8 +61,8 @@ buyornot/
 - טבלה השוואתית שורה-שורה
 
 **Watchlist:**
-- שמירת מניות למעקב
-- התראה בתוך האפליקציה כשה-rating משתנה (🟡→🟢 וכו')
+- שמירת מניות למעקב (localStorage)
+- התראה in-app כשה-rating משתנה (🟡→🟢 וכו')
 
 ### קריטריונים + משקלות
 
@@ -77,10 +79,10 @@ buyornot/
 | 9 | מרחק משיא (52w / ATH) | 4% | הקשר מחיר |
 | 10 | שיאים שנשברו (1y/3y/5y) | 2% | עוצמת טרנד |
 
-- כל קריטריון מוצג תמיד (לא ניתן להסתיר)
-- כשאין נתון: מציג "אין מידע", לא מחשב בציון
-- משקלות קבועות (המשתמש לא יכול לשנות)
-- כל קריטריון כולל tooltip המסביר מה הוא אומר
+- כל קריטריון מוצג תמיד
+- כשאין נתון: מציג "אין מידע", לא נכנס לחישוב
+- משקלות קבועות
+- נרמול לפי סקטור (טכנולוגיה / בנקים / אנרגיה / בריאות / נדל"ן / צריכה / תעשייה / תקשורת)
 
 ### מקורות נתונים
 
@@ -88,17 +90,18 @@ buyornot/
 |------|------|-------|
 | מחיר, P/E, P/B, P/S, 52w high/low | Yahoo Finance | לא רשמי, דרך corsproxy |
 | היסטוריית מחירים (RSI, MACD, גרף, שיאים) | Yahoo Finance | |
-| המלצות אנליסטים, אחזקות מוסדיים | Finnhub | יש API key |
-| EPS, Revenue, Debt/Equity | Financial Modeling Prep | חינמי, 250 req/day |
-| מניות TASE | TASE API / Maya API | ריאל-טיים בשעות מסחר (9:00–17:30), מחוץ לשעות — מחיר אחרון עם תווית "סגור" |
-| מניות טרנדינג (דף הבית) | רשימה קבועה S&P 500 + Finnhub | |
+| המלצות אנליסטים, אחזקות מוסדיים | Finnhub | API key נשמר ב-localStorage |
+| EPS, Revenue, Debt/Equity | Financial Modeling Prep | חינמי, 250 req/day, API key ב-localStorage |
+| מניות TASE | Yahoo Finance סימול `{ניירת}.TA` | ריאל-טיים בשעות מסחר (9:00–17:30), מחוץ לשעות → מחיר אחרון + תווית "סגור" |
+| Autocomplete | רשימה מקומית S&P 500 + ת"א 125 | |
+| מניות טרנדינג (דף הבית) | Finnhub | |
 
-### TASE
-- חיפוש לפי שם עברי **ולפי** מספר ניירת
-- שעות מסחר: 9:00–17:30 → מחיר ריאל-טיים
-- מחוץ לשעות → מחיר אחרון + תווית "סגור"
+### Cache
+- נתוני מניה נשמרים ב-localStorage למשך **15 דקות**
+- מפתח: `bon-cache-{symbol}-{timestamp}`
 
 ### עיצוב
+- Responsive — מותאם למובייל/טאבלט/דסקטופ
 - Light/Dark mode toggle
 - רקע: לבן (light) / שחור (dark)
 - צבע ראשי: ירוק
@@ -110,6 +113,9 @@ buyornot/
 - `bon-history` — היסטוריית חיפושים אחרונים
 - `bon-theme` — light/dark
 - `bon-lang` — שפה נבחרת
+- `bon-cache-{symbol}` — cache נתוני מניה (15 דקות)
+- `bon-finnhub-key` — Finnhub API key
+- `bon-fmp-key` — Financial Modeling Prep API key
 
 ## Libraries
 
@@ -123,3 +129,5 @@ buyornot/
 - API keys נשמרים ב-localStorage, לא hardcoded
 - ציון סופי = סכום (ציון קטגוריה × משקל) — רק קטגוריות עם נתון תקף
 - מניה ללא מספיק נתונים → הציון מוצג עם אזהרה "נתונים חלקיים"
+- נרמול ציון כל קריטריון ← benchmark לפי סקטור (ראה scoring.js)
+- רענון אוטומטי של נתונים כל 15 דקות (auto-refresh)
