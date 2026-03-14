@@ -49,11 +49,17 @@ buyornot/
 **Results Page:**
 - Gauge/speedometer אנימטי עם ציון 0–100 — בולט בראש הדף
 - אינדיקטור: 🔴 0–40 / 🟡 41–65 / 🟢 66–100
+- מידע כללי: שווי שוק (Market cap), Beta, דיבידנד (כמידע בלבד, לא בציון)
+- Earnings date: תאריך + "בעוד X ימים"
+- Price target אנליסטים: ממוצע + min + max
 - גרף מחיר מלא (TradingView) עם טווחים: 1W / 1M / 3M / 6M / 1Y / 3Y / 5Y
+- חדשות אחרונות על המניה
 - טבלת קריטריונים — מוצגת תמיד, כל קריטריון עם tooltip הסבר
 - כפתור השוואה (עד 3 מניות)
-- כפתור שיתוף ניתוח
+- כפתור שיתוף: URL בפורמט `?s=AAPL` — נטען ישירות לתוצאות
 - מניה שלא נמצאה → הודעת שגיאה ברורה
+- Offline → cache אחרון עם תווית "נתונים מ-{תאריך}"
+- Disclaimer: "אין לראות בניתוח זה ייעוץ פיננסי"
 
 **Comparison Page:**
 - גרפים זה ליד זה
@@ -126,7 +132,8 @@ buyornot/
 ## Key Conventions
 
 - כל ה-API calls דרך corsproxy.io (CORS) או allorigins.win כ-fallback
-- API keys נשמרים ב-localStorage, לא hardcoded
+- API keys: default keys hardcoded כ-fallback, ניתן לדרוס ב-localStorage
+- PWA: manifest + service worker, שם אפליקציה "BuyorNot"
 - ציון סופי = סכום (ציון קטגוריה × משקל) — רק קטגוריות עם נתון תקף
 - מניה ללא מספיק נתונים → הציון מוצג עם אזהרה "נתונים חלקיים"
 - נרמול ציון כל קריטריון ← benchmark לפי סקטור (ראה scoring.js)
