@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#16a34a" />
+  <title>BuyorNot</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/home.css" />
+  <link rel="stylesheet" href="css/results.css" />
+  <link rel="stylesheet" href="css/compare.css" />
+</head>
+<body class="theme-light">
+
+  <!-- ===== HOME PAGE ===== -->
+  <div id="page-home" class="page active">
+    <header class="top-bar">
+      <button id="btn-theme" class="icon-btn" aria-label="toggle theme">🌙</button>
+      <button id="btn-lang" class="lang-btn">EN</button>
+    </header>
+
+    <main class="home-main">
+      <div class="logo-wrap">
+        <h1 class="logo-title">BuyorNot</h1>
+        <p class="logo-sub" data-i18n="tagline">ניתוח מניות בלחיצת כפתור</p>
+      </div>
+
+      <div class="search-wrap">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            id="search-input"
+            type="text"
+            data-i18n-placeholder="searchPlaceholder"
+            placeholder="חפש מניה... (AAPL, תל אביב, אמזון)"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="search-btn" data-i18n="search">חפש</button>
+        </div>
+        <div id="autocomplete-list" class="autocomplete-list hidden"></div>
+      </div>
+
+      <section class="trending-section">
+        <h2 class="section-title" data-i18n="trending">מניות טרנדינג</h2>
+        <div id="trending-list" class="trending-list">
+          <div class="trending-skeleton"></div>
+          <div class="trending-skeleton"></div>
+          <div class="trending-skeleton"></div>
+          <div class="trending-skeleton"></div>
+          <div class="trending-skeleton"></div>
+        </div>
+      </section>
+
+      <section class="history-section" id="history-section" style="display:none">
+        <h2 class="section-title" data-i18n="recentSearches">חיפושים אחרונים</h2>
+        <div id="history-list" class="history-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===== RESULTS PAGE ===== -->
+  <div id="page-results" class="page">
+    <header class="results-header">
+      <button id="btn-back" class="icon-btn back-btn">←</button>
+      <div class="stock-title-wrap">
+        <span id="res-symbol" class="res-symbol"></span>
+        <span id="res-name" class="res-name"></span>
+      </div>
+      <div class="header-actions">
+        <button id="btn-watchlist-toggle" class="icon-btn" title="הוסף למעקב">☆</button>
+        <button id="btn-share" class="icon-btn" title="שתף">⬆️</button>
+        <button id="btn-theme-res" class="icon-btn">🌙</button>
+        <button id="btn-lang-res" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <div id="results-loading" class="loading-overlay">
+      <div class="spinner"></div>
+      <p data-i18n="analyzing">מנתח מניה...</p>
+    </div>
+
+    <div id="results-error" class="error-state hidden">
+      <div class="error-icon">❌</div>
+      <p id="error-msg" data-i18n="stockNotFound">המניה לא נמצאה</p>
+      <button class="btn-primary" id="btn-back-err" data-i18n="back">חזור</button>
+    </div>
+
+    <div id="results-content" class="results-content hidden">
+
+      <!-- Offline banner -->
+      <div id="offline-banner" class="offline-banner hidden">
+        <span data-i18n="offlineData">נתונים מ-</span><span id="offline-date"></span>
+      </div>
+
+      <!-- Gauge -->
+      <section class="gauge-section">
+        <div class="gauge-wrap">
+          <canvas id="gauge-canvas" width="280" height="160"></canvas>
+          <div class="gauge-score-wrap">
+            <span id="gauge-score" class="gauge-score">--</span>
+            <span id="gauge-label" class="gauge-label"></span>
+          </div>
+        </div>
+        <p id="partial-data-warning" class="partial-warning hidden" data-i18n="partialData">⚠️ נתונים חלקיים</p>
+      </section>
+
+      <!-- Info cards -->
+      <section class="info-cards">
+        <div class="info-card">
+          <span class="info-label" data-i18n="price">מחיר</span>
+          <span id="info-price" class="info-value">--</span>
+          <span id="info-change" class="info-change">--</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label" data-i18n="marketCap">שווי שוק</span>
+          <span id="info-mktcap" class="info-value">--</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label" data-i18n="beta">Beta</span>
+          <span id="info-beta" class="info-value">--</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label" data-i18n="dividend">דיבידנד</span>
+          <span id="info-dividend" class="info-value">--</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label" data-i18n="earningsDate">דוח הבא</span>
+          <span id="info-earnings" class="info-value">--</span>
+          <span id="info-earnings-days" class="info-sub">--</span>
+        </div>
+        <div class="info-card">
+          <span class="info-label" data-i18n="priceTarget">מחיר יעד</span>
+          <span id="info-target" class="info-value">--</span>
+          <span id="info-target-range" class="info-sub">--</span>
+        </div>
+      </section>
+
+      <!-- Chart -->
+      <section class="chart-section">
+        <div class="chart-ranges">
+          <button class="range-btn" data-range="1W">1W</button>
+          <button class="range-btn active" data-range="1M">1M</button>
+          <button class="range-btn" data-range="3M">3M</button>
+          <button class="range-btn" data-range="6M">6M</button>
+          <button class="range-btn" data-range="1Y">1Y</button>
+          <button class="range-btn" data-range="3Y">3Y</button>
+          <button class="range-btn" data-range="5Y">5Y</button>
+        </div>
+        <div id="chart-container"></div>
+      </section>
+
+      <!-- Criteria table -->
+      <section class="criteria-section">
+        <h2 class="section-title" data-i18n="analysis">ניתוח מפורט</h2>
+        <div id="criteria-table" class="criteria-table"></div>
+      </section>
+
+      <!-- News -->
+      <section class="news-section">
+        <h2 class="section-title" data-i18n="news">חדשות אחרונות</h2>
+        <div id="news-list" class="news-list"></div>
+      </section>
+
+      <!-- Compare button -->
+      <div class="compare-bar">
+        <button id="btn-add-compare" class="btn-secondary" data-i18n="addToCompare">הוסף להשוואה</button>
+      </div>
+
+      <!-- Disclaimer -->
+      <p class="disclaimer" data-i18n="disclaimer">אין לראות בניתוח זה ייעוץ פיננסי. המידע מוצג למטרות לימודיות בלבד.</p>
+    </div>
+  </div>
+
+  <!-- ===== COMPARE PAGE ===== -->
+  <div id="page-compare" class="page">
+    <header class="results-header">
+      <button id="btn-back-compare" class="icon-btn back-btn">←</button>
+      <h2 data-i18n="compare">השוואת מניות</h2>
+      <div class="header-actions">
+        <button id="btn-theme-cmp" class="icon-btn">🌙</button>
+        <button id="btn-lang-cmp" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <div id="compare-content" class="compare-content"></div>
+  </div>
+
+  <!-- ===== WATCHLIST PAGE ===== -->
+  <div id="page-watchlist" class="page">
+    <header class="results-header">
+      <button id="btn-back-watchlist" class="icon-btn back-btn">←</button>
+      <h2 data-i18n="watchlist">רשימת מעקב</h2>
+      <div class="header-actions">
+        <button id="btn-theme-wl" class="icon-btn">🌙</button>
+        <button id="btn-lang-wl" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <div id="watchlist-content" class="watchlist-content"></div>
+  </div>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-page="home">
+      <span class="nav-icon">🏠</span>
+      <span data-i18n="home">בית</span>
+    </button>
+    <button class="nav-btn" data-page="watchlist">
+      <span class="nav-icon">⭐</span>
+      <span data-i18n="watchlist">מעקב</span>
+    </button>
+    <button class="nav-btn" data-page="compare">
+      <span class="nav-icon">⚖️</span>
+      <span data-i18n="compare">השוואה</span>
+    </button>
+  </nav>
+
+  <!-- ===== IN-APP NOTIFICATION ===== -->
+  <div id="notification" class="notification hidden"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/watchlist.js"></script>
+  <script src="js/compare.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
