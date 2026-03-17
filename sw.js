@@ -1,5 +1,5 @@
-// Service Worker — BuyorNot PWA
-const CACHE = 'buyornot-v1';
+// Service Worker — StockIT PWA
+const CACHE = 'stockit-v1';
 const STATIC = [
   '/newapp/',
   '/newapp/index.html',

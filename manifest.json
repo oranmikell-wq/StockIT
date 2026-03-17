@@ -1,6 +1,6 @@
 {
-  "name": "BuyorNot",
-  "short_name": "BuyorNot",
+  "name": "StockIT",
+  "short_name": "StockIT",
   "description": "ניתוח מניות בלחיצת כפתור",
   "start_url": "/newapp/",
   "scope": "/newapp/",
