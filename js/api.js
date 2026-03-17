@@ -33,21 +33,27 @@ function cacheGetStale(symbol) {
 }
 
 // ── Fetch helpers ──────────────────────────────────────
+function fetchWithTimeout(url, ms = 8000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
 async function fetchProxy(url) {
   try {
-    const res = await fetch(PROXY1 + encodeURIComponent(url));
+    const res = await fetchWithTimeout(PROXY1 + encodeURIComponent(url));
     if (!res.ok) throw new Error(res.status);
     const text = await res.text();
     return JSON.parse(text);
   } catch {
-    const res = await fetch(PROXY2 + encodeURIComponent(url));
+    const res = await fetchWithTimeout(PROXY2 + encodeURIComponent(url));
     if (!res.ok) throw new Error(res.status);
     return res.json();
   }
 }
 
 async function fetchDirect(url) {
-  const res = await fetch(url);
+  const res = await fetchWithTimeout(url);
   if (!res.ok) throw new Error(res.status);
   return res.json();
 }
