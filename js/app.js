@@ -406,6 +406,9 @@ function renderResults(data, scored) {
 // ── Gauge (canvas) ─────────────────────────────────────
 function drawGauge(score, rating) {
   const canvas = document.getElementById('gauge-canvas');
+  // Match canvas buffer to CSS display size (sharp on desktop)
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width > 0) { canvas.width = Math.round(rect.width); canvas.height = Math.round(rect.height); }
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);

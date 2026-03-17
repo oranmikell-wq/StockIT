@@ -10,11 +10,18 @@ function initChart() {
   const container = document.getElementById('chart-container');
   if (!container) return;
 
-  const isDark = document.body.classList.contains('theme-dark');
+  // Destroy existing chart before recreating
+  if (mainChart) { try { mainChart.remove(); } catch {} }
+  mainChart = null;
+  mainSeries = null;
 
+  const isDark = document.body.classList.contains('theme-dark');
+  const h = Math.max(container.clientHeight, 260);
+
+  try {
   mainChart = LightweightCharts.createChart(container, {
-    width:  container.clientWidth,
-    height: container.clientHeight || 260,
+    width:  container.clientWidth || 400,
+    height: h,
     layout: {
       background: { color: isDark ? '#0a0a0a' : '#ffffff' },
       textColor:  isDark ? '#94a3b8' : '#475569',
@@ -43,15 +50,24 @@ function initChart() {
 
   // Resize observer
   const ro = new ResizeObserver(entries => {
+    if (!mainChart) return;
     for (const entry of entries) {
-      mainChart.applyOptions({ width: entry.contentRect.width, height: entry.contentRect.height || 260 });
+      const w = entry.contentRect.width;
+      const h = Math.max(entry.contentRect.height, 260);
+      if (w > 0) mainChart.applyOptions({ width: w, height: h });
     }
   });
   ro.observe(container);
+  } catch (e) {
+    console.error('Chart init error:', e);
+    mainChart = null;
+    mainSeries = null;
+  }
 }
 
 async function loadChart(symbol, range = '1M') {
-  if (!mainChart) initChart();
+  if (!mainChart || !mainSeries) initChart();
+  if (!mainSeries) return; // init failed silently
   currentSymbol = symbol;
   currentRange  = range;
 

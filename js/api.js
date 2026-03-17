@@ -114,12 +114,13 @@ async function fetchAllData(symbol, lite = false) {
 
     if (!meta || meta.regularMarketPrice === 0) throw new Error('no_data');
 
-    // Twelve Data statistics (always fetched)
-    const stats = await tdStatistics(symbol).catch(() => null);
+    // Twelve Data: skip for TASE (.TA) — returns 403 for Israeli stocks
+    const isTASE = symbol.endsWith('.TA');
+    const stats = isTASE ? null : await tdStatistics(symbol).catch(() => null);
 
     // Non-lite: fetch earnings/target/ratings sequentially to avoid rate limit
     let earning = null, target = null, ratings = null;
-    if (!lite) {
+    if (!lite && !isTASE) {
       earning = await tdEarnings(symbol).catch(() => null);
       target  = await tdPriceTarget(symbol).catch(() => null);
       ratings = await tdAnalystRatings(symbol).catch(() => null);
