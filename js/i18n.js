@@ -163,6 +163,12 @@ function setLang(lang) {
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
   applyTranslations();
+  // Re-render dynamic content if on results page
+  if (typeof currentStock !== 'undefined' && currentStock &&
+      document.getElementById('page-results')?.classList.contains('active')) {
+    renderResults(currentStock, currentStock);
+    applyTranslations();
+  }
 }
 
 function applyTranslations() {
