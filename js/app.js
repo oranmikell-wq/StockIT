@@ -55,6 +55,7 @@ const STOCK_LIST = [
 let currentPage  = 'home';
 let currentStock = null;
 let autoRefreshTimer = null;
+let lastTrendingData = null;
 
 // ── Init ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -232,6 +233,27 @@ function hideAutocomplete() {
 }
 
 // ── Trending ───────────────────────────────────────────
+function renderTrendingList() {
+  if (!lastTrendingData) return;
+  const container = document.getElementById('trending-list');
+  container.innerHTML = lastTrendingData.map((stock, i) => {
+    const ratingKey = stock.rating === 'buy' ? 'buy' : stock.rating === 'wait' ? 'wait' : 'sell';
+    const badgeClass = stock.rating === 'buy' ? 'badge-buy-bg' : stock.rating === 'wait' ? 'badge-wait-bg' : 'badge-sell-bg';
+    const changePct = stock.changePct != null ? `${stock.changePct > 0 ? '+' : ''}${stock.changePct.toFixed(1)}%` : '';
+    return `
+      <div class="trending-item" data-symbol="${stock.symbol}">
+        <span class="trending-rank">${i + 1}</span>
+        <span class="trending-symbol">${stock.symbol}</span>
+        <span class="trending-name">${stock.name}</span>
+        <span class="trending-change ${stock.changePct >= 0 ? 'badge-buy' : 'badge-sell'}">${changePct}</span>
+        <span class="trending-badge ${badgeClass}">${t(ratingKey)}</span>
+      </div>`;
+  }).join('');
+  container.querySelectorAll('.trending-item').forEach(el => {
+    el.addEventListener('click', () => navigateTo('results', el.dataset.symbol));
+  });
+}
+
 async function loadTrending() {
   const container = document.getElementById('trending-list');
   try {
@@ -242,26 +264,8 @@ async function loadTrending() {
       const scored = calcScore(data, h5);
       return { ...data, ...scored };
     }));
-
-    container.innerHTML = results.map((r, i) => {
-      if (r.status !== 'fulfilled') return '';
-      const stock = r.value;
-      const ratingKey = stock.rating === 'buy' ? 'buy' : stock.rating === 'wait' ? 'wait' : 'sell';
-      const badgeClass = stock.rating === 'buy' ? 'badge-buy-bg' : stock.rating === 'wait' ? 'badge-wait-bg' : 'badge-sell-bg';
-      const changePct = stock.changePct != null ? `${stock.changePct > 0 ? '+' : ''}${stock.changePct.toFixed(1)}%` : '';
-      return `
-        <div class="trending-item" data-symbol="${stock.symbol}">
-          <span class="trending-rank">${i + 1}</span>
-          <span class="trending-symbol">${stock.symbol}</span>
-          <span class="trending-name">${stock.name}</span>
-          <span class="trending-change ${stock.changePct >= 0 ? 'badge-buy' : 'badge-sell'}">${changePct}</span>
-          <span class="trending-badge ${badgeClass}">${t(ratingKey)}</span>
-        </div>`;
-    }).join('');
-
-    container.querySelectorAll('.trending-item').forEach(el => {
-      el.addEventListener('click', () => navigateTo('results', el.dataset.symbol));
-    });
+    lastTrendingData = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+    renderTrendingList();
   } catch (e) {
     container.innerHTML = `<p style="padding:16px;color:var(--text-3)">${e.message}</p>`;
   }

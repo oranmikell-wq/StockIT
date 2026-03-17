@@ -169,6 +169,8 @@ function setLang(lang) {
     renderResults(currentStock, currentStock);
     applyTranslations();
   }
+  // Re-render trending badges on home page
+  if (typeof renderTrendingList === 'function') renderTrendingList();
 }
 
 function applyTranslations() {
