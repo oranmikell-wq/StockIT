@@ -1,19 +1,19 @@
 // Service Worker — BuyorNot PWA
 const CACHE = 'buyornot-v1';
 const STATIC = [
-  '/buyornot/',
-  '/buyornot/index.html',
-  '/buyornot/css/main.css',
-  '/buyornot/css/home.css',
-  '/buyornot/css/results.css',
-  '/buyornot/css/compare.css',
-  '/buyornot/js/i18n.js',
-  '/buyornot/js/api.js',
-  '/buyornot/js/scoring.js',
-  '/buyornot/js/chart.js',
-  '/buyornot/js/watchlist.js',
-  '/buyornot/js/compare.js',
-  '/buyornot/js/app.js',
+  '/newapp/',
+  '/newapp/index.html',
+  '/newapp/css/main.css',
+  '/newapp/css/home.css',
+  '/newapp/css/results.css',
+  '/newapp/css/compare.css',
+  '/newapp/js/i18n.js',
+  '/newapp/js/api.js',
+  '/newapp/js/scoring.js',
+  '/newapp/js/chart.js',
+  '/newapp/js/watchlist.js',
+  '/newapp/js/compare.js',
+  '/newapp/js/app.js',
 ];
 
 self.addEventListener('install', e => {
