@@ -156,3 +156,18 @@
   padding: 4px;
   flex-shrink: 0;
 }
+
+/* ===== DESKTOP ===== */
+@media (min-width: 768px) {
+  .compare-content, .watchlist-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 32px;
+  }
+
+  .watchlist-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}

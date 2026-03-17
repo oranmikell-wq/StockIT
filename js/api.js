@@ -1,7 +1,9 @@
 // api.js — כל קריאות ה-API + corsproxy + cache
+// Primary: Yahoo Finance v8 chart (free, no key)
+// Supplemental: Twelve Data (free key — 800 req/day)
+//   Get your own free key at https://twelvedata.com/pricing
 
-const FINNHUB_KEY = localStorage.getItem('bon-finnhub-key') || 'd6qup2hr01qgdhqcgpbgd6qup2hr01qgdhqcgpc0';
-const FMP_KEY     = localStorage.getItem('bon-fmp-key')     || 'B2YQqp7ld6CnzJXytvs5siPiJbUImjNZ';
+const TWELVE_KEY = localStorage.getItem('bon-twelve-key') || 'demo';
 
 const PROXY1 = 'https://corsproxy.io/?';
 const PROXY2 = 'https://api.allorigins.win/raw?url=';
@@ -33,7 +35,7 @@ function cacheGetStale(symbol) {
 }
 
 // ── Fetch helpers ──────────────────────────────────────
-function fetchWithTimeout(url, ms = 8000) {
+function fetchWithTimeout(url, ms = 10000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
@@ -52,77 +54,43 @@ async function fetchProxy(url) {
   }
 }
 
-async function fetchDirect(url) {
-  const res = await fetchWithTimeout(url);
-  if (!res.ok) throw new Error(res.status);
-  return res.json();
-}
-
-// ── Yahoo Finance v8 chart (no crumb needed) ───────────
+// ── Yahoo Finance v8 chart ─────────────────────────────
 async function yahooChart(symbol, range = '1d', interval = '1d') {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=${interval}&includePrePost=false`;
   return fetchProxy(url);
 }
 
-async function yahooHistory(symbol, period1, period2, interval = '1d') {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${period1}&period2=${period2}&interval=${interval}&includePrePost=false`;
+// ── Yahoo Finance news search ──────────────────────────
+async function yahooNewsSearch(symbol) {
+  const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${symbol}&newsCount=8&enableNavLinks=false`;
   return fetchProxy(url);
 }
 
-// ── Finnhub ────────────────────────────────────────────
-async function finnhubGet(endpoint) {
-  return fetchDirect(`https://finnhub.io/api/v1/${endpoint}&token=${FINNHUB_KEY}`);
+// ── Twelve Data ───────────────────────────────────────
+async function tdGet(endpoint) {
+  const sep = endpoint.includes('?') ? '&' : '?';
+  const url = `https://api.twelvedata.com/${endpoint}${sep}apikey=${TWELVE_KEY}`;
+  const res = await fetchWithTimeout(url);
+  if (!res.ok) throw new Error(res.status);
+  const json = await res.json();
+  if (json.code >= 400 || json.status === 'error') throw new Error(json.message || json.code);
+  return json;
 }
 
-async function getFinnhubQuote(symbol) {
-  return finnhubGet(`quote?symbol=${symbol}`);
+async function tdStatistics(symbol) {
+  return tdGet(`statistics?symbol=${encodeURIComponent(symbol)}`);
 }
 
-async function getFinnhubProfile(symbol) {
-  return finnhubGet(`stock/profile2?symbol=${symbol}`);
+async function tdEarnings(symbol) {
+  return tdGet(`earnings?symbol=${encodeURIComponent(symbol)}`);
 }
 
-async function getFinnhubMetrics(symbol) {
-  return finnhubGet(`stock/metric?symbol=${symbol}&metric=all`);
+async function tdPriceTarget(symbol) {
+  return tdGet(`price_target?symbol=${encodeURIComponent(symbol)}`);
 }
 
-async function getFinnhubRecommendations(symbol) {
-  return finnhubGet(`stock/recommendation?symbol=${symbol}`);
-}
-
-async function getFinnhubPriceTarget(symbol) {
-  return finnhubGet(`stock/price-target?symbol=${symbol}`);
-}
-
-async function getFinnhubEarnings(symbol) {
-  return finnhubGet(`stock/earnings?symbol=${symbol}&limit=8`);
-}
-
-async function getFinnhubInstitutional(symbol) {
-  return finnhubGet(`institutional/ownership?symbol=${symbol}&limit=5`);
-}
-
-async function getFinnhubNews(symbol) {
-  const to   = new Date().toISOString().slice(0, 10);
-  const from = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  return finnhubGet(`company-news?symbol=${symbol}&from=${from}&to=${to}`);
-}
-
-// ── Financial Modeling Prep ────────────────────────────
-async function fmpGet(endpoint) {
-  return fetchDirect(`https://financialmodelingprep.com/stable/${endpoint}&apikey=${FMP_KEY}`);
-}
-
-async function getFmpRevenue(symbol) {
-  return fmpGet(`income-statement?symbol=${symbol}&limit=3&period=annual`);
-}
-
-async function getFmpEarnings(symbol) {
-  return fmpGet(`earnings?symbol=${symbol}&limit=2`);
-}
-
-async function getFmpPriceTarget(symbol) {
-  return fmpGet(`price-target-summary?symbol=${symbol}`);
+async function tdAnalystRatings(symbol) {
+  return tdGet(`analyst_ratings/light?symbol=${encodeURIComponent(symbol)}`);
 }
 
 // ── Trending symbols ───────────────────────────────────
@@ -133,50 +101,34 @@ async function fetchTrending() {
 }
 
 // ── Master fetch: all data for a symbol ───────────────
-async function fetchAllData(symbol) {
+async function fetchAllData(symbol, lite = false) {
   const cached = cacheGet(symbol);
   if (cached) return { data: cached, fromCache: false, offline: false };
 
   const stale = cacheGetStale(symbol);
 
   try {
-    const [chartRaw, quoteRaw, profileRaw, metricsRaw, recRaw,
-           earningsRaw, instRaw, newsRaw, revenueRaw, fmpEarningsRaw, fmpTargetRaw] =
-      await Promise.allSettled([
-        yahooChart(symbol, '1d', '1d'),
-        getFinnhubQuote(symbol),
-        getFinnhubProfile(symbol),
-        getFinnhubMetrics(symbol),
-        getFinnhubRecommendations(symbol),
-        getFinnhubEarnings(symbol),
-        getFinnhubInstitutional(symbol),
-        getFinnhubNews(symbol),
-        getFmpRevenue(symbol),
-        getFmpEarnings(symbol),
-        getFmpPriceTarget(symbol),
-      ]);
+    // Always fetch Yahoo chart (works for all symbols including TASE)
+    const chartRaw = await yahooChart(symbol, '1d', '1d');
+    const meta = chartRaw?.chart?.result?.[0]?.meta;
 
-    const chart   = chartRaw.status   === 'fulfilled' ? chartRaw.value   : null;
-    const quote   = quoteRaw.status   === 'fulfilled' ? quoteRaw.value   : null;
-    const profile = profileRaw.status === 'fulfilled' ? profileRaw.value : null;
-    const metrics = metricsRaw.status === 'fulfilled' ? metricsRaw.value : null;
+    if (!meta || meta.regularMarketPrice === 0) throw new Error('no_data');
 
-    // Validate symbol exists
-    const meta = chart?.chart?.result?.[0]?.meta;
-    if (!meta && !quote) throw new Error('no_data');
-    if (quote && quote.c === 0 && !meta) throw new Error('no_data');
+    // Twelve Data statistics (always fetched)
+    const stats = await tdStatistics(symbol).catch(() => null);
 
-    const data = parseAllData({
-      meta, quote, profile, metrics,
-      recommendations:  recRaw.status        === 'fulfilled' ? recRaw.value        : [],
-      earnings:         earningsRaw.status   === 'fulfilled' ? earningsRaw.value   : [],
-      institutional:    instRaw.status       === 'fulfilled' ? instRaw.value       : null,
-      news:             newsRaw.status       === 'fulfilled' ? newsRaw.value       : [],
-      revenue:          revenueRaw.status    === 'fulfilled' ? revenueRaw.value    : [],
-      fmpEarnings:      fmpEarningsRaw.status === 'fulfilled' ? fmpEarningsRaw.value : [],
-      fmpTarget:        fmpTargetRaw.status  === 'fulfilled' ? fmpTargetRaw.value  : [],
-    }, symbol);
+    // Non-lite: fetch earnings/target/ratings sequentially to avoid rate limit
+    let earning = null, target = null, ratings = null;
+    if (!lite) {
+      earning = await tdEarnings(symbol).catch(() => null);
+      target  = await tdPriceTarget(symbol).catch(() => null);
+      ratings = await tdAnalystRatings(symbol).catch(() => null);
+    }
 
+    // Yahoo news (no rate limit)
+    const newsResp = await yahooNewsSearch(symbol).catch(() => null);
+
+    const data = parseAllData({ meta, stats, earning, target, ratings, newsResp }, symbol);
     cacheSet(symbol, data);
     return { data, fromCache: false, offline: false };
 
@@ -188,93 +140,123 @@ async function fetchAllData(symbol) {
   }
 }
 
-// ── Parse all raw data into clean object ──────────────
-function parseAllData({ meta, quote, profile, metrics, recommendations,
-                         earnings, institutional, news, revenue, fmpEarnings, fmpTarget }, symbol) {
-  const m  = metrics?.metric || {};
+// ── Analyst ratings aggregation ───────────────────────
+function aggregateRatings(ratingsData) {
+  if (!ratingsData?.ratings?.length) return null;
 
-  // Price from Finnhub quote (most accurate) or Yahoo meta
-  const price       = quote?.c    ?? meta?.regularMarketPrice    ?? null;
-  const prevClose   = quote?.pc   ?? meta?.chartPreviousClose    ?? null;
-  const change      = quote?.d    ?? (price && prevClose ? price - prevClose : null);
-  const changePct   = quote?.dp   ?? (change && prevClose ? (change / prevClose) * 100 : null);
-  const currency    = meta?.currency   || profile?.currency || 'USD';
-  const isTASE      = symbol.endsWith('.TA');
-  const marketState = meta?.marketState || 'CLOSED';
-
-  // Basic info
-  const name        = profile?.name     || meta?.longName    || meta?.shortName || symbol;
-  const sector      = profile?.finnhubIndustry || meta?.sector || null;
-  const exchange    = profile?.exchange  || meta?.exchangeName || null;
-
-  // Valuation (Finnhub metrics)
-  const pe          = m.peBasicExclExtraTTM  ?? m.peNormalizedAnnual ?? null;
-  const pb          = m.pbAnnual             ?? null;
-  const ps          = m.psAnnual             ?? null;
-  const marketCap   = profile?.marketCapitalization
-    ? profile.marketCapitalization * 1e6
-    : (meta?.regularMarketVolume ? null : null);
-  const beta        = m.beta ?? null;
-  const dividend    = m['dividendYieldIndicatedAnnual'] ?? null;
-
-  // 52w
-  const high52w     = m['52WeekHigh'] ?? meta?.fiftyTwoWeekHigh ?? null;
-  const low52w      = m['52WeekLow']  ?? meta?.fiftyTwoWeekLow  ?? null;
-
-  // Analyst recommendations
-  const recLatest   = Array.isArray(recommendations) && recommendations.length ? recommendations[0] : null;
-  const analystScore = recLatest
-    ? { buy: recLatest.buy || 0, hold: recLatest.hold || 0,
-        sell: (recLatest.sell || 0) + (recLatest.strongSell || 0),
-        strongBuy: recLatest.strongBuy || 0 }
-    : null;
-
-  // Price target (FMP price-target-summary)
-  const targetSummary = Array.isArray(fmpTarget) && fmpTarget.length ? fmpTarget[0] : null;
-  const targetMean  = targetSummary?.lastMonthAvgPriceTarget ?? targetSummary?.lastQuarterAvgPriceTarget ?? null;
-  const targetHigh  = targetSummary?.lastQuarterAvgPriceTarget ?? null;
-  const targetLow   = targetSummary?.allTimeAvgPriceTarget ?? null;
-
-  // Debt/Equity
-  const debtEquity  = m['totalDebt/totalEquityAnnual'] ?? m.totalDebtToEquityAnnual ?? null;
-
-  // EPS growth (Finnhub)
-  const epsGrowth   = m.epsGrowth3Y ?? m.epsGrowthTTMYoy ?? null;
-
-  // Revenue growth (FMP)
-  let revenueGrowth = null;
-  if (Array.isArray(revenue) && revenue.length >= 2) {
-    const r0 = revenue[0]?.revenue ?? null;
-    const r1 = revenue[1]?.revenue ?? null;
-    if (r0 != null && r1 != null && r1 !== 0) {
-      revenueGrowth = ((r0 - r1) / Math.abs(r1)) * 100;
+  // Take the latest rating per firm (deduplicate)
+  const byFirm = new Map();
+  for (const r of ratingsData.ratings) {
+    if (!byFirm.has(r.firm) || r.date > byFirm.get(r.firm).date) {
+      byFirm.set(r.firm, r);
     }
   }
 
-  // Institutional %
-  const instPct = institutional?.ownership?.[0]?.share ?? null;
+  // Only consider ratings from the last 3 months
+  const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const recent = [...byFirm.values()].filter(r => r.date >= cutoff);
+  if (!recent.length) return null;
 
-  // Earnings date — FMP /earnings returns upcoming dates with epsActual=null
+  const counts = { strongBuy: 0, buy: 0, hold: 0, sell: 0 };
+  const STRONG_BUY = ['strong buy', 'top pick'];
+  const BUY_WORDS  = ['buy', 'outperform', 'overweight', 'accumulate', 'positive'];
+  const HOLD_WORDS = ['hold', 'neutral', 'equal', 'market perform', 'sector perform', 'sector weight', 'in-line'];
+
+  for (const r of recent) {
+    const rc = (r.rating_current || '').toLowerCase();
+    if (STRONG_BUY.some(w => rc.includes(w))) counts.strongBuy++;
+    else if (BUY_WORDS.some(w => rc.includes(w)))   counts.buy++;
+    else if (HOLD_WORDS.some(w => rc.includes(w)))  counts.hold++;
+    else counts.sell++;
+  }
+
+  const total = counts.strongBuy + counts.buy + counts.hold + counts.sell;
+  return total > 0 ? counts : null;
+}
+
+// ── Parse all raw data into clean object ──────────────
+function parseAllData({ meta, stats, earning, target, ratings, newsResp }, symbol) {
+  const st    = stats?.statistics || {};
+  const val   = st.valuations_metrics || {};
+  const fin   = st.financials || {};
+  const inc   = fin.income_statement || {};
+  const bal   = fin.balance_sheet || {};
+  const sps   = st.stock_price_summary || {};
+  const sst   = st.stock_statistics || {};
+  const div   = st.dividends_and_splits || {};
+
+  // Price from Yahoo chart (always available)
+  const price     = meta.regularMarketPrice    ?? null;
+  const prevClose = meta.chartPreviousClose     ?? meta.regularMarketPreviousClose ?? null;
+  const change    = (price != null && prevClose) ? price - prevClose : null;
+  const changePct = (change != null && prevClose) ? (change / prevClose) * 100 : null;
+  const currency  = meta.currency               ?? 'USD';
+  const exchange  = meta.exchangeName           ?? meta.fullExchangeName ?? null;
+  const isTASE    = symbol.endsWith('.TA');
+  const marketState = meta.marketState          ?? 'CLOSED';
+
+  // Name — from Twelve Data (better) or Yahoo chart
+  const name = stats?.meta?.name ?? meta.longName ?? meta.shortName ?? symbol;
+
+  // Sector from Twelve Data if available
+  const sector = null; // Twelve Data statistics doesn't include sector
+
+  // Valuation from Twelve Data statistics
+  const marketCap = val.market_capitalization  ?? null;
+  const pe        = val.trailing_pe            ?? null;
+  const pb        = val.price_to_book_mrq      ?? null;
+  const ps        = val.price_to_sales_ttm     ?? null;
+
+  // Price summary
+  const beta    = sps.beta                   ?? null;
+  const high52w = sps.fifty_two_week_high    ?? meta.fiftyTwoWeekHigh ?? null;
+  const low52w  = sps.fifty_two_week_low     ?? meta.fiftyTwoWeekLow  ?? null;
+
+  // Dividend (Twelve Data returns as decimal e.g. 0.0041 = 0.41%)
+  const dividend = div.forward_annual_dividend_yield != null
+    ? div.forward_annual_dividend_yield * 100
+    : null;
+
+  // EPS & Revenue growth (Twelve Data returns as decimals e.g. 0.159 = 15.9%)
+  const epsGrowth     = inc.quarterly_earnings_growth_yoy != null
+    ? inc.quarterly_earnings_growth_yoy * 100
+    : null;
+  const revenueGrowth = inc.quarterly_revenue_growth != null
+    ? inc.quarterly_revenue_growth * 100
+    : null;
+
+  // Debt/Equity (Twelve Data returns as percent e.g. 102.63 = 1.0263x)
+  const debtEquity = bal.total_debt_to_equity_mrq != null
+    ? bal.total_debt_to_equity_mrq / 100
+    : null;
+
+  // Institutional % (Twelve Data returns as decimal 0-1)
+  const instPct = sst.percent_held_by_institutions ?? null;
+
+  // Analyst recommendations
+  const analystScore = aggregateRatings(ratings);
+
+  // Price target
+  const pt = target?.price_target || null;
+  const targetMean = pt?.average ?? null;
+  const targetHigh = pt?.high    ?? null;
+  const targetLow  = pt?.low     ?? null;
+
+  // Earnings date
   let earningsDate = null;
-  if (Array.isArray(fmpEarnings) && fmpEarnings.length) {
-    const next = fmpEarnings.find(e => e.epsActual == null && e.date);
-    if (next) earningsDate = new Date(next.date);
-  }
-  if (!earningsDate && Array.isArray(earnings) && earnings.length) {
-    const next = earnings.find(e => new Date(e.period) > new Date());
-    if (next) earningsDate = new Date(next.period);
-  }
+  const earningsArr = Array.isArray(earning?.earnings) ? earning.earnings : [];
+  const nextEarning = earningsArr.find(e => e.date && new Date(e.date) > new Date());
+  if (nextEarning) earningsDate = new Date(nextEarning.date);
 
   // News
-  const newsItems = Array.isArray(news)
-    ? news.slice(0, 5).map(n => ({
-        headline: n.headline,
-        url:      n.url,
-        source:   n.source,
-        datetime: n.datetime * 1000,
-        image:    n.image || null,
-      }))
-    : [];
+  const rawNews  = newsResp?.news || [];
+  const newsItems = rawNews.slice(0, 5).map(n => ({
+    headline: n.title,
+    url:      n.link,
+    source:   n.publisher,
+    datetime: (n.providerPublishTime || 0) * 1000,
+    image:    n.thumbnail?.resolutions?.[0]?.url || null,
+  }));
 
   return {
     symbol, name, sector, exchange, currency, isTASE, marketState,
@@ -301,7 +283,8 @@ async function fetchHistory(symbol, range) {
     '5Y': { period1: now - 5 * 365 * 86400, interval: '1mo' },
   };
   const { period1, interval } = configs[range] || configs['1M'];
-  const raw = await yahooHistory(symbol, period1, now, interval);
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${period1}&period2=${now}&interval=${interval}&includePrePost=false`;
+  const raw = await fetchProxy(url);
   const result = raw?.chart?.result?.[0];
   if (!result) return [];
   const ts     = result.timestamp || [];

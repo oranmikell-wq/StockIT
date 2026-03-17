@@ -14,7 +14,7 @@ function initChart() {
 
   mainChart = LightweightCharts.createChart(container, {
     width:  container.clientWidth,
-    height: 260,
+    height: container.clientHeight || 260,
     layout: {
       background: { color: isDark ? '#0a0a0a' : '#ffffff' },
       textColor:  isDark ? '#94a3b8' : '#475569',
@@ -44,7 +44,7 @@ function initChart() {
   // Resize observer
   const ro = new ResizeObserver(entries => {
     for (const entry of entries) {
-      mainChart.applyOptions({ width: entry.contentRect.width });
+      mainChart.applyOptions({ width: entry.contentRect.width, height: entry.contentRect.height || 260 });
     }
   });
   ro.observe(container);

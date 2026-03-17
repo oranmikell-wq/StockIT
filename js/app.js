@@ -258,14 +258,18 @@ async function loadTrending() {
   const container = document.getElementById('trending-list');
   try {
     const symbols = await fetchTrending();
-    const results = await Promise.allSettled(symbols.map(async sym => {
-      const { data } = await fetchAllData(sym);
-      const h5 = await fetchHistory(sym, '5Y');
-      const scored = calcScore(data, h5);
-      return { ...data, ...scored };
-    }));
-    lastTrendingData = results.filter(r => r.status === 'fulfilled').map(r => r.value);
-    renderTrendingList();
+    lastTrendingData = [];
+    for (const sym of symbols) {
+      try {
+        const { data } = await fetchAllData(sym, true);
+        const h5 = await fetchHistory(sym, '5Y');
+        const scored = calcScore(data, h5);
+        lastTrendingData.push({ ...data, ...scored });
+        renderTrendingList();
+      } catch (e) {
+        // skip failed stock, continue
+      }
+    }
   } catch (e) {
     container.innerHTML = `<p style="padding:16px;color:var(--text-3)">${e.message}</p>`;
   }
