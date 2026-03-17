@@ -57,7 +57,7 @@ async function loadChart(symbol, range = '1M') {
 
   try {
     const data = await fetchHistory(symbol, range);
-    if (!data.length) return;
+    if (!data.length) { mainSeries.setData([]); return; }
 
     const chartData = data.map(p => ({
       time:  p.time,
