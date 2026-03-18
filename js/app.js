@@ -475,16 +475,9 @@ function renderCriteriaTable(scored, data) {
     { key: 'debt',         icon: '⚖️', weight: '8%',  rawData: () => data.debtEquity != null ? [`D/E: ${data.debtEquity.toFixed(1)}`] : [] },
     { key: 'technical',    icon: '📊', weight: '6%',  rawData: () => [scored.technicals?.rsi && `RSI: ${scored.technicals.rsi.toFixed(1)}`, scored.technicals?.macd && `MACD: ${scored.technicals.macd.toFixed(2)}`].filter(Boolean) },
     { key: 'ath',          icon: '🏔️', weight: '4%',  rawData: () => {
-        const items = [];
-        if (data.price != null && data.high52w != null) {
-          const distPct = ((data.high52w - data.price) / data.high52w) * 100;
-          items.push(`${distPct.toFixed(1)}% מהשיא (52w)`);
-        }
-        if (scored.technicals?.ath != null && data.price != null) {
-          const distATH = ((scored.technicals.ath - data.price) / scored.technicals.ath) * 100;
-          items.push(`${distATH.toFixed(1)}% מהשיא הכולל`);
-        }
-        return items;
+        if (data.price == null || data.high52w == null) return [];
+        const distPct = ((data.high52w - data.price) / data.high52w) * 100;
+        return [`${distPct.toFixed(1)}% מהשיא השנתי`];
       }},
     { key: 'highs',        icon: '⭐', weight: '2%',  rawData: () => scored.technicals?.highs ? [`1Y: ${scored.technicals.highs.y1}`, `3Y: ${scored.technicals.highs.y3}`, `5Y: ${scored.technicals.highs.y5}`] : [] },
   ];
