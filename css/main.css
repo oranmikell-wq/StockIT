@@ -245,6 +245,13 @@ body {
   align-items: center;
   gap: 8px;
 }
+.top-bar-home-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
 
 .top-bar-text {
   display: flex;
