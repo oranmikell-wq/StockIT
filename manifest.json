@@ -1,9 +1,9 @@
 {
-  "name": "StockIT",
-  "short_name": "StockIT",
+  "name": "Stock Zone",
+  "short_name": "Stock Zone",
   "description": "ניתוח מניות בלחיצת כפתור",
-  "start_url": "/StockIT/",
-  "scope": "/StockIT/",
+  "start_url": "/Stock Zone/",
+  "scope": "/Stock Zone/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
