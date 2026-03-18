@@ -283,6 +283,7 @@ body {
 /* כפתור חזרה — ללא header */
 .page-back-btn {
   display: block;
+  align-self: flex-start;
   margin: 14px 0 0 14px;
   color: var(--text);
 }
