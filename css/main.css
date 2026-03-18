@@ -3,7 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --topbar-h: 53px;   /* global top-bar height — mobile */
+  --topbar-h: 130px;   /* global top-bar height — mobile */
   --green:        #16a34a;
   --green-light:  #22c55e;
   --green-dark:   #15803d;
@@ -104,17 +104,20 @@ body {
 /* ===== HAMBURGER BUTTON ===== */
 .hamburger-btn {
   background: none;
-  border: 1px solid transparent;
+  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 20px;
-  padding: 6px 9px;
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  line-height: 1;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.85);
   transition: background var(--transition), border-color var(--transition);
   flex-shrink: 0;
 }
-.hamburger-btn:hover { background: var(--bg-3); border-color: var(--border); }
+.hamburger-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.9); }
 
 /* ===== DRAWER OVERLAY ===== */
 .drawer-overlay {
@@ -172,7 +175,7 @@ body {
 .drawer-brand {
   font-size: 18px;
   font-weight: 800;
-  color: var(--green);
+  color: #000000;
   letter-spacing: -0.5px;
 }
 
@@ -199,7 +202,7 @@ body {
   transition: background var(--transition), color var(--transition);
 }
 .drawer-nav-item:hover { background: var(--bg-3); color: var(--text); }
-.drawer-nav-item.active { color: var(--green); background: var(--green-bg); font-weight: 600; }
+.drawer-nav-item.active { color: #000000; background: var(--green-bg); font-weight: 600; }
 .drawer-footer {
   padding: 16px;
   border-top: 1px solid var(--border);
@@ -235,13 +238,21 @@ body {
 .top-bar-brand-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.top-bar-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
 .top-bar-logo {
-  width: 36px;
-  height: 36px;
+  width: 90px;
+  height: 90px;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .top-bar-brand {
@@ -415,7 +426,7 @@ body {
   width: 36px;
   height: 36px;
   border: 3px solid var(--border);
-  border-top-color: var(--green);
+  border-top-color: #000000;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   margin: 0 auto 12px;
@@ -469,7 +480,7 @@ body {
 }
 
 /* ===== RATING BADGES ===== */
-.badge-buy  { color: var(--green);  font-weight: 700; }
+.badge-buy  { color: #000000;  font-weight: 700; }
 .badge-wait { color: var(--yellow); font-weight: 700; }
 .badge-sell { color: var(--red);    font-weight: 700; }
 
@@ -497,7 +508,7 @@ body {
    DESKTOP LAYOUT (768px+)
    ================================================================ */
 @media (min-width: 768px) {
-  :root { --topbar-h: 59px; }   /* taller header on desktop */
+  :root { --topbar-h: 130px; }   /* taller header on desktop */
 
   .notification { bottom: 20px; }
 

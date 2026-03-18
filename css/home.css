@@ -24,7 +24,7 @@
 .logo-title {
   font-size: 52px;
   font-weight: 800;
-  color: var(--green);
+  color: #000000;
   letter-spacing: -2px;
   line-height: 1;
 }
@@ -55,7 +55,7 @@
 }
 
 .search-box:focus-within {
-  border-color: var(--green);
+  border-color: #000000;
   box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
 }
 
@@ -76,7 +76,7 @@
 #search-input::placeholder { color: var(--text-3); }
 
 #search-btn {
-  background: var(--green);
+  background: #000;
   color: #fff;
   border: none;
   border-radius: 50px;
@@ -88,10 +88,10 @@
   white-space: nowrap;
   transition: background var(--transition);
   flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(22,163,74,0.3);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
-#search-btn:hover { background: var(--green-dark); }
+#search-btn:hover { background: #222; }
 
 /* Autocomplete */
 .autocomplete-list {
@@ -127,7 +127,7 @@
 .ac-symbol {
   font-weight: 700;
   font-size: 13px;
-  color: var(--green);
+  color: #000000;
   min-width: 60px;
 }
 
@@ -171,7 +171,7 @@
 }
 
 .trending-item:hover {
-  border-color: var(--green);
+  border-color: #000000;
   box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
 }
@@ -217,7 +217,7 @@
   letter-spacing: 0.2px;
 }
 
-.badge-buy-bg  { background: var(--green-bg); color: var(--green); }
+.badge-buy-bg  { background: var(--green-bg); color: #000000; }
 .badge-wait-bg { background: var(--yellow-bg); color: var(--yellow); }
 .badge-sell-bg { background: var(--red-bg); color: var(--red); }
 

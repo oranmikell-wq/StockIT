@@ -3,10 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#16a34a" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Interesting Zone" />
+  <meta name="application-name" content="Interesting Zone" />
   <title>Interesting Zone</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
@@ -19,13 +26,21 @@
 
   <!-- ===== GLOBAL STICKY TOP-BAR (always visible on every page) ===== -->
   <header class="top-bar">
-    <button class="hamburger-btn" onclick="openDrawer()" aria-label="תפריט">☰</button>
+    <button class="hamburger-btn" onclick="openDrawer()" aria-label="תפריט">
+      <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="20" height="2.5" rx="1.25" fill="currentColor"/>
+        <rect y="6.75" width="20" height="2.5" rx="1.25" fill="currentColor"/>
+        <rect y="13.5" width="20" height="2.5" rx="1.25" fill="currentColor"/>
+      </svg>
+    </button>
     <div class="top-bar-titles">
       <div class="top-bar-brand-row">
+        <div class="top-bar-text">
+          <span class="top-bar-brand">Interesting Zone</span>
+          <span class="top-bar-sub" data-i18n="tagline">Stock analysis in one click</span>
+        </div>
         <img src="logo2.png" alt="Interesting Zone logo" class="top-bar-logo" />
-        <span class="top-bar-brand">Interesting Zone</span>
       </div>
-      <span class="top-bar-sub" data-i18n="tagline">Stock analysis in one click</span>
     </div>
   </header>
 
