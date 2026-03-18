@@ -103,7 +103,7 @@ async function fetchTrending() {
 // ── Master fetch: all data for a symbol ───────────────
 async function fetchAllData(symbol, lite = false) {
   const cached = cacheGet(symbol);
-  if (cached) return { data: cached, fromCache: false, offline: false };
+  if (cached) return { data: cached, fromCache: true, offline: false };
 
   const stale = cacheGetStale(symbol);
 

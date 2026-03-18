@@ -151,9 +151,10 @@ function scoreInstitutional(instPct) {
 
 function scoreDebt(debtEquity, sectorKey) {
   if (debtEquity == null) return null;
+  // debtEquity is in ratio form (e.g. 1.5 = 150% D/E)
   // Banks/real-estate naturally carry more debt
   const highDebtSectors = ['financials', 'real_estate', 'utilities'];
-  const max = highDebtSectors.includes(sectorKey) ? 300 : 150;
+  const max = highDebtSectors.includes(sectorKey) ? 10.0 : 2.0;
   // Lower debt = higher score
   const score = 100 - normalizeLinear(debtEquity, 0, max);
   return Math.max(0, score);
@@ -222,8 +223,8 @@ function calcEMA(closes, period) {
 
 function calcMACD(closes) {
   if (closes.length < 26) return null;
-  const ema12 = calcEMA(closes.slice(-12), 12);
-  const ema26 = calcEMA(closes.slice(-26), 26);
+  const ema12 = calcEMA(closes, 12);
+  const ema26 = calcEMA(closes, 26);
   return ema12 - ema26; // positive = bullish
 }
 
@@ -251,9 +252,10 @@ function countHighs(prices, timestamps) {
 function calcScore(data, history5y = []) {
   const sectorKey = getSectorKey(data.sector);
 
-  // Technical from history
-  const closes    = history5y.map(p => p.value).filter(Boolean);
-  const timestamps = history5y.map(p => p.time).filter(Boolean);
+  // Technical from history — filter together to keep indices aligned
+  const validHistory = history5y.filter(p => p.value && p.time);
+  const closes     = validHistory.map(p => p.value);
+  const timestamps = validHistory.map(p => p.time);
   const rsi       = calcRSI(closes);
   const macd      = calcMACD(closes);
   const highs     = countHighs(closes, timestamps);

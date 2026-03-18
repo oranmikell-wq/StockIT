@@ -313,6 +313,9 @@ async function loadResults(symbol) {
     document.getElementById('results-loading').style.display = 'none';
     document.getElementById('results-content').classList.remove('hidden');
 
+    // Redraw gauge now that canvas is visible (getBoundingClientRect returns correct size)
+    drawGauge(scored.score, scored.rating);
+
     // Load chart
     loadChart(symbol, '1M');
     updateWatchlistBtn(symbol);
