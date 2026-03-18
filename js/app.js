@@ -62,19 +62,35 @@ document.addEventListener('DOMContentLoaded', () => {
   applyTheme();
   applyTranslations();
   bindEvents();
+  // Mark home as active in drawer
+  const homeBtn = document.querySelector('.drawer-nav-item[data-page="home"]');
+  if (homeBtn) homeBtn.classList.add('active');
   checkURLParam();
   loadTrending();
   renderHistory();
   setInterval(checkWatchlistAlerts, 15 * 60 * 1000);
 });
 
+// ── Drawer ─────────────────────────────────────────────
+function openDrawer() {
+  document.getElementById('nav-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('nav-drawer').removeAttribute('aria-hidden');
+}
+
+function closeDrawer() {
+  document.getElementById('nav-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('nav-drawer').setAttribute('aria-hidden', 'true');
+}
+
 // ── Theme ──────────────────────────────────────────────
 function applyTheme() {
   const theme = localStorage.getItem('bon-theme') || 'light';
   document.body.className = `theme-${theme}`;
   const icon = theme === 'dark' ? '☀️' : '🌙';
-  document.querySelectorAll('#btn-theme, #btn-theme-res, #btn-theme-cmp, #btn-theme-wl')
-    .forEach(b => b.textContent = icon);
+  const btn = document.getElementById('btn-theme-drawer');
+  if (btn) btn.textContent = icon;
 }
 
 function toggleTheme() {
@@ -87,11 +103,13 @@ function toggleTheme() {
 
 // ── Navigation ─────────────────────────────────────────
 function navigateTo(page, symbol = null) {
+  closeDrawer();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${page}`).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const navBtn = document.querySelector(`.nav-btn[data-page="${page}"]`);
-  if (navBtn) navBtn.classList.add('active');
+  // Update drawer active state
+  document.querySelectorAll('.drawer-nav-item').forEach(b => b.classList.remove('active'));
+  const drawerBtn = document.querySelector(`.drawer-nav-item[data-page="${page}"]`);
+  if (drawerBtn) drawerBtn.classList.add('active');
   currentPage = page;
 
   if (page === 'results' && symbol) loadResults(symbol);
@@ -108,13 +126,12 @@ function checkURLParam() {
 
 // ── Events ─────────────────────────────────────────────
 function bindEvents() {
-  // Theme toggles
-  document.querySelectorAll('#btn-theme, #btn-theme-res, #btn-theme-cmp, #btn-theme-wl')
-    .forEach(b => b.addEventListener('click', toggleTheme));
+  // Drawer theme + lang
+  document.getElementById('btn-theme-drawer').addEventListener('click', toggleTheme);
+  document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', toggleLang));
 
-  // Lang toggles
-  document.querySelectorAll('.lang-btn')
-    .forEach(b => b.addEventListener('click', toggleLang));
+  // Close drawer on Escape
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 
   // Search
   const input = document.getElementById('search-input');
@@ -139,8 +156,8 @@ function bindEvents() {
   document.getElementById('btn-back-compare').addEventListener('click', () => navigateTo('home'));
   document.getElementById('btn-back-watchlist').addEventListener('click', () => navigateTo('home'));
 
-  // Bottom nav
-  document.querySelectorAll('.nav-btn').forEach(btn => {
+  // Drawer nav items
+  document.querySelectorAll('.drawer-nav-item').forEach(btn => {
     btn.addEventListener('click', () => {
       const page = btn.dataset.page;
       navigateTo(page, page === 'results' ? currentStock?.symbol : null);

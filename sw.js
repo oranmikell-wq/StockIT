@@ -1,6 +1,6 @@
 // Service Worker — StockIT PWA
 // Bump version on every deploy so users always get fresh files
-const CACHE = 'stockit-v3';
+const CACHE = 'stockit-v4';
 
 self.addEventListener('install', e => {
   self.skipWaiting();

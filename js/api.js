@@ -103,7 +103,12 @@ async function fetchTrending() {
 // ── Master fetch: all data for a symbol ───────────────
 async function fetchAllData(symbol, lite = false) {
   const cached = cacheGet(symbol);
-  if (cached) return { data: cached, fromCache: true, offline: false };
+  if (cached) {
+    // If all Twelve Data fields are null, cache was stored during a rate-limit — re-fetch fresh
+    const isTASE = symbol.endsWith('.TA');
+    const hasTDData = isTASE || cached.pe != null || cached.epsGrowth != null || cached.instPct != null || cached.debtEquity != null;
+    if (hasTDData) return { data: cached, fromCache: true, offline: false };
+  }
 
   const stale = cacheGetStale(symbol);
 

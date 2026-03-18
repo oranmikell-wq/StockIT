@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/home.css" />
@@ -20,8 +20,8 @@
   <!-- ===== HOME PAGE ===== -->
   <div id="page-home" class="page active">
     <header class="top-bar">
-      <button id="btn-theme" class="icon-btn" aria-label="toggle theme">🌙</button>
-      <button id="btn-lang" class="lang-btn">EN</button>
+      <button class="hamburger-btn" onclick="openDrawer()" aria-label="תפריט">☰</button>
+      <span class="top-bar-brand">StockIT</span>
     </header>
 
     <main class="home-main">
@@ -75,8 +75,7 @@
       <div class="header-actions">
         <button id="btn-watchlist-toggle" class="icon-btn" title="הוסף למעקב">☆</button>
         <button id="btn-share" class="icon-btn" title="שתף">⬆️</button>
-        <button id="btn-theme-res" class="icon-btn">🌙</button>
-        <button id="btn-lang-res" class="lang-btn">EN</button>
+        <button class="hamburger-btn" onclick="openDrawer()" aria-label="תפריט">☰</button>
       </div>
     </header>
 
@@ -188,10 +187,7 @@
     <header class="results-header">
       <button id="btn-back-compare" class="icon-btn back-btn">←</button>
       <h2 data-i18n="compare">השוואת מניות</h2>
-      <div class="header-actions">
-        <button id="btn-theme-cmp" class="icon-btn">🌙</button>
-        <button id="btn-lang-cmp" class="lang-btn">EN</button>
-      </div>
+      <button class="hamburger-btn" onclick="openDrawer()" aria-label="תפריט">☰</button>
     </header>
     <div id="compare-content" class="compare-content"></div>
   </div>
@@ -201,30 +197,37 @@
     <header class="results-header">
       <button id="btn-back-watchlist" class="icon-btn back-btn">←</button>
       <h2 data-i18n="watchlist">רשימת מעקב</h2>
-      <div class="header-actions">
-        <button id="btn-theme-wl" class="icon-btn">🌙</button>
-        <button id="btn-lang-wl" class="lang-btn">EN</button>
-      </div>
+      <button class="hamburger-btn" onclick="openDrawer()" aria-label="תפריט">☰</button>
     </header>
     <div id="watchlist-content" class="watchlist-content"></div>
   </div>
 
-  <!-- ===== BOTTOM NAV ===== -->
-  <nav class="bottom-nav">
-    <span class="nav-brand">StockIT</span>
-    <button class="nav-btn active" data-page="home">
-      <span class="nav-icon">🏠</span>
-      <span data-i18n="home">בית</span>
-    </button>
-    <button class="nav-btn" data-page="watchlist">
-      <span class="nav-icon">⭐</span>
-      <span data-i18n="watchlist">מעקב</span>
-    </button>
-    <button class="nav-btn" data-page="compare">
-      <span class="nav-icon">⚖️</span>
-      <span data-i18n="compare">השוואה</span>
-    </button>
-  </nav>
+  <!-- ===== NAV DRAWER ===== -->
+  <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+  <aside id="nav-drawer" class="nav-drawer" aria-hidden="true">
+    <div class="drawer-header-row">
+      <span class="drawer-brand">StockIT</span>
+      <button class="icon-btn" onclick="closeDrawer()" aria-label="סגור">✕</button>
+    </div>
+    <nav class="drawer-nav-list">
+      <button class="drawer-nav-item nav-btn" data-page="home">
+        <span class="drawer-icon">🏠</span>
+        <span data-i18n="home">בית</span>
+      </button>
+      <button class="drawer-nav-item nav-btn" data-page="watchlist">
+        <span class="drawer-icon">⭐</span>
+        <span data-i18n="watchlist">מעקב</span>
+      </button>
+      <button class="drawer-nav-item nav-btn" data-page="compare">
+        <span class="drawer-icon">⚖️</span>
+        <span data-i18n="compare">השוואה</span>
+      </button>
+    </nav>
+    <div class="drawer-footer">
+      <button id="btn-theme-drawer" class="icon-btn" aria-label="ניגוד צבעים">🌙</button>
+      <button id="btn-lang-drawer" class="lang-btn">EN</button>
+    </div>
+  </aside>
 
   <!-- ===== IN-APP NOTIFICATION ===== -->
   <div id="notification" class="notification hidden"></div>
