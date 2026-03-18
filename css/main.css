@@ -90,11 +90,16 @@ body {
 /* ===== PAGES ===== */
 .page {
   display: none;
-  min-height: calc(100dvh - var(--nav-height-mobile));
   animation: fadeIn 0.18s ease;
 }
 
-.page.active { display: block; }
+.page.active {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--topbar-h));
+}
+
+.page.active .app-footer { margin-top: auto; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(5px); }
