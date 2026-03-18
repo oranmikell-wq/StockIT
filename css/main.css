@@ -275,19 +275,14 @@ body {
 .back-btn { font-size: 20px; }
 [dir="rtl"] .back-btn { transform: scaleX(-1); }
 
-/* כפתור חזרה צף — ללא header */
+/* כפתור חזרה — ללא header */
 .page-back-btn {
-  position: sticky;
-  top: 12px;
-  left: 12px;
-  margin: 12px 0 0 12px;
-  z-index: 10;
   display: block;
+  margin: 14px 0 0 14px;
+  color: var(--text);
 }
 [dir="rtl"] .page-back-btn {
-  left: auto;
-  right: 12px;
-  margin: 12px 12px 0 0;
+  margin: 14px 14px 0 0;
 }
 
 /* ===== HEADER ===== */
@@ -308,8 +303,8 @@ body {
   position: sticky;
   top: var(--topbar-h);
   z-index: 50;
-  background: #000000;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
   padding: 10px 16px;
   display: flex;
   align-items: center;
@@ -323,26 +318,31 @@ body {
   font-weight: 700;
 }
 
-/* Header text/icon colors on black bar */
+/* Header text/icon colors */
 .results-header .res-symbol,
 .results-header h2 {
-  color: #ffffff;
+  color: var(--text);
 }
-.top-bar .hamburger-btn,
+.top-bar .hamburger-btn {
+  color: rgba(255,255,255,0.8);
+}
 .results-header .hamburger-btn,
 .results-header .icon-btn,
 .results-header .back-btn {
-  color: rgba(255,255,255,0.8);
+  color: var(--text);
 }
-.top-bar .hamburger-btn:hover,
-.results-header .hamburger-btn:hover,
-.results-header .icon-btn:hover,
-.results-header .back-btn:hover {
+.top-bar .hamburger-btn:hover {
   background: rgba(255,255,255,0.1);
   border-color: transparent;
 }
+.results-header .hamburger-btn:hover,
+.results-header .icon-btn:hover,
+.results-header .back-btn:hover {
+  background: var(--bg-2);
+  border-color: transparent;
+}
 .results-header .res-name {
-  color: rgba(255,255,255,0.55);
+  color: var(--text-3);
 }
 
 /* ===== BUTTONS ===== */
