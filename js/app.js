@@ -170,6 +170,7 @@ function bindEvents() {
   document.getElementById('btn-back-err').addEventListener('click', () => navigateTo('home'));
   document.getElementById('btn-back-compare').addEventListener('click', () => navigateTo('home'));
   document.getElementById('btn-back-watchlist').addEventListener('click', () => navigateTo('home'));
+  document.getElementById('btn-back-about').addEventListener('click', () => navigateTo('home'));
 
   // Drawer nav items
   document.querySelectorAll('.drawer-nav-item').forEach(btn => {

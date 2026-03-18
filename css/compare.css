@@ -157,6 +157,81 @@
   flex-shrink: 0;
 }
 
+/* ===== ABOUT ===== */
+.about-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.about-logo {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--green);
+  letter-spacing: -1.5px;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.about-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.about-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.about-text {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
+.about-criteria-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.about-criteria-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.about-criteria-weight {
+  background: var(--green-bg);
+  color: var(--green);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  min-width: 40px;
+  text-align: center;
+}
+
+.about-score-legend {
+  font-size: 13px;
+  font-weight: 600;
+  padding-top: 4px;
+}
+
 /* ===== DESKTOP ===== */
 @media (min-width: 768px) {
   .compare-content, .watchlist-content {

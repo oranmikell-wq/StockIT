@@ -1,14 +1,13 @@
 // api.js — כל קריאות ה-API + corsproxy + cache
-// Primary: Yahoo Finance v8 chart (free, no key)
-// Supplemental: Twelve Data (free key — 800 req/day)
-//   Get your own free key at https://twelvedata.com/pricing
+// Price data: Yahoo Finance (free, no rate limit)
+// Fundamentals: Twelve Data (free key — 800 req/day, cached 24 hours)
 
 function getTwelveKey() { return localStorage.getItem('bon-twelve-key') || 'demo'; }
 
 const PROXY1 = 'https://corsproxy.io/?';
 const PROXY2 = 'https://api.allorigins.win/raw?url=';
 
-// ── Cache ──────────────────────────────────────────────
+// ── Price cache (15 min) ───────────────────────────────
 function cacheGet(symbol) {
   try {
     const raw = localStorage.getItem(`bon-cache-${symbol}`);
@@ -32,6 +31,24 @@ function cacheGetStale(symbol) {
     const { data, ts } = JSON.parse(raw);
     return { data, ts };
   } catch { return null; }
+}
+
+// ── Fundamentals cache (24 hours) ─────────────────────
+// Fundamentals (PE, PB, growth, debt, etc.) change slowly — cache for 24h
+function fundGet(symbol) {
+  try {
+    const raw = localStorage.getItem(`bon-fund-${symbol}`);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts < 24 * 60 * 60 * 1000) return data;
+    return null;
+  } catch { return null; }
+}
+
+function fundSet(symbol, data) {
+  try {
+    localStorage.setItem(`bon-fund-${symbol}`, JSON.stringify({ data, ts: Date.now() }));
+  } catch {}
 }
 
 // ── Fetch helpers ──────────────────────────────────────
@@ -60,7 +77,7 @@ async function yahooChart(symbol, range = '1d', interval = '1d') {
   return fetchProxy(url);
 }
 
-// ── Yahoo Finance news search ──────────────────────────
+// ── Yahoo Finance news + sector ────────────────────────
 async function yahooNewsSearch(symbol) {
   const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${symbol}&newsCount=8&enableNavLinks=false`;
   return fetchProxy(url);
@@ -81,16 +98,16 @@ async function tdStatistics(symbol) {
   return tdGet(`statistics?symbol=${encodeURIComponent(symbol)}`);
 }
 
-async function tdEarnings(symbol) {
-  return tdGet(`earnings?symbol=${encodeURIComponent(symbol)}`);
+async function tdAnalystRatings(symbol) {
+  return tdGet(`analyst_ratings/light?symbol=${encodeURIComponent(symbol)}`);
 }
 
 async function tdPriceTarget(symbol) {
   return tdGet(`price_target?symbol=${encodeURIComponent(symbol)}`);
 }
 
-async function tdAnalystRatings(symbol) {
-  return tdGet(`analyst_ratings/light?symbol=${encodeURIComponent(symbol)}`);
+async function tdEarnings(symbol) {
+  return tdGet(`earnings?symbol=${encodeURIComponent(symbol)}`);
 }
 
 // ── Trending symbols ───────────────────────────────────
@@ -107,40 +124,51 @@ function isCryptoSymbol(symbol) {
 
 // ── Master fetch: all data for a symbol ───────────────
 async function fetchAllData(symbol, lite = false) {
+  // Full cache hit (price + fundamentals, 15 min)
   const cached = cacheGet(symbol);
-  if (cached) {
-    // If all Twelve Data fields are null, cache was stored during a rate-limit — re-fetch fresh
-    const skipsTD = symbol.endsWith('.TA') || isCryptoSymbol(symbol);
-    const hasTDData = skipsTD || cached.pe != null || cached.epsGrowth != null || cached.instPct != null || cached.debtEquity != null;
-    if (hasTDData) return { data: cached, fromCache: true, offline: false };
-  }
+  if (cached) return { data: cached, fromCache: true, offline: false };
 
   const stale = cacheGetStale(symbol);
 
   try {
-    // Always fetch Yahoo chart (works for all symbols including TASE and Crypto)
+    const isCrypto = isCryptoSymbol(symbol);
+    const isTASE   = symbol.endsWith('.TA');
+    const skipFund = isTASE || isCrypto;
+
+    // 1. Yahoo chart — price data (always available, no rate limit)
     const chartRaw = await yahooChart(symbol, '1d', '1d');
     const meta = chartRaw?.chart?.result?.[0]?.meta;
+    if (!meta || !meta.regularMarketPrice) throw new Error('no_data');
 
-    if (!meta || meta.regularMarketPrice === 0) throw new Error('no_data');
-
-    // Twelve Data: skip for TASE (.TA) and Crypto — no fundamental data
-    const isTASE = symbol.endsWith('.TA');
-    const isCrypto = isCryptoSymbol(symbol);
-    const stats = (isTASE || isCrypto) ? null : await tdStatistics(symbol).catch(() => null);
-
-    // Non-lite: fetch earnings/target/ratings sequentially to avoid rate limit
-    let earning = null, target = null, ratings = null;
-    if (!lite && !isTASE && !isCrypto) {
-      earning = await tdEarnings(symbol).catch(() => null);
-      target  = await tdPriceTarget(symbol).catch(() => null);
-      ratings = await tdAnalystRatings(symbol).catch(() => null);
+    // 2. Fundamentals from Twelve Data — 24h cache, skip for TASE/Crypto/lite
+    let stats = null, ratings = null, target = null, earning = null;
+    if (!skipFund) {
+      const cached24h = fundGet(symbol);
+      if (cached24h) {
+        // Use cached fundamentals
+        stats   = cached24h.stats;
+        ratings = cached24h.ratings;
+        target  = cached24h.target;
+        earning = cached24h.earning;
+      } else if (!lite) {
+        // Fetch fresh fundamentals (full mode only)
+        stats   = await tdStatistics(symbol).catch(() => null);
+        ratings = await tdAnalystRatings(symbol).catch(() => null);
+        target  = await tdPriceTarget(symbol).catch(() => null);
+        earning = await tdEarnings(symbol).catch(() => null);
+        // Cache fundamentals for 24 hours
+        fundSet(symbol, { stats, ratings, target, earning });
+      } else {
+        // lite mode: try stats only (for scoring), skip heavy calls
+        stats = await tdStatistics(symbol).catch(() => null);
+        if (stats) fundSet(symbol, { stats, ratings: null, target: null, earning: null });
+      }
     }
 
-    // Yahoo news (no rate limit)
+    // 3. News (Yahoo — no rate limit)
     const newsResp = await yahooNewsSearch(symbol).catch(() => null);
 
-    const data = parseAllData({ meta, stats, earning, target, ratings, newsResp }, symbol);
+    const data = parseAllData({ meta, stats, ratings, target, earning, newsResp }, symbol);
     cacheSet(symbol, data);
     return { data, fromCache: false, offline: false };
 
@@ -156,7 +184,6 @@ async function fetchAllData(symbol, lite = false) {
 function aggregateRatings(ratingsData) {
   if (!ratingsData?.ratings?.length) return null;
 
-  // Take the latest rating per firm (deduplicate)
   const byFirm = new Map();
   for (const r of ratingsData.ratings) {
     if (!byFirm.has(r.firm) || r.date > byFirm.get(r.firm).date) {
@@ -164,7 +191,6 @@ function aggregateRatings(ratingsData) {
     }
   }
 
-  // Only consider ratings from the last 3 months
   const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const recent = [...byFirm.values()].filter(r => r.date >= cutoff);
   if (!recent.length) return null;
@@ -187,50 +213,49 @@ function aggregateRatings(ratingsData) {
 }
 
 // ── Parse all raw data into clean object ──────────────
-function parseAllData({ meta, stats, earning, target, ratings, newsResp }, symbol) {
-  const st    = stats?.statistics || {};
-  const val   = st.valuations_metrics || {};
-  const fin   = st.financials || {};
-  const inc   = fin.income_statement || {};
-  const bal   = fin.balance_sheet || {};
-  const sps   = st.stock_price_summary || {};
-  const sst   = st.stock_statistics || {};
-  const div   = st.dividends_and_splits || {};
+function parseAllData({ meta, stats, ratings, target, earning, newsResp }, symbol) {
+  const st  = stats?.statistics || {};
+  const val = st.valuations_metrics || {};
+  const fin = st.financials || {};
+  const inc = fin.income_statement || {};
+  const bal = fin.balance_sheet || {};
+  const sps = st.stock_price_summary || {};
+  const sst = st.stock_statistics || {};
+  const div = st.dividends_and_splits || {};
 
-  // Price from Yahoo chart (always available)
-  const price     = meta.regularMarketPrice    ?? null;
-  const prevClose = meta.chartPreviousClose     ?? meta.regularMarketPreviousClose ?? null;
-  const change    = (price != null && prevClose) ? price - prevClose : null;
-  const changePct = (change != null && prevClose) ? (change / prevClose) * 100 : null;
-  const currency  = meta.currency               ?? 'USD';
-  const exchange  = meta.exchangeName           ?? meta.fullExchangeName ?? null;
-  const isTASE    = symbol.endsWith('.TA');
-  const isCrypto  = isCryptoSymbol(symbol);
+  const isCrypto    = isCryptoSymbol(symbol);
+  const isTASE      = symbol.endsWith('.TA');
   const marketState = isCrypto ? 'REGULAR' : (meta.marketState ?? 'CLOSED');
 
-  // Name — from Twelve Data (better) or Yahoo chart
-  const name = stats?.meta?.name ?? meta.longName ?? meta.shortName ?? symbol;
+  // Price (Yahoo chart — always reliable)
+  const price     = meta.regularMarketPrice    ?? null;
+  const prevClose = meta.chartPreviousClose    ?? meta.regularMarketPreviousClose ?? null;
+  const change    = (price != null && prevClose) ? price - prevClose : null;
+  const changePct = (change != null && prevClose) ? (change / prevClose) * 100 : null;
+  const currency  = meta.currency    ?? 'USD';
+  const exchange  = meta.exchangeName ?? meta.fullExchangeName ?? null;
 
-  // Sector from Yahoo Finance search results (free — already fetched in newsResp)
+  // Name & sector
+  const name   = stats?.meta?.name ?? meta.longName ?? meta.shortName ?? symbol;
   const sector = newsResp?.quotes?.find(q => q.symbol === symbol)?.sector || null;
 
-  // Valuation from Twelve Data statistics
+  // Valuation (Twelve Data)
   const marketCap = val.market_capitalization  ?? null;
   const pe        = val.trailing_pe            ?? null;
   const pb        = val.price_to_book_mrq      ?? null;
   const ps        = val.price_to_sales_ttm     ?? null;
 
-  // Price summary
-  const beta    = sps.beta                   ?? null;
-  const high52w = sps.fifty_two_week_high    ?? meta.fiftyTwoWeekHigh ?? null;
-  const low52w  = sps.fifty_two_week_low     ?? meta.fiftyTwoWeekLow  ?? null;
+  // Price stats (Twelve Data + Yahoo fallback)
+  const beta    = sps.beta                ?? null;
+  const high52w = sps.fifty_two_week_high ?? meta.fiftyTwoWeekHigh ?? null;
+  const low52w  = sps.fifty_two_week_low  ?? meta.fiftyTwoWeekLow  ?? null;
 
-  // Dividend (Twelve Data returns as decimal e.g. 0.0041 = 0.41%)
+  // Dividend (Twelve Data — decimal: 0.0041 = 0.41%)
   const dividend = div.forward_annual_dividend_yield != null
     ? div.forward_annual_dividend_yield * 100
     : null;
 
-  // EPS & Revenue growth (Twelve Data returns as decimals e.g. 0.159 = 15.9%)
+  // Growth (Twelve Data — decimal: 0.159 = 15.9%)
   const epsGrowth     = inc.quarterly_earnings_growth_yoy != null
     ? inc.quarterly_earnings_growth_yoy * 100
     : null;
@@ -238,12 +263,12 @@ function parseAllData({ meta, stats, earning, target, ratings, newsResp }, symbo
     ? inc.quarterly_revenue_growth * 100
     : null;
 
-  // Debt/Equity (Twelve Data returns as percent e.g. 102.63 = 1.0263x)
+  // Debt/Equity (Twelve Data — returns as percent: 102.63 = 1.0263x)
   const debtEquity = bal.total_debt_to_equity_mrq != null
     ? bal.total_debt_to_equity_mrq / 100
     : null;
 
-  // Institutional % (Twelve Data returns as decimal 0-1)
+  // Institutional %
   const instPct = sst.percent_held_by_institutions ?? null;
 
   // Analyst recommendations
@@ -262,7 +287,7 @@ function parseAllData({ meta, stats, earning, target, ratings, newsResp }, symbo
   if (nextEarning) earningsDate = new Date(nextEarning.date);
 
   // News
-  const rawNews  = newsResp?.news || [];
+  const rawNews   = newsResp?.news || [];
   const newsItems = rawNews.slice(0, 5).map(n => ({
     headline: n.title,
     url:      n.link,
