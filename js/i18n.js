@@ -149,7 +149,7 @@ const TRANSLATIONS = {
   }
 };
 
-let currentLang = localStorage.getItem('bon-lang') || 'he';
+let currentLang = localStorage.getItem('bon-lang') || 'en';
 
 function t(key, vars = {}) {
   let str = TRANSLATIONS[currentLang][key] || TRANSLATIONS['he'][key] || key;
