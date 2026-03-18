@@ -699,7 +699,7 @@ function renderCriteriaTable(scored, data) {
     { key: 'technical',     rawData: () => [scored.technicals?.rsi != null && `RSI: ${scored.technicals.rsi.toFixed(1)}`, scored.technicals?.macd != null && `MACD: ${scored.technicals.macd.toFixed(2)}`].filter(Boolean) },
     { key: 'ath',           rawData: () => {
         if (data.price == null || data.high52w == null) return [];
-        const distPct = Math.max(0, ((data.high52w - data.price) / data.price) * 100);
+        const distPct = Math.max(0, ((data.high52w - data.price) / data.high52w) * 100);
         return [distPct < 0.1 ? 'At 52w High' : `+${distPct.toFixed(1)}% to 52w High`];
       }},
     { key: 'highs',         rawData: () => scored.technicals?.highs ? [`1Y: ${scored.technicals.highs.y1}`, `3Y: ${scored.technicals.highs.y3}`, `5Y: ${scored.technicals.highs.y5}`] : [] },

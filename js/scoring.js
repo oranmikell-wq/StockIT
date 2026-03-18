@@ -125,7 +125,7 @@ function scoreAnalysts(analystScore, analystMean) {
   // Yahoo Finance recommendationMean: 1=Strong Buy, 2=Buy, 3=Hold, 4=Underperform, 5=Sell
   if (analystMean != null) {
     // Map 1–5 scale to 0–100 (inverted: lower mean = better)
-    return normalizeLinear(5 - analystMean, 0, 4) * 100;
+    return normalizeLinear(5 - analystMean, 0, 4);
   }
   if (!analystScore) return null;
   const { strongBuy = 0, buy = 0, hold = 0, sell = 0 } = analystScore;
