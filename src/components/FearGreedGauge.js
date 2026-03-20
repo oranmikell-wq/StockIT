@@ -77,15 +77,13 @@ function buildGaugeSVG(score, activeIdx, label) {
     </g>`;
   }).join('');
 
-  // 3. Tick dots — same radius as the 25/50/75 numbers so they sit between them
+  // 3. Tick dots — same radius as the 25/50/75 numbers, centred between each pair
   const R_NUM = R_I - 18; // shared radius for both dots and arc numbers
-  const skipS = new Set([0, 25, 45, 50, 55, 75, 100]);
-  const dots = [];
-  for (let s = 10; s < 100; s += 10) {
-    if (skipS.has(s)) continue;
+  const dotPositions = [13, 38, 63, 88]; // midpoints between 0–25, 25–50, 50–75, 75–100
+  const dots = dotPositions.map(s => {
     const { x: dx, y: dy } = pt(PI * (1 - s / 100), R_NUM);
-    dots.push(`<circle cx="${dx}" cy="${dy}" r="1.8" fill="var(--text-3)" opacity="0.45"/>`);
-  }
+    return `<circle cx="${dx}" cy="${dy}" r="1.8" fill="var(--text-3)" opacity="0.45"/>`;
+  });
 
   // 4. Numbers: 0 and 100 at base endpoints; 25, 50, 75 along inner arc
   const arcNums = [
