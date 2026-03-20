@@ -586,19 +586,17 @@ body {
   /* Wider drawer on desktop */
   .nav-drawer { width: min(200px, 70vw); }
 
-  /* Desktop: pages centered at 80% width, footers full width */
-  .page.active {
+  /* Desktop: constrain inner content to 80%, background stays full width */
+  .home-main,
+  .results-content,
+  .results-header,
+  .about-content,
+  .watchlist-content,
+  .compare-content {
+    max-width: 880px;
     width: 80%;
-    max-width: 1100px;
-    margin: 0 auto;
-    box-shadow: 0 0 40px rgba(0,0,0,0.08);
-  }
-
-  .top-bar,
-  .app-footer {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
