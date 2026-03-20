@@ -3,34 +3,18 @@
 import { t } from '../utils/i18n.js';
 import { fetchProxy } from '../services/StockService.js';
 
-const FRED_BASE = 'https://api.stlouisfed.org/fred/series/observations';
-const FRED_KEY  = '7a1406a89db10455c27f6c7af6a94e08';
+const AAII_URL = 'https://www.aaii.com/sentimentsurvey';
 
-async function fetchFred(seriesId) {
-  const key = localStorage.getItem('bon-fred-key') || FRED_KEY;
-  const url = `${FRED_BASE}?series_id=${seriesId}&api_key=${key}&file_type=json&sort_order=desc&limit=56`;
-  const json = await fetchProxy(url);
-  if (json.error_message) throw new Error(json.error_message);
-  return json.observations || [];
+async function fetchAAII() {
+  const data = await fetchProxy(AAII_URL);
+  if (data.error) throw new Error(data.error);
+  if (!data.weekly?.length) throw new Error('no_data');
+  return data;
 }
 
-// Align 3 series by date (FRED returns desc, index 0 = most recent)
-function align(bullObs, neuObs, bearObs) {
-  const neuMap  = Object.fromEntries(neuObs.filter(o => o.value !== '.').map(o => [o.date, +o.value]));
-  const bearMap = Object.fromEntries(bearObs.filter(o => o.value !== '.').map(o => [o.date, +o.value]));
-  return bullObs
-    .filter(o => o.value !== '.' && neuMap[o.date] != null && bearMap[o.date] != null)
-    .map(o => ({ date: o.date, bull: +o.value, neu: neuMap[o.date], bear: bearMap[o.date] }));
-}
-
-function fmtDate(d) {
-  const [y, m, day] = d.split('-');
-  return `${+m}/${+day}/${y}`;
-}
-
-// Stacked bar (3 colors)
+// Stacked bar (3 colors, bull+neu+bear ≈ 100)
 function stackedBar(bull, neu, bear) {
-  const sum = bull + neu + bear || 100;
+  const sum = (bull || 0) + (neu || 0) + (bear || 0) || 100;
   const b = +(bull / sum * 100).toFixed(1);
   const n = +(neu  / sum * 100).toFixed(1);
   const r = +(100  - b - n).toFixed(1);
@@ -48,14 +32,15 @@ function stackedBar(bull, neu, bear) {
     </div>`;
 }
 
-// Single-color bar (for historical highs)
+// Single-color bar (for highs)
 function singleBar(val, mod, dateStr) {
+  if (val == null) return '';
   return `
     <div class="aaii-bar aaii-bar--single">
       <div class="aaii-seg ${mod}" style="flex:0 0 ${val.toFixed(1)}%;border-radius:4px">
         <span class="aaii-seg-txt">${val.toFixed(1)}%</span>
       </div>
-      <span class="aaii-bar-annot">${t('aaii_week_ending')} ${fmtDate(dateStr)}</span>
+      ${dateStr ? `<span class="aaii-bar-annot">${t('aaii_week_ending')} ${dateStr}</span>` : ''}
     </div>`;
 }
 
@@ -73,27 +58,9 @@ export async function loadAAII() {
   if (!el) return;
 
   try {
-    const [bullObs, neuObs, bearObs] = await Promise.all([
-      fetchFred('AAIIBULL'),
-      fetchFred('AAIINEU'),
-      fetchFred('AAIIBEAR'),
-    ]);
+    const { weekly, averages, highs } = await fetchAAII();
 
-    const data = align(bullObs, neuObs, bearObs);
-    if (!data.length) throw new Error('no_data');
-
-    const recent   = data.slice(0, 4);
-    const yearData = data.slice(0, 52);
-
-    const avg = (arr, key) => arr.reduce((s, r) => s + r[key], 0) / arr.length;
-    const max = (arr, key) => arr.reduce((m, r) => r[key] > m.val ? { val: r[key], date: r.date } : m, { val: 0, date: '' });
-
-    const avgBull = avg(yearData, 'bull');
-    const avgNeu  = avg(yearData, 'neu');
-    const avgBear = avg(yearData, 'bear');
-    const maxBull = max(yearData, 'bull');
-    const maxNeu  = max(yearData, 'neu');
-    const maxBear = max(yearData, 'bear');
+    const recent = weekly.slice(0, 4);
 
     el.innerHTML = `
       <div class="aaii-legend">
@@ -109,13 +76,15 @@ export async function loadAAII() {
       </div>
 
       <p class="aaii-section-title">${t('aaii_sentiment_votes')}</p>
-      ${recent.map(r => row(fmtDate(r.date), stackedBar(r.bull, r.neu, r.bear))).join('')}
+      ${recent.map(r => row(r.date, stackedBar(r.bull, r.neu, r.bear))).join('')}
 
-      <p class="aaii-section-title aaii-section-title--gap">${t('aaii_historical')}</p>
-      ${row(t('aaii_avg'),       stackedBar(avgBull, avgNeu, avgBear), true)}
-      ${row(t('aaii_bull_high'), singleBar(maxBull.val, 'aaii-seg--bull', maxBull.date))}
-      ${row(t('aaii_neu_high'),  singleBar(maxNeu.val,  'aaii-seg--neu',  maxNeu.date))}
-      ${row(t('aaii_bear_high'), singleBar(maxBear.val, 'aaii-seg--bear', maxBear.date))}
+      ${averages || highs?.bull ? `
+        <p class="aaii-section-title aaii-section-title--gap">${t('aaii_historical')}</p>
+        ${averages ? row(t('aaii_avg'), stackedBar(averages.bull, averages.neu, averages.bear), true) : ''}
+        ${highs?.bull ? row(t('aaii_bull_high'), singleBar(highs.bull.val, 'aaii-seg--bull', highs.bull.date)) : ''}
+        ${highs?.neu  ? row(t('aaii_neu_high'),  singleBar(highs.neu.val,  'aaii-seg--neu',  highs.neu.date))  : ''}
+        ${highs?.bear ? row(t('aaii_bear_high'), singleBar(highs.bear.val, 'aaii-seg--bear', highs.bear.date)) : ''}
+      ` : ''}
 
       <p class="aaii-source">${t('aaii_source')}</p>`;
 
