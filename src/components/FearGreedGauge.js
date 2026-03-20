@@ -81,7 +81,7 @@ function buildGaugeSVG(score, activeIdx, label) {
   const R_NUM = R_I - 18; // shared radius for both dots and arc numbers
   const skipS = new Set([0, 25, 45, 50, 55, 75, 100]);
   const dots = [];
-  for (let s = 5; s < 100; s += 5) {
+  for (let s = 10; s < 100; s += 10) {
     if (skipS.has(s)) continue;
     const { x: dx, y: dy } = pt(PI * (1 - s / 100), R_NUM);
     dots.push(`<circle cx="${dx}" cy="${dy}" r="1.8" fill="var(--text-3)" opacity="0.45"/>`);
