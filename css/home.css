@@ -219,81 +219,27 @@
   50%       { opacity: 1;   transform: translateY(-3px); }
 }
 
-/* Trending */
-.trending-section { width: 100%; max-width: 100%; overflow: hidden; }
+/* ===== FEAR & GREED INDEX ===== */
+.fng-section { width: 100%; }
 
-.trending-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.trending-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 16px;
+.fng-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
-}
-
-.trending-item:hover {
-  border-color: #000000;
+  border-radius: var(--radius-lg);
+  padding: 20px 16px 14px;
   box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
 }
 
-.trending-rank {
-  font-size: 12px;
-  color: var(--text-3);
-  min-width: 18px;
-  text-align: center;
-  font-weight: 600;
+.fng-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.trending-symbol {
-  font-weight: 700;
-  font-size: 14px;
-  min-width: 64px;
-  color: var(--text);
-}
-
-.trending-name {
-  flex: 1;
-  font-size: 12px;
-  color: var(--text-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trending-change {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-
-.trending-badge {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 20px;
-  flex-shrink: 0;
-  letter-spacing: 0.2px;
-}
-
-.badge-buy-bg  { background: var(--green-bg); color: var(--green); }
-.badge-wait-bg { background: var(--yellow-bg); color: var(--yellow); }
-.badge-sell-bg { background: var(--red-bg); color: var(--red); }
-
-/* Skeleton */
-.trending-skeleton {
-  height: 52px;
+/* Loading skeleton */
+.fng-skeleton {
+  height: 160px;
+  width: 100%;
   background: var(--bg-3);
   border-radius: var(--radius);
   animation: pulse 1.4s ease-in-out infinite;
@@ -301,8 +247,118 @@
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
+  50%       { opacity: 0.45; }
 }
+
+/* Gauge SVG */
+.fng-gauge-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 200px;
+}
+
+.fng-svg {
+  width: 200px;
+  height: auto;
+  display: block;
+}
+
+.fng-arc {
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Score + label overlaid on SVG */
+.fng-center {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.fng-score {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  font-family: var(--font-num);
+}
+
+.fng-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+/* Compare rows */
+.fng-compare {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.fng-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.fng-row-label {
+  flex: 1;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.fng-row-score {
+  font-weight: 700;
+  min-width: 26px;
+  text-align: right;
+  font-family: var(--font-num);
+}
+
+.fng-row-arrow {
+  font-size: 11px;
+  min-width: 38px;
+  font-family: var(--font-num);
+}
+
+.fng-source {
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+.fng-error {
+  font-size: 13px;
+  color: var(--text-3);
+  text-align: center;
+  padding: 24px;
+}
+
+/* Mobile: stack gauge above compare */
+@media (max-width: 480px) {
+  .fng-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .fng-compare {
+    width: 100%;
+    padding: 0 4px;
+  }
+}
+
+/* RTL */
+[dir="rtl"] .fng-row { flex-direction: row-reverse; }
+[dir="rtl"] .fng-row-score { text-align: left; }
+[dir="rtl"] .fng-source { text-align: right; }
 
 /* History */
 .history-section { width: 100%; }
@@ -352,15 +408,7 @@
   #search-input { font-size: 16px; }
   #search-btn { padding: 12px 28px; font-size: 14px; }
 
-  .trending-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
 
-  .trending-item { padding: 14px 20px; }
-  .trending-symbol { font-size: 15px; min-width: 72px; }
-  .trending-name { font-size: 13px; }
 }
 
 @media (min-width: 1200px) {

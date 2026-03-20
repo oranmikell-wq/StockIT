@@ -8,7 +8,7 @@ import { calcSummaryScore, renderSummaryGauge } from './components/SummaryGauge.
 import { renderCriteriaTable } from './components/CriteriaTable.js';
 import { renderStrategyChecklist } from './components/StrategyChecklist.js';
 import { renderNews, renderAIInsight } from './components/NewsRenderer.js';
-import { renderTrendingList, loadTrending } from './components/TrendingList.js';
+import { loadFearGreed } from './components/FearGreedGauge.js';
 import { showAutocomplete, hideAutocomplete, selectAutocomplete, confirmAutocomplete, showRecentSearches, initAutocomplete } from './components/Autocomplete.js';
 import { initChart, loadChart, updateChartTheme, initCompareChart } from './components/Chart.js';
 import {
@@ -141,10 +141,8 @@ window.__onLangChange = function() {
     }
   }
 
-  // 3. Re-render trending to update badge labels
-  import('./components/TrendingList.js').then(mod => {
-    mod.renderTrendingList(navigateTo);
-  });
+  // 3. Re-render Fear & Greed labels on lang change
+  loadFearGreed();
 };
 
 // ── Utility ─────────────────────────────────────────────
@@ -470,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initPullToRefresh();
   checkURLParam();
-  loadTrending(navigateTo);
+  loadFearGreed();
   renderHistory();
 
   setInterval(() => checkWatchlistAlerts(showNotification), 15 * 60 * 1000);
