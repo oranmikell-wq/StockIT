@@ -37,14 +37,72 @@ export async function yahooNewsSearch(symbol) {
   return fetchProxy(url);
 }
 
+// Convert flat Yahoo Finance v7 quote object into the nested v10 structure
+// that parseAllData expects.
+function _v7ToV10(q) {
+  return {
+    summaryDetail: {
+      trailingPE:   q.trailingPE   ?? null,
+      priceToBook:  q.priceToBook  ?? null,
+      beta:         q.beta         ?? null,
+      marketCap:    q.marketCap    ?? null,
+      dividendYield: q.trailingAnnualDividendYield ?? q.dividendYield ?? null,
+    },
+    defaultKeyStatistics: {
+      priceToSalesTrailing12Months: q.trailingPriceToSales ?? null,
+      heldPercentInstitutions:      q.heldPercentInstitutions ?? null,
+    },
+    financialData: {
+      earningsGrowth:           q.earningsGrowth           ?? null,
+      revenueGrowth:            q.revenueGrowth            ?? null,
+      debtToEquity:             q.debtToEquity             ?? null,
+      targetMeanPrice:          q.targetMeanPrice          ?? null,
+      targetHighPrice:          q.targetHighPrice          ?? null,
+      targetLowPrice:           q.targetLowPrice           ?? null,
+      recommendationMean:       q.recommendationMean       ?? null,
+      numberOfAnalystOpinions:  q.numberOfAnalystOpinions  ?? null,
+    },
+    calendarEvents: {
+      earnings: {
+        earningsDate: q.earningsTimestampStart ? [q.earningsTimestampStart] : [],
+      },
+    },
+    assetProfile: {
+      longName: q.longName ?? q.shortName ?? null,
+      sector:   q.sector   ?? null,
+      industry: q.industry ?? null,
+    },
+  };
+}
+
 export async function yahooFundamentals(symbol) {
-  const modules = 'summaryDetail,defaultKeyStatistics,financialData,assetProfile,calendarEvents';
-  const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&formatted=false&corsDomain=finance.yahoo.com`;
+  // ── 1. Try v7/finance/quote (no crumb needed) ──────────────
   try {
-    const raw = await fetchProxy(url);
+    const fields = [
+      'trailingPE','forwardPE','marketCap','beta','priceToBook',
+      'trailingPriceToSales','trailingAnnualDividendYield','dividendYield',
+      'recommendationMean','numberOfAnalystOpinions',
+      'targetMeanPrice','targetHighPrice','targetLowPrice',
+      'earningsTimestampStart','earningsTimestampEnd',
+      'earningsGrowth','revenueGrowth','debtToEquity',
+      'heldPercentInstitutions','sector','industry','longName','shortName',
+    ].join(',');
+    const url7 = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbol)}&fields=${fields}`;
+    const raw7 = await fetchProxy(url7);
+    const q = raw7?.quoteResponse?.result?.[0];
+    if (q?.symbol) return _v7ToV10(q);
+  } catch {}
+
+  // ── 2. Fallback: v10/quoteSummary (needs crumb — may return 401) ──
+  const modules = 'summaryDetail,defaultKeyStatistics,financialData,assetProfile,calendarEvents';
+  try {
+    const raw = await fetchProxy(
+      `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&formatted=false&corsDomain=finance.yahoo.com`
+    );
     if (raw?.quoteSummary?.error || !raw?.quoteSummary?.result?.[0]) {
-      const url2 = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&formatted=false`;
-      const raw2 = await fetchProxy(url2);
+      const raw2 = await fetchProxy(
+        `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&formatted=false`
+      );
       const result2 = raw2?.quoteSummary?.result?.[0];
       if (!result2 || raw2?.quoteSummary?.error) return null;
       return result2;

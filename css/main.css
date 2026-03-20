@@ -592,48 +592,8 @@ body {
 }
 
 /* ============================================================
-   WATCHLIST SIDEBAR BUTTON (top-bar)
+   WATCHLIST SIDEBAR PANEL STYLES (sidebar still in DOM for JS)
    ============================================================ */
-.wl-sidebar-btn {
-  position: relative;
-  background: rgba(255,255,255,0.12);
-  border: 1.5px solid rgba(255,255,255,0.35);
-  border-radius: 8px;
-  color: rgba(255,255,255,0.9);
-  font-size: 18px;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background var(--transition), border-color var(--transition);
-  line-height: 1;
-}
-.wl-sidebar-btn:hover {
-  background: rgba(255,255,255,0.22);
-  border-color: rgba(255,255,255,0.7);
-}
-
-.wl-count-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #16a34a;
-  color: #fff;
-  font-size: 9px;
-  font-weight: 800;
-  min-width: 16px;
-  height: 16px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 3px;
-  border: 1.5px solid var(--bg);
-  pointer-events: none;
-}
 
 /* ============================================================
    WATCHLIST SIDEBAR PANEL
