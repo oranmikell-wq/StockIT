@@ -175,15 +175,11 @@ async function loadResults(symbol) {
     void resultsContent.offsetWidth; // force reflow to restart animations
     resultsContent.classList.add('did-animate');
 
-    // ── SummaryGauge — use main engine score for consistency with trending ──
+    // ── SummaryGauge — 4-factor technical score (the primary score) ──
     const summaryContainer = document.getElementById('summary-gauge-container');
     if (summaryContainer) {
       const indicators    = fullStockData?.indicators ?? null;
       const summaryScored = calcSummaryScore(data, indicators);
-      // Override badge/score with main engine values so it matches trending list
-      summaryScored.rating   = scored.rating;
-      summaryScored.score    = scored.score;
-      summaryScored.isPartial = scored.isPartial;
       renderSummaryGauge(summaryContainer, summaryScored);
     }
 
