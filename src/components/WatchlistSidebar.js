@@ -2,6 +2,7 @@
 
 import { fetchAllData, fetchHistory } from '../services/StockService.js';
 import { getWatchlist, removeFromWatchlist, isInWatchlist } from './Watchlist.js';
+import { t } from '../utils/i18n.js';
 
 let _onNavigate = null;
 let _showNotification = null;
@@ -110,7 +111,7 @@ export async function renderWatchlistSidebar() {
     const currency  = data?.currency || '';
 
     const badgeClass = item.rating === 'buy' ? 'badge-buy-bg' : item.rating === 'wait' ? 'badge-wait-bg' : 'badge-sell-bg';
-    const badgeText  = item.rating === 'buy' ? 'Bullish' : item.rating === 'wait' ? 'Neutral' : 'Bearish';
+    const badgeText  = t(item.rating === 'buy' ? 'buy' : item.rating === 'wait' ? 'wait' : 'sell');
 
     const priceStr  = price != null
       ? `${currency} ${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`.trim()
