@@ -38,6 +38,7 @@ import { formatMarketCap } from './utils/formatters.js';
 // ── App State ───────────────────────────────────────────
 let currentStock = null;
 let autoRefreshTimer = null;
+let activeLoadSymbol = null; // tracks the latest requested symbol to cancel stale loads
 
 // ── Notification ───────────────────────────────────────
 let notifTimer = null;
@@ -135,15 +136,11 @@ function syncTopbarHeight() {
 
 // ── Results ────────────────────────────────────────────
 async function loadResults(symbol) {
+  activeLoadSymbol = symbol;
   document.getElementById('results-loading').style.display = 'flex';
   document.getElementById('results-content').classList.add('hidden');
   document.getElementById('results-error').classList.add('hidden');
   document.getElementById('offline-banner').classList.add('hidden');
-  // Clear stale data immediately so old stock info doesn't flash
-  const resSymbol = document.getElementById('res-symbol');
-  const resName   = document.getElementById('res-name');
-  if (resSymbol) resSymbol.textContent = symbol;
-  if (resName)   resName.textContent   = '';
 
   clearInterval(autoRefreshTimer);
 
@@ -160,6 +157,9 @@ async function loadResults(symbol) {
     ]);
 
     if (!data) throw new Error(t('stockNotFound'));
+
+    // If the user navigated to a different stock while this was loading, discard
+    if (activeLoadSymbol !== symbol) return;
 
     const scored = calcScore(data, h5);
     currentStock = { ...data, ...scored };
