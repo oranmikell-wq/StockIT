@@ -159,7 +159,8 @@
 
 /* ===== ABOUT ===== */
 .about-content {
-  max-width: 720px;
+  width: 80%;
+  max-width: 880px;
   margin: 0 auto;
   padding: 32px 20px 48px;
   display: flex;
@@ -235,7 +236,8 @@
 /* ===== DESKTOP ===== */
 @media (min-width: 768px) {
   .compare-content, .watchlist-content {
-    max-width: 900px;
+    width: 80%;
+    max-width: 880px;
     margin: 0 auto;
     padding: 24px 32px;
   }

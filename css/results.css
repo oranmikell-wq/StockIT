@@ -396,7 +396,8 @@
 @media (min-width: 900px) {
 
   .results-content {
-    max-width: var(--content-max);
+    width: 80%;
+    max-width: 880px;
     margin: 0 auto;
   }
 
@@ -953,6 +954,9 @@ body.theme-dark .sg-svg {
 /* Desktop: maintain 2-col card layout */
 @media (min-width: 900px) {
   .results-content {
+    width: 80%;
+    max-width: 880px;
+    margin: 0 auto;
     padding: 14px 16px 32px !important;
     gap: 10px;
   }
