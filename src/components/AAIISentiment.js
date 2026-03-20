@@ -5,7 +5,7 @@ import { t } from '../utils/i18n.js';
 const FRED_BASE = 'https://api.stlouisfed.org/fred/series/observations';
 
 function fredKey() {
-  return localStorage.getItem('bon-fred-key') || '';
+  return localStorage.getItem('bon-fred-key') || '7a1406a89db10455c27f6c7af6a94e08';
 }
 
 async function fetchFred(seriesId) {
