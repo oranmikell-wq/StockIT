@@ -4,8 +4,15 @@ import { cacheGet, cacheSet, cacheGetStale, fundGet, fundSet, fullCacheGet, full
 
 function getTwelveKey() { return localStorage.getItem('bon-twelve-key') || 'demo'; }
 
-const PROXY1 = 'https://corsproxy.io/?';
-const PROXY2 = 'https://api.allorigins.win/raw?url=';
+// ── CORS Proxy configuration ─────────────────────────────────
+// Our own Cloudflare Worker proxy — set after deploying cloudflare-worker/worker.js
+// Replace the URL below with your actual Worker URL from Cloudflare dashboard
+const CF_WORKER = localStorage.getItem('bon-proxy-url') || 'https://bulltherapy-proxy.oranmikell-wq.workers.dev';
+
+// Build proxy URL: Worker expects ?url=<encoded>
+function proxyUrl(target) {
+  return `${CF_WORKER}?url=${encodeURIComponent(target)}`;
+}
 
 export function fetchWithTimeout(url, ms = 12000) {
   const ctrl = new AbortController();
@@ -14,16 +21,10 @@ export function fetchWithTimeout(url, ms = 12000) {
 }
 
 export async function fetchProxy(url) {
-  try {
-    const res = await fetchWithTimeout(PROXY1 + encodeURIComponent(url));
-    if (!res.ok) throw new Error(res.status);
-    const text = await res.text();
-    return JSON.parse(text);
-  } catch {
-    const res = await fetchWithTimeout(PROXY2 + encodeURIComponent(url));
-    if (!res.ok) throw new Error(res.status);
-    return res.json();
-  }
+  const res = await fetchWithTimeout(proxyUrl(url));
+  if (!res.ok) throw new Error(res.status);
+  const text = await res.text();
+  return JSON.parse(text);
 }
 
 export async function yahooChart(symbol, range = '1d', interval = '1d') {
