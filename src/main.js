@@ -305,6 +305,50 @@ function doSearch(query) {
   navigateTo('results', query);
 }
 
+// ── Pull-to-Refresh ────────────────────────────────────
+function initPullToRefresh() {
+  const page      = document.getElementById('page-results');
+  const indicator = document.getElementById('ptr-indicator');
+  if (!page || !indicator) return;
+
+  const THRESHOLD = 65;
+  let startY      = 0;
+  let pulling     = false;
+  let triggered   = false;
+
+  page.addEventListener('touchstart', e => {
+    if (page.scrollTop === 0) {
+      startY    = e.touches[0].clientY;
+      pulling   = true;
+      triggered = false;
+    }
+  }, { passive: true });
+
+  page.addEventListener('touchmove', e => {
+    if (!pulling) return;
+    const delta = e.touches[0].clientY - startY;
+    if (delta <= 0) return;
+    indicator.classList.add('ptr-visible');
+    indicator.classList.toggle('ptr-ready', delta >= THRESHOLD);
+  }, { passive: true });
+
+  page.addEventListener('touchend', e => {
+    if (!pulling) return;
+    pulling = false;
+    const delta = e.changedTouches[0].clientY - startY;
+    if (delta >= THRESHOLD && currentStock && !triggered) {
+      triggered = true;
+      indicator.classList.remove('ptr-ready');
+      indicator.classList.add('ptr-refreshing');
+      loadResults(currentStock.symbol).finally(() => {
+        indicator.classList.remove('ptr-visible', 'ptr-refreshing', 'ptr-ready');
+      });
+    } else {
+      indicator.classList.remove('ptr-visible', 'ptr-ready');
+    }
+  }, { passive: true });
+}
+
 // ── URL param (?s=AAPL) ────────────────────────────────
 function checkURLParam() {
   const params = new URLSearchParams(window.location.search);
@@ -364,11 +408,20 @@ function bindEvents() {
     });
   });
 
-  // Watchlist toggle
+  // Watchlist toggle + haptic feedback
   document.getElementById('btn-watchlist-toggle')?.addEventListener('click', () => {
     if (!currentStock) return;
+    const wasInList = isInWatchlist(currentStock.symbol);
     _toggleWatchlist(currentStock.symbol, currentStock.name, currentStock.rating, showNotification, updateWatchlistBtn, renderWatchlist);
     updateSidebarCount();
+    // Haptic: vibrate only when ADDING to watchlist
+    if (!wasInList) navigator.vibrate?.(50);
+  });
+
+  // FAB — navigate to home + focus search
+  document.getElementById('fab-search')?.addEventListener('click', () => {
+    navigateTo('home');
+    setTimeout(() => document.getElementById('search-input')?.focus(), 80);
   });
 
   // Scroll to top
@@ -415,6 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initWatchlistSidebar(navigateTo, showNotification, updateWatchlistBtn, renderWatchlist);
   updateSidebarCount();
 
+  initPullToRefresh();
   checkURLParam();
   loadTrending(navigateTo);
   renderHistory();

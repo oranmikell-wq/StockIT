@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-  <link rel="stylesheet" href="css/main.css?v=18" />
+  <link rel="stylesheet" href="css/main.css?v=19" />
   <link rel="stylesheet" href="css/home.css?v=10" />
   <link rel="stylesheet" href="css/results.css?v=17" />
   <link rel="stylesheet" href="css/compare.css?v=9" />
@@ -91,6 +91,11 @@
         <div id="history-list" class="history-list"></div>
       </section>
     </main>
+  </div>
+
+  <!-- ===== PULL-TO-REFRESH INDICATOR ===== -->
+  <div id="ptr-indicator" class="ptr-indicator" aria-hidden="true">
+    <span class="ptr-arrow">↓</span>
   </div>
 
   <!-- ===== RESULTS PAGE ===== -->
@@ -264,6 +269,13 @@
     <a href="mailto:info@bulltherapy.com" class="footer-contact">Contact Us: info@bulltherapy.com</a>
     <span class="footer-copy">Copyright 2026 © Bull Therapy</span>
   </footer>
+
+  <!-- ===== FLOATING ACTION BUTTON ===== -->
+  <button id="fab-search" class="fab-search" aria-label="Search">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  </button>
 
   <!-- ===== IN-APP NOTIFICATION ===== -->
   <div id="notification" class="notification hidden"></div>
