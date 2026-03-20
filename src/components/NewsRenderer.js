@@ -1,6 +1,9 @@
-// NewsRenderer.js — renders the latest news items
+// NewsRenderer.js — renders latest news + AI Insight card
 
 import { t } from '../utils/i18n.js';
+import { getAINewsInsight, hasGeminiKey, setGeminiKey } from '../services/AIService.js';
+
+// ── Standard news list ───────────────────────────────────
 
 export function renderNews(items) {
   const container = document.getElementById('news-list');
@@ -17,4 +20,91 @@ export function renderNews(items) {
         <div class="news-meta">${n.source} · ${new Date(n.datetime).toLocaleDateString()}</div>
       </div>
     </a>`).join('');
+}
+
+// ── AI Insight card ──────────────────────────────────────
+
+/**
+ * Render the AI Insight card above the news list.
+ * Shows a setup prompt if no key is set, a skeleton while loading,
+ * and the 3-bullet summary when ready.
+ * Silently hides on any error.
+ *
+ * @param {Array}  newsItems  - same array passed to renderNews
+ * @param {string} symbol     - stock ticker (for context)
+ */
+export async function renderAIInsight(newsItems, symbol = '') {
+  const section = document.getElementById('ai-insight-section');
+  const body    = document.getElementById('ai-insight-body');
+  if (!section || !body) return;
+
+  // ── No key yet: show setup prompt ──
+  if (!hasGeminiKey()) {
+    section.classList.remove('hidden');
+    body.innerHTML = `
+      <div class="ai-setup">
+        <p class="ai-setup-text">
+          Enter a free <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="ai-setup-link">Google Gemini API key</a>
+          to get an AI-generated insight for this stock's news.
+        </p>
+        <div class="ai-key-row">
+          <input
+            id="ai-key-input"
+            type="password"
+            class="ai-key-input"
+            placeholder="AIza…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="ai-key-save" class="ai-key-btn">Save key</button>
+        </div>
+        <p class="ai-key-note">Key is stored only in your browser's localStorage. Never shared.</p>
+      </div>`;
+
+    document.getElementById('ai-key-save')?.addEventListener('click', async () => {
+      const val = (document.getElementById('ai-key-input')?.value || '').trim();
+      if (!val) return;
+      setGeminiKey(val);
+      // Re-run with the key now set
+      await renderAIInsight(newsItems, symbol);
+    });
+    return;
+  }
+
+  // ── Key exists: show skeleton while fetching ──
+  if (!newsItems?.length) { section.classList.add('hidden'); return; }
+
+  section.classList.remove('hidden');
+  body.innerHTML = `
+    <div class="ai-skeleton">
+      <div class="ai-sk-line ai-sk-long"></div>
+      <div class="ai-sk-line ai-sk-medium"></div>
+      <div class="ai-sk-line ai-sk-short"></div>
+    </div>`;
+
+  const bullets = await getAINewsInsight(newsItems);
+
+  if (!bullets?.length) {
+    // Graceful hide — API failure or rate limit
+    section.classList.add('hidden');
+    return;
+  }
+
+  body.innerHTML = `
+    <ul class="ai-bullets">
+      ${bullets.map(b => `
+        <li class="ai-bullet">
+          <span class="ai-bullet-arrow">▸</span>
+          <span class="ai-bullet-text">${b}</span>
+        </li>`).join('')}
+    </ul>
+    <div class="ai-footer">
+      <span class="ai-powered">Powered by Gemini</span>
+      <button class="ai-clear-key" id="ai-clear-key-btn" title="Remove API key">✕ Remove key</button>
+    </div>`;
+
+  document.getElementById('ai-clear-key-btn')?.addEventListener('click', () => {
+    setGeminiKey('');
+    section.classList.add('hidden');
+  });
 }

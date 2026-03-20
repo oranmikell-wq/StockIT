@@ -7,7 +7,7 @@ import { calcSummaryScore, renderSummaryGauge } from './components/SummaryGauge.
 
 import { drawGauge } from './components/Gauge.js';
 import { renderCriteriaTable } from './components/CriteriaTable.js';
-import { renderNews } from './components/NewsRenderer.js';
+import { renderNews, renderAIInsight } from './components/NewsRenderer.js';
 import { renderTrendingList, loadTrending } from './components/TrendingList.js';
 import { showAutocomplete, hideAutocomplete, selectAutocomplete, confirmAutocomplete, showRecentSearches, initAutocomplete } from './components/Autocomplete.js';
 import { initChart, loadChart, updateChartTheme, initCompareChart } from './components/Chart.js';
@@ -185,6 +185,9 @@ async function loadResults(symbol) {
     loadChart(symbol, '1M');
     updateWatchlistBtn(symbol);
     updateCompareBtn(symbol);
+
+    // AI Insight — runs async, silently hides itself on error
+    renderAIInsight(data.newsItems, symbol);
 
     autoRefreshTimer = setInterval(() => loadResults(symbol), 15 * 60 * 1000);
 
