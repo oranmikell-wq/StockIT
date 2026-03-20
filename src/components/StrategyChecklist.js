@@ -205,9 +205,9 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
     const above = currentPrice > ma150;
     const pct   = Math.abs((currentPrice / ma150 - 1) * 100).toFixed(1);
     rows += row(t('sc_ma150'), above ? 'YES' : 'NO', null,
-      above ? `מגמת עלייה — המחיר ${pct}% מעל ממוצע 150 ימים` : `מגמת ירידה — המחיר ${pct}% מתחת לממוצע 150 ימים`);
+      above ? t('sc_i_ma150_above', { pct }) : t('sc_i_ma150_below', { pct }));
   } else {
-    rows += row(t('sc_ma150'), 'NA', null, 'אין מספיק היסטוריית מחירים (נדרשים 150+ ימי מסחר)');
+    rows += row(t('sc_ma150'), 'NA', null, t('sc_i_ma_nodata', { n: 150 }));
   }
 
   // MA200
@@ -215,19 +215,19 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
     const above = indicators.priceAboveMA200;
     const pct   = Math.abs((currentPrice / indicators.ma200 - 1) * 100).toFixed(1);
     rows += row(t('sc_ma200'), above ? 'YES' : 'NO', null,
-      above ? `מגמת עלייה ארוכת טווח — המחיר ${pct}% מעל ממוצע 200 ימים` : `מתחת לממוצע 200 ימים — מגמה שלילית (${pct}% מתחת)`);
+      above ? t('sc_i_ma200_above', { pct }) : t('sc_i_ma200_below', { pct }));
   } else {
-    rows += row(t('sc_ma200'), 'NA', null, 'אין מספיק היסטוריית מחירים (נדרשים 200+ ימי מסחר)');
+    rows += row(t('sc_ma200'), 'NA', null, t('sc_i_ma_nodata', { n: 200 }));
   }
 
   // New 52-week highs count
   const highCount = countNewHighs(closes);
   const highStatus = highCount >= 10 ? 'YES' : highCount >= 3 ? 'NEUTRAL' : 'NO';
   rows += row(t('sc_new_highs'), highStatus, `${highCount}×`,
-    highCount >= 10 ? `מומנטום יוצא דופן — שבר שיא שנתי ${highCount} פעמים השנה`
-    : highCount >= 3 ? `מומנטום מתון — ${highCount} שיאים חדשים בשנה האחרונה`
-    : highCount === 0 ? 'ללא שיאים שנתיים — מגמה חלשה'
-    : `רק ${highCount} שיא חדש — מומנטום מוגבל`);
+    highCount >= 10 ? t('sc_i_highs_high', { n: highCount })
+    : highCount >= 3 ? t('sc_i_highs_mid',  { n: highCount })
+    : highCount === 0 ? t('sc_i_highs_zero')
+    : t('sc_i_highs_few', { n: highCount }));
 
   // ── GROUP 2: Pattern Recognition ──────────────────────
   rows += groupHeader(t('sc_group_patterns'));
@@ -236,10 +236,10 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
   const cup = detectCupAndHandle(closes);
   rows += row(t('sc_cup_handle'),
     cup.detected ? 'YES' : 'NEUTRAL',
-    cup.detected ? (cup.confidence === 'high' ? t('sc_forming') : t('sc_forming')) : t('sc_not_detected'),
+    cup.detected ? t('sc_forming') : t('sc_not_detected'),
     cup.detected
-      ? `עומק כוס ${cup.depth}%, ידית ${cup.handlePct}% — ${cup.confidence === 'high' ? 'פריצה צפויה בקרוב' : 'תבנית מתפתחת'}`
-      : 'לא זוהתה תבנית כוס וידית ב-6 החודשים האחרונים');
+      ? t('sc_i_cup_found', { depth: cup.depth, handle: cup.handlePct, msg: cup.confidence === 'high' ? t('sc_i_cup_break') : t('sc_i_cup_forming') })
+      : t('sc_i_cup_none'));
 
   // Double Bottom
   const dbl = detectDoubleBottom(closes);
@@ -247,32 +247,32 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
     dbl.detected ? 'YES' : 'NEUTRAL',
     dbl.detected ? (dbl.confirmed ? t('sc_confirmed') : t('sc_forming')) : t('sc_not_detected'),
     dbl.detected
-      ? `שני שפלים בסטייה של ${dbl.variance}%, קפיצה של ${dbl.recovery}% ביניהם — ${dbl.confirmed ? 'פריצה מעל קו הצוואר' : 'ממתין לאישור פריצה'}`
-      : 'לא זוהתה תבנית שפל כפול ב-3 החודשים האחרונים');
+      ? t('sc_i_dbl_found', { v: dbl.variance, r: dbl.recovery, msg: dbl.confirmed ? t('sc_i_dbl_confirmed') : t('sc_i_dbl_forming') })
+      : t('sc_i_dbl_none'));
 
   // ── GROUP 3: Valuation vs. Sector ─────────────────────
   rows += groupHeader(t('sc_group_valuation'));
 
   const sectorKey     = getSectorKey(data.sector);
   const industryAvgPE = INDUSTRY_PE_AVG[sectorKey] || INDUSTRY_PE_AVG.default;
-  const sectorLabel   = data.sector || 'הסקטור';
+  const sectorLabel   = data.sector || t('sc_group_valuation').replace(/[^\w\s]/g, '').trim();
 
   if (data.pe != null && data.pe > 0) {
     const ratio = data.pe / industryAvgPE;
     let vType, vLabel, vInsight;
     if (ratio <= 0.8) {
       vType = 'YES'; vLabel = t('sc_cheap');
-      vInsight = `P/E של ${data.pe.toFixed(1)}x הוא ${((1 - ratio) * 100).toFixed(0)}% מתחת לממוצע ${sectorLabel} (${industryAvgPE}x) — בעל ערך ביחס לסקטור`;
+      vInsight = t('sc_i_pe_cheap', { pe: data.pe.toFixed(1), pct: ((1 - ratio) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPE });
     } else if (ratio <= 1.2) {
       vType = 'NEUTRAL'; vLabel = t('sc_fair');
-      vInsight = `P/E של ${data.pe.toFixed(1)}x תואם את ממוצע ${sectorLabel} (${industryAvgPE}x)`;
+      vInsight = t('sc_i_pe_fair', { pe: data.pe.toFixed(1), sector: sectorLabel, avg: industryAvgPE });
     } else {
       vType = 'NO'; vLabel = t('sc_expensive');
-      vInsight = `P/E של ${data.pe.toFixed(1)}x הוא ${((ratio - 1) * 100).toFixed(0)}% מעל ממוצע ${sectorLabel} (${industryAvgPE}x) — יקר ביחס לסקטור`;
+      vInsight = t('sc_i_pe_expensive', { pe: data.pe.toFixed(1), pct: ((ratio - 1) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPE });
     }
     rows += row(t('sc_pe_vs_sector'), vType, vLabel, vInsight);
   } else {
-    rows += row(t('sc_pe_vs_sector'), 'NA', null, 'P/E לא זמין — ייתכן חברה לא רווחית או מניה פיננסית');
+    rows += row(t('sc_pe_vs_sector'), 'NA', null, t('sc_i_pe_nodata'));
   }
 
   // ── GROUP 4: Relative Strength vs. SPY ────────────────
@@ -320,15 +320,15 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
       if (diff < -3) {
         spyType    = 'YES';
         spyLabel   = t('sc_stronger');
-        spyInsight = `ירידה של המניה: ${stockDrawdown.toFixed(1)}% לעומת SPY: ${spyDrawdown.toFixed(1)}% — עדיפות של ${Math.abs(diff).toFixed(1)}% על השוק`;
+        spyInsight = t('sc_i_spy_stronger', { stock: stockDrawdown.toFixed(1), spy: spyDrawdown.toFixed(1), diff: Math.abs(diff).toFixed(1) });
       } else if (diff > 3) {
         spyType    = 'NO';
         spyLabel   = t('sc_weaker');
-        spyInsight = `ירידה של המניה: ${stockDrawdown.toFixed(1)}% לעומת SPY: ${spyDrawdown.toFixed(1)}% — חולשה של ${diff.toFixed(1)}% ביחס לשוק`;
+        spyInsight = t('sc_i_spy_weaker', { stock: stockDrawdown.toFixed(1), spy: spyDrawdown.toFixed(1), diff: diff.toFixed(1) });
       } else {
         spyType    = 'NEUTRAL';
         spyLabel   = t('sc_in_line');
-        spyInsight = `ירידה של ${stockDrawdown.toFixed(1)}% דומה ל-SPY (${spyDrawdown.toFixed(1)}%)`;
+        spyInsight = t('sc_i_spy_inline', { stock: stockDrawdown.toFixed(1), spy: spyDrawdown.toFixed(1) });
       }
 
       const spyRow = document.getElementById(spyId);
