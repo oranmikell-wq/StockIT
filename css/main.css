@@ -1040,9 +1040,9 @@ body {
 .fab-search {
   display: none; /* hidden on desktop */
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   right: 20px;
-  z-index: 200;
+  z-index: 210;
   width: 52px;
   height: 52px;
   border-radius: 50%;
