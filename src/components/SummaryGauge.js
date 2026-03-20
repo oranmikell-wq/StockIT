@@ -263,6 +263,13 @@ function animateGauge(svg, targetScore, duration = 1300) {
     scoreText.textContent = Math.round(current);
     scoreText.setAttribute('fill', color);
 
+    // Dynamic glow: intensity grows with score, color matches arc
+    const glowSize    = Math.round(4 + eased * 20);
+    const glowOpacity = (0.25 + eased * 0.55).toFixed(2);
+    // Convert rgb(...) → rgba(..., opacity) for the glow
+    const glowColor   = color.replace('rgb(', 'rgba(').replace(')', `,${glowOpacity})`);
+    arc.style.filter  = `drop-shadow(0 0 ${glowSize}px ${glowColor}) drop-shadow(0 0 ${glowSize * 2}px ${glowColor})`;
+
     if (progress < 1) requestAnimationFrame(frame);
   }
 

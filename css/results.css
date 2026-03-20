@@ -856,3 +856,92 @@ body.theme-dark .sg-svg {
   color: var(--text-3);
   line-height: 1.4;
 }
+
+/* ============================================================
+   PREMIUM UI — Card Layout
+   ============================================================ */
+
+/* Results content: flex column with gaps and edge padding */
+.results-content {
+  display: flex !important;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 10px 28px !important;
+}
+
+/* Every major section becomes a floating card */
+.summary-gauge-section,
+.results-layout,
+.criteria-section,
+.news-section {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--card-bg);
+  /* Remove old flush border-bottom (gap replaces it) */
+  border-bottom: 1px solid var(--border);
+}
+
+/* Remove old flush outer border-bottoms — card border + gap replaces them */
+.results-layout  { border-bottom: none !important; }
+.criteria-section { border-bottom: none !important; }
+.news-section     { border-bottom: none !important; }
+
+/* Keep internal dividers within cards */
+.gauge-section    { border-bottom: 1px solid var(--border) !important; }
+.info-cards       { background: var(--card-bg); border-bottom: none; }
+.chart-section    { background: var(--card-bg); border-bottom: none; }
+
+/* Elevated shadow in dark mode for prominent card lift */
+.theme-dark .summary-gauge-section,
+.theme-dark .results-layout,
+.theme-dark .criteria-section,
+.theme-dark .news-section {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border);
+}
+
+/* Criteria rows look richer */
+.criteria-row {
+  border-radius: var(--radius);
+  transition: border-color var(--transition), box-shadow var(--transition), transform 0.15s ease;
+}
+.criteria-row:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+/* News items richer hover */
+.news-item {
+  border-radius: var(--radius);
+  transition: border-color var(--transition), box-shadow var(--transition), transform 0.15s ease;
+}
+.news-item:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+/* Section titles premium style overrides */
+.criteria-section .section-title,
+.news-section .section-title {
+  margin-bottom: 12px;
+}
+
+/* Compare bar card-style */
+.compare-bar {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Desktop: maintain 2-col card layout */
+@media (min-width: 900px) {
+  .results-content {
+    padding: 14px 16px 32px !important;
+    gap: 10px;
+  }
+
+  .results-layout { border-bottom: none !important; }
+}

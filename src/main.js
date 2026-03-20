@@ -169,7 +169,12 @@ async function loadResults(symbol) {
     saveSearchHistory(symbol, data.name, renderHistory);
 
     document.getElementById('results-loading').style.display = 'none';
-    document.getElementById('results-content').classList.remove('hidden');
+    const resultsContent = document.getElementById('results-content');
+    resultsContent.classList.remove('hidden');
+    // Trigger staggered fade-in-up animations on all sections
+    resultsContent.classList.remove('did-animate');
+    void resultsContent.offsetWidth; // force reflow to restart animations
+    resultsContent.classList.add('did-animate');
 
     // ── Existing canvas gauge (inside results-layout) ──
     drawGauge(scored.score, scored.rating);
