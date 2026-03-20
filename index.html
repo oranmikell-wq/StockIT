@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-  <link rel="stylesheet" href="css/main.css?v=8" />
+  <link rel="stylesheet" href="css/main.css?v=9" />
   <link rel="stylesheet" href="css/home.css?v=8" />
   <link rel="stylesheet" href="css/results.css?v=8" />
   <link rel="stylesheet" href="css/compare.css?v=8" />
@@ -46,28 +46,6 @@
       </a>
     </div>
 
-    <!-- Mini search — shown on all non-home pages -->
-    <div class="topbar-search-mini" id="topbar-search-mini">
-      <input
-        id="topbar-search-input"
-        type="text"
-        placeholder="Search symbol…"
-        autocomplete="off"
-        spellcheck="false"
-        aria-label="Search stocks"
-      />
-      <button class="topbar-search-btn" id="topbar-search-btn" aria-label="Search">
-        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="2"/>
-          <path d="M14 14L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
-
-    <button id="btn-wl-sidebar" class="wl-sidebar-btn" aria-label="Watchlist" onclick="window.openWatchlistSidebar()">
-      ☆
-      <span id="wl-count-badge" class="wl-count-badge" style="display:none">0</span>
-    </button>
   </header>
 
   <!-- ===== HOME PAGE ===== -->
@@ -268,15 +246,20 @@
     </div>
     <nav class="drawer-nav-list">
       <button class="drawer-nav-item nav-btn" data-page="home">
+        <span class="drawer-nav-icon">🏠</span>
         <span data-i18n="home">Home</span>
       </button>
-      <button class="drawer-nav-item nav-btn" data-page="watchlist">
+      <button class="drawer-nav-item drawer-nav-item--watchlist nav-btn" data-page="watchlist" onclick="window.openWatchlistSidebar(); closeDrawer();">
+        <span class="drawer-nav-icon">☆</span>
         <span data-i18n="watchlist">Watchlist</span>
+        <span id="wl-count-badge" class="wl-count-badge" style="display:none">0</span>
       </button>
       <button class="drawer-nav-item nav-btn" data-page="compare">
+        <span class="drawer-nav-icon">⚖️</span>
         <span data-i18n="compare">Compare Stocks</span>
       </button>
       <button class="drawer-nav-item nav-btn" data-page="about">
+        <span class="drawer-nav-icon">ℹ️</span>
         <span data-i18n="about">About</span>
       </button>
     </nav>

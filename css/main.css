@@ -897,59 +897,33 @@ body {
   color: var(--text-3);
 }
 
-/* ── Topbar brand / mini-search toggle ──────────────────────── */
-/* Default: brand visible, mini-search hidden */
-.topbar-search-mini { display: none; }
-
-/* Once a page other than home is active, swap them */
-body[data-page]:not([data-page="home"]) #topbar-brand { display: none; }
-body[data-page]:not([data-page="home"]) .topbar-search-mini {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-  max-width: 340px;
-}
-
-.topbar-search-input {
-  flex: 1;
-  background: var(--bg-3);
-  border: 1.5px solid var(--border);
-  border-radius: 50px;
-  padding: 7px 14px;
-  font-size: 13px;
-  color: var(--text);
-  font-family: inherit;
-  outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
-  min-width: 0;
-}
-.topbar-search-input::placeholder { color: var(--text-3); }
-.topbar-search-input:focus {
-  border-color: var(--text-2);
-  box-shadow: 0 0 0 3px rgba(22,163,74,0.10);
-}
-
-.topbar-search-btn {
-  background: var(--bg-3);
-  border: 1.5px solid var(--border);
-  border-radius: 50px;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+/* ── Drawer nav icons + watchlist badge ─────────────────────── */
+.drawer-nav-icon {
+  font-size: 16px;
+  width: 24px;
+  text-align: center;
   flex-shrink: 0;
-  color: var(--text-2);
-  transition: background var(--transition), border-color var(--transition);
 }
-.topbar-search-btn:hover {
-  background: var(--bg-4);
-  border-color: var(--border-2);
+
+.drawer-nav-item--watchlist {
+  justify-content: flex-start;
+  gap: 10px;
 }
-.topbar-search-btn svg {
-  width: 15px;
-  height: 15px;
-  stroke: currentColor;
+
+/* Badge inside drawer */
+.wl-count-badge {
+  margin-left: auto;
+  background: var(--green);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  padding: 0 5px;
+  border-radius: 9px;
 }
+
+/* .topbar-search-mini removed from HTML — rule kept for safety */
+.topbar-search-mini { display: none !important; }

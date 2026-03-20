@@ -302,19 +302,6 @@ function bindEvents() {
   }
   if (btn) btn.addEventListener('click', () => { if (input) doSearch(input.value); });
 
-  // Top-bar mini search (visible on non-home pages)
-  const topInput = document.getElementById('topbar-search-input');
-  const topBtn   = document.getElementById('topbar-search-btn');
-  if (topInput) {
-    topInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { doSearch(topInput.value); topInput.value = ''; }
-    });
-    // Clear on navigation away
-    topInput.addEventListener('blur', () => { setTimeout(() => { topInput.value = ''; }, 200); });
-  }
-  if (topBtn) topBtn.addEventListener('click', () => {
-    if (topInput) { doSearch(topInput.value); topInput.value = ''; }
-  });
 
   // Init autocomplete — onSelect triggers doSearch
   initAutocomplete((symbol) => doSearch(symbol));
