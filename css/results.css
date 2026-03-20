@@ -973,6 +973,7 @@ body.theme-dark .sg-svg {
   border-bottom: 1px solid var(--border);
 }
 
+
 .sc-loading {
   display: flex;
   align-items: center;
@@ -998,6 +999,10 @@ body.theme-dark .sg-svg {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card-bg);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
 .sc-table {
