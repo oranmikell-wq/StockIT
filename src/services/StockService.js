@@ -511,20 +511,34 @@ async function _fetch1YDaily(symbol) {
 export async function fetchHistory(symbol, range) {
   const now = Math.floor(Date.now() / 1000);
   const configs = {
-    '1W': { period1: now - 7   * 86400, interval: '15m' },
-    '1M': { period1: now - 30  * 86400, interval: '1d'  },
-    '3M': { period1: now - 90  * 86400, interval: '1d'  },
-    '6M': { period1: now - 180 * 86400, interval: '1d'  },
-    '1Y': { period1: now - 365 * 86400, interval: '1wk' },
-    '3Y': { period1: now - 3 * 365 * 86400, interval: '1mo' },
-    '5Y': { period1: now - 5 * 365 * 86400, interval: '1mo' },
+    '1D': { period1: now - 86400,             interval: '5m'  },
+    '1W': { period1: now - 7   * 86400,       interval: '15m' },
+    '1M': { period1: now - 30  * 86400,       interval: '1d'  },
+    '3M': { period1: now - 90  * 86400,       interval: '1d'  },
+    '6M': { period1: now - 180 * 86400,       interval: '1d'  },
+    '1Y': { period1: now - 365 * 86400,       interval: '1wk' },
+    '3Y': { period1: now - 3 * 365 * 86400,   interval: '1mo' },
+    '5Y': { period1: now - 5 * 365 * 86400,   interval: '1mo' },
   };
   const { period1, interval } = configs[range] || configs['1M'];
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${period1}&period2=${now}&interval=${interval}&includePrePost=false`;
   const raw = await fetchProxy(url);
   const result = raw?.chart?.result?.[0];
   if (!result) return [];
-  const ts     = result.timestamp || [];
-  const closes = result.indicators?.quote?.[0]?.close || [];
-  return ts.map((t, i) => ({ time: t, value: closes[i] })).filter(p => p.value != null);
+  const ts    = result.timestamp || [];
+  const q     = result.indicators?.quote?.[0] || {};
+  const closes = q.close || [];
+  const opens  = q.open  || [];
+  const highs  = q.high  || [];
+  const lows   = q.low   || [];
+  return ts
+    .map((t, i) => ({
+      time:  t,
+      value: closes[i],
+      open:  opens[i]  ?? closes[i],
+      high:  highs[i]  ?? closes[i],
+      low:   lows[i]   ?? closes[i],
+      close: closes[i],
+    }))
+    .filter(p => p.value != null);
 }

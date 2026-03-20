@@ -11,6 +11,9 @@ let currentSymbol = null;
 let currentRange = '1M';
 let chartLoadGen = 0;
 
+const CANDLE_UP   = '#16a34a';
+const CANDLE_DOWN = '#dc2626';
+
 export function initChart() {
   const container = document.getElementById('chart-container');
   if (!container) return;
@@ -32,8 +35,14 @@ export function initChart() {
       timeScale: { borderColor: isDark ? '#2a2a2a' : '#e2e8f0', timeVisible: true },
       handleScroll: true, handleScale: true,
     });
-    mainSeries = mainChart.addSeries(LightweightCharts.AreaSeries, {
-      lineColor: '#16a34a', topColor: 'rgba(22,163,74,0.2)', bottomColor: 'rgba(22,163,74,0)', lineWidth: 2, priceLineVisible: false,
+    mainSeries = mainChart.addSeries(LightweightCharts.CandlestickSeries, {
+      upColor:          CANDLE_UP,
+      downColor:        CANDLE_DOWN,
+      borderUpColor:    CANDLE_UP,
+      borderDownColor:  CANDLE_DOWN,
+      wickUpColor:      CANDLE_UP,
+      wickDownColor:    CANDLE_DOWN,
+      priceLineVisible: false,
     });
     mainRO = new ResizeObserver(entries => {
       if (!mainChart) return;
@@ -56,20 +65,22 @@ export async function loadChart(symbol, range = '1M') {
   try {
     const data = await fetchHistory(symbol, range);
     if (gen !== chartLoadGen || !mainSeries) return;
-    const chartData = data.map(p => ({ time: p.time, value: p.value }));
     if (!data.length) return;
-    mainSeries.setData(chartData);
+
+    // Build candlestick data — each bar needs open/high/low/close
+    const candleData = data
+      .map(p => ({
+        time:  p.time,
+        open:  p.open  ?? p.value,
+        high:  p.high  ?? p.value,
+        low:   p.low   ?? p.value,
+        close: p.close ?? p.value,
+      }))
+      .filter(p => p.open != null && p.close != null);
+
+    if (!candleData.length) return;
+    mainSeries.setData(candleData);
     mainChart.timeScale().fitContent();
-    const first = chartData[0]?.value;
-    const last  = chartData[chartData.length - 1]?.value;
-    if (first && last) {
-      const up = last >= first;
-      mainSeries.applyOptions({
-        lineColor:   up ? '#16a34a' : '#dc2626',
-        topColor:    up ? 'rgba(22,163,74,0.2)'  : 'rgba(220,38,38,0.2)',
-        bottomColor: up ? 'rgba(22,163,74,0)'    : 'rgba(220,38,38,0)',
-      });
-    }
   } catch {}
 }
 

@@ -40,6 +40,8 @@ import { formatMarketCap } from './utils/formatters.js';
 let currentStock = null;
 let autoRefreshTimer = null;
 let activeLoadSymbol = null; // tracks the latest requested symbol to cancel stale loads
+let lastFullStockData  = null;   // stored for lang-change re-render
+let lastSummaryScored  = null;   // stored for lang-change re-render
 
 // ── Notification ───────────────────────────────────────
 let notifTimer = null;
@@ -114,19 +116,35 @@ window.closeWatchlistSidebar = closeWatchlistSidebar;
 
 // ── Lang change callback ────────────────────────────────
 window.__onLangChange = function() {
+  // 1. Apply data-i18n attribute translations everywhere
+  applyTranslations();
+
+  // 2. Re-render results page dynamic content if it's active
   if (currentStock && document.getElementById('page-results')?.classList.contains('active')) {
     renderResults(currentStock, currentStock);
-    applyTranslations();
+
+    // Re-render summary gauge (has translated zone/factor labels)
+    const summaryContainer = document.getElementById('summary-gauge-container');
+    if (summaryContainer && lastSummaryScored) {
+      renderSummaryGauge(summaryContainer, lastSummaryScored);
+    }
+
+    // Re-render strategy checklist (all text via t())
+    const checklistContainer = document.getElementById('strategy-checklist-container');
+    if (checklistContainer && lastFullStockData !== undefined) {
+      renderStrategyChecklist(
+        checklistContainer,
+        currentStock,
+        lastFullStockData?.history ?? [],
+        lastFullStockData?.indicators ?? null,
+      );
+    }
   }
-  // Re-render trending to update badge labels
-  const trendingContainer = document.getElementById('trending-list');
-  if (trendingContainer) {
-    // Re-render with current data by calling loadTrending again would re-fetch;
-    // instead directly re-render from cached data
-    import('./components/TrendingList.js').then(mod => {
-      mod.renderTrendingList(navigateTo);
-    });
-  }
+
+  // 3. Re-render trending to update badge labels
+  import('./components/TrendingList.js').then(mod => {
+    mod.renderTrendingList(navigateTo);
+  });
 };
 
 // ── Utility ─────────────────────────────────────────────
@@ -185,8 +203,9 @@ async function loadResults(symbol) {
     const summaryContainer = document.getElementById('summary-gauge-container');
     if (summaryContainer) {
       const indicators    = fullStockData?.indicators ?? null;
-      const summaryScored = calcSummaryScore(data, indicators);
-      renderSummaryGauge(summaryContainer, summaryScored);
+      lastSummaryScored   = calcSummaryScore(data, indicators);
+      lastFullStockData   = fullStockData;
+      renderSummaryGauge(summaryContainer, lastSummaryScored);
     }
 
     loadChart(symbol, '1M');
