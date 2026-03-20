@@ -219,6 +219,14 @@
   50%       { opacity: 1;   transform: translateY(-3px); }
 }
 
+/* ===== SENTIMENT ROW (F&G + AAII side by side on desktop) ===== */
+.sentiment-row {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
 /* ===== FEAR & GREED INDEX ===== */
 .fng-section { width: 100%; }
 
@@ -333,7 +341,28 @@
   #search-input { font-size: 16px; }
   #search-btn { padding: 12px 28px; font-size: 14px; }
 
+  /* Side-by-side layout */
+  .sentiment-row {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .fng-section {
+    flex: 0 0 320px;
+  }
+  .aaii-section {
+    flex: 1;
+    min-width: 0;
+  }
 
+  /* Larger gauge on desktop */
+  .fng-gauge-wrap {
+    width: 100%;
+    max-width: 100%;
+  }
+  .fng-card {
+    padding: 20px 16px 16px;
+  }
 }
 
 @media (min-width: 1200px) {
