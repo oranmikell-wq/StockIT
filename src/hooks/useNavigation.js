@@ -28,7 +28,11 @@ export function navigateTo(page, symbol = null, { loadResults, renderWatchlist, 
     if (inp) inp.value = '';
   }
   if (page === 'results' && symbol) {
-    // Hide stale content immediately before the page is even visible
+    // Clear stale header + hide content before the page becomes visible
+    const resSymbol = document.getElementById('res-symbol');
+    const resName   = document.getElementById('res-name');
+    if (resSymbol) resSymbol.textContent = symbol;
+    if (resName)   resName.textContent   = '';
     const content = document.getElementById('results-content');
     const loading  = document.getElementById('results-loading');
     if (content) content.classList.add('hidden');
