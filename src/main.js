@@ -416,11 +416,6 @@ function bindEvents() {
     if (!wasInList) navigator.vibrate?.(50);
   });
 
-  // FAB — navigate to home + focus search (sync focus required for iOS keyboard)
-  document.getElementById('fab-search')?.addEventListener('click', () => {
-    navigateTo('home');
-    document.getElementById('search-input')?.focus();
-  });
 
   // Scroll to top
   document.getElementById('btn-share')?.addEventListener('click', () => {

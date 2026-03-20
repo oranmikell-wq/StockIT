@@ -1036,28 +1036,3 @@ body {
 .ptr-indicator.ptr-refreshing .ptr-arrow { animation: ptr-spin 0.7s linear infinite; }
 @keyframes ptr-spin { to { transform: rotate(360deg); } }
 
-/* ===== FLOATING ACTION BUTTON ===== */
-.fab-search {
-  display: none; /* hidden on desktop */
-  position: fixed;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  right: 20px;
-  z-index: 210;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--green);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(22,163,74,0.45);
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
-}
-.fab-search:active { transform: scale(0.92); box-shadow: 0 2px 8px rgba(22,163,74,0.3); }
-
-@media (max-width: 639px) {
-  .fab-search { display: flex; }
-  body[data-page="home"] .fab-search { display: none; }
-}
