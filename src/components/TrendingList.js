@@ -1,7 +1,6 @@
 // TrendingList.js — trending stocks list on home page
 
-import { fetchAllData, fetchHistory, fetchTrending } from '../services/StockService.js';
-import { calcRSI, calcEMA } from '../utils/scoring.js';
+import { fetchStockFullData, fetchTrending } from '../services/StockService.js';
 import { calcSummaryScore } from './SummaryGauge.js';
 import { t } from '../utils/i18n.js';
 
@@ -52,16 +51,10 @@ export async function loadTrending(onNavigate) {
     for (let i = 0; i < symbols.length; i++) {
       const sym = symbols[i];
       try {
-        const { data } = await fetchAllData(sym, true);
-        const h5 = await fetchHistory(sym, '5Y');
-        const closes = h5.filter(p => p.value).map(p => p.value);
-        const indicators = {
-          rsi14:          calcRSI(closes),
-          priceAboveMA50:  closes.length >= 50  ? closes[closes.length - 1] > calcEMA(closes, 50)  : null,
-          priceAboveMA200: closes.length >= 200 ? closes[closes.length - 1] > calcEMA(closes, 200) : null,
-          goldenCross:     closes.length >= 200 ? calcEMA(closes, 50) > calcEMA(closes, 200)       : null,
-        };
-        const scored = calcSummaryScore(data, indicators);
+        const fullData  = await fetchStockFullData(sym);
+        const data       = fullData.quote;
+        const indicators = fullData.indicators ?? null;
+        const scored     = calcSummaryScore(data, indicators);
         lastTrendingData[i] = { ...data, ...scored };
         renderTrendingList(onNavigate);
       } catch (e) {
