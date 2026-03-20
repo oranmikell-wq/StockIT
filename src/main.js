@@ -204,10 +204,12 @@ function renderResults(data, scored) {
   document.getElementById('res-symbol').textContent = data.symbol;
   document.getElementById('res-name').textContent   = data.name || '';
 
-  document.getElementById('gauge-score').textContent = scored.score ?? '--';
-  document.getElementById('gauge-label').textContent = t(scored.rating);
-  document.getElementById('gauge-label').className = `gauge-label badge-${scored.rating}`;
-  document.getElementById('partial-data-warning').classList.toggle('hidden', !scored.isPartial);
+  const gaugeScore = document.getElementById('gauge-score');
+  const gaugeLabel = document.getElementById('gauge-label');
+  const partialWarn = document.getElementById('partial-data-warning');
+  if (gaugeScore) gaugeScore.textContent = scored.score ?? '--';
+  if (gaugeLabel) { gaugeLabel.textContent = t(scored.rating); gaugeLabel.className = `gauge-label badge-${scored.rating}`; }
+  if (partialWarn) partialWarn.classList.toggle('hidden', !scored.isPartial);
 
   const fmt = (n, dec = 2) => n != null ? n.toFixed(dec) : t('noData');
   const currency = data.currency || 'USD';
