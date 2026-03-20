@@ -1,115 +1,173 @@
-// FearGreedGauge.js — CNN Fear & Greed Index widget for home page
+// FearGreedGauge.js — CNN-style Fear & Greed speedometer gauge
 
 import { fetchProxy } from '../services/StockService.js';
 import { t } from '../utils/i18n.js';
 
 const FNG_URL = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
 
-// ── Zone definitions ───────────────────────────────────
+// ── Zone config ────────────────────────────────────────
 const ZONES = [
-  { max: 25,  key: 'fng_extreme_fear',  color: '#dc2626' },
-  { max: 45,  key: 'fng_fear',          color: '#f97316' },
-  { max: 55,  key: 'fng_neutral',       color: '#f59e0b' },
-  { max: 75,  key: 'fng_greed',         color: '#84cc16' },
-  { max: 100, key: 'fng_extreme_greed', color: '#16a34a' },
+  { s1: 0,  s2: 25,  key: 'fng_extreme_fear',  color: '#ef4444', l1: 'EXTREME', l2: 'FEAR'  },
+  { s1: 25, s2: 45,  key: 'fng_fear',           color: '#f97316', l1: 'FEAR',    l2: null    },
+  { s1: 45, s2: 55,  key: 'fng_neutral',        color: '#eab308', l1: 'NEUTRAL', l2: null    },
+  { s1: 55, s2: 75,  key: 'fng_greed',          color: '#84cc16', l1: 'GREED',   l2: null    },
+  { s1: 75, s2: 100, key: 'fng_extreme_greed',  color: '#22c55e', l1: 'EXTREME', l2: 'GREED' },
 ];
 
-function getZone(score) {
-  return ZONES.find(z => score <= z.max) || ZONES[ZONES.length - 1];
+function getZoneIndex(score) {
+  for (let i = 0; i < ZONES.length; i++) if (score <= ZONES[i].s2) return i;
+  return ZONES.length - 1;
 }
 
 function ratingToKey(cnnRating) {
-  const map = {
-    'Extreme Fear': 'fng_extreme_fear',
-    'Fear':         'fng_fear',
-    'Neutral':      'fng_neutral',
-    'Greed':        'fng_greed',
-    'Extreme Greed':'fng_extreme_greed',
-  };
-  return map[cnnRating] || getZone(50).key;
+  const s = (cnnRating || '').toLowerCase().replace(/\s+/g, '_');
+  return ({ extreme_fear: 'fng_extreme_fear', fear: 'fng_fear', neutral: 'fng_neutral',
+            greed: 'fng_greed', extreme_greed: 'fng_extreme_greed' })[s] || 'fng_neutral';
 }
 
-// ── SVG gauge ──────────────────────────────────────────
-const CX = 120, CY = 120, R = 100;
-const DASHLEN = Math.PI * R;
+// ── SVG geometry ───────────────────────────────────────
+const CX = 140, CY = 150, R_O = 130, R_I = 72, R_MID = 101;
+const PI = Math.PI;
 
-function buildGaugeSVG(score, color) {
-  const filled   = (DASHLEN * score / 100).toFixed(1);
-  const unfilled = (DASHLEN - DASHLEN * score / 100).toFixed(1);
-  const arcPath  = `M ${CX - R} ${CY} A ${R} ${R} 0 0 1 ${CX + R} ${CY}`;
+function pt(a, r) {
+  return { x: +(CX + r * Math.cos(a)).toFixed(2), y: +(CY - r * Math.sin(a)).toFixed(2) };
+}
 
-  // Needle
-  const angle     = Math.PI * (1 - score / 100);
-  const needleLen = R - 22;
-  const nx = (CX + needleLen * Math.cos(angle)).toFixed(1);
-  const ny = (CY - needleLen * Math.sin(angle)).toFixed(1);
+// Annular sector path from score s1→s2 (arc fills left to right = fear→greed)
+function sectorPath(s1, s2) {
+  const a1 = PI * (1 - s1 / 100); // angle at s1 (left = large angle)
+  const a2 = PI * (1 - s2 / 100); // angle at s2 (right = small angle)
+  const { x: ox1, y: oy1 } = pt(a1, R_O);
+  const { x: ox2, y: oy2 } = pt(a2, R_O);
+  const { x: ix1, y: iy1 } = pt(a1, R_I);
+  const { x: ix2, y: iy2 } = pt(a2, R_I);
+  // Outer arc CW (a1→a2), line to inner, inner arc CCW (a2→a1), close
+  return `M${ox1} ${oy1} A${R_O} ${R_O} 0 0 1 ${ox2} ${oy2} L${ix2} ${iy2} A${R_I} ${R_I} 0 0 0 ${ix1} ${iy1}Z`;
+}
 
-  // Zone tick lines at zone boundaries
-  const ticks = [25, 45, 55, 75].map(tick => {
-    const a  = Math.PI * (1 - tick / 100);
-    const ix = (CX + (R - 12) * Math.cos(a)).toFixed(1);
-    const iy = (CY - (R - 12) * Math.sin(a)).toFixed(1);
-    const ox = (CX + (R + 11) * Math.cos(a)).toFixed(1);
-    const oy = (CY - (R + 11) * Math.sin(a)).toFixed(1);
-    return `<line x1="${ix}" y1="${iy}" x2="${ox}" y2="${oy}" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>`;
+// ── Build SVG ──────────────────────────────────────────
+function buildGaugeSVG(score, activeIdx, label) {
+  const activeZone = ZONES[activeIdx];
+
+  // 1. Sector shapes
+  const sectors = ZONES.map((z, i) => {
+    const isActive = i === activeIdx;
+    return `<path d="${sectorPath(z.s1, z.s2)}"
+      fill="${z.color}" fill-opacity="${isActive ? '0.22' : '0.06'}"
+      stroke="${isActive ? z.color : 'var(--border)'}" stroke-width="${isActive ? '1.5' : '0.8'}"/>`;
   }).join('');
 
+  // 2. Zone text labels (rotated along radius)
+  const zoneLabels = ZONES.map((z, i) => {
+    const mid = (z.s1 + z.s2) / 2;
+    const a   = PI * (1 - mid / 100);
+    const { x: lx, y: ly } = pt(a, R_MID);
+    const rot = -(a * 180 / PI - 90);
+    const col = i === activeIdx ? activeZone.color : 'var(--text-3)';
+    const fw  = i === activeIdx ? '800' : '600';
+    const fs  = 9;
+    if (z.l2) {
+      return `<g transform="translate(${lx},${ly}) rotate(${rot.toFixed(1)})">
+        <text text-anchor="middle" font-size="${fs}" font-weight="${fw}" fill="${col}" letter-spacing="0.7">
+          <tspan x="0" dy="-5.5">${z.l1}</tspan><tspan x="0" dy="12">${z.l2}</tspan>
+        </text></g>`;
+    }
+    return `<g transform="translate(${lx},${ly}) rotate(${rot.toFixed(1)})">
+      <text text-anchor="middle" font-size="${fs}" font-weight="${fw}" fill="${col}" letter-spacing="0.7" dy="4">${z.l1}</text>
+    </g>`;
+  }).join('');
+
+  // 3. Tick dots on inner arc at every 5 units (skip zone boundaries)
+  const skipS = new Set([0, 25, 45, 55, 75, 100]);
+  const dots = [];
+  for (let s = 5; s < 100; s += 5) {
+    if (skipS.has(s)) continue;
+    const { x: dx, y: dy } = pt(PI * (1 - s / 100), R_I + 7);
+    dots.push(`<circle cx="${dx}" cy="${dy}" r="1.5" fill="var(--text-3)" opacity="0.4"/>`);
+  }
+
+  // 4. Zone boundary numbers (0, 25, 50, 75, 100) inside the donut hole
+  const numData = [
+    { s: 0,   label: '0',   fx: 18,  fy: 156 },
+    { s: 25,  label: '25' },
+    { s: 50,  label: '50' },
+    { s: 75,  label: '75' },
+    { s: 100, label: '100', fx: 260, fy: 156 },
+  ];
+  const nums = numData.map(({ s, label, fx, fy }) => {
+    let x, y;
+    if (fx != null) { x = fx; y = fy; }
+    else {
+      const { x: px, y: py } = pt(PI * (1 - s / 100), R_I - 14);
+      x = px; y = py;
+    }
+    return `<text x="${x}" y="${y}" text-anchor="middle"
+      font-size="9" font-weight="500" fill="var(--text-3)">${label}</text>`;
+  });
+
+  // 5. Needle
+  const na = PI * (1 - score / 100);
+  const { x: nx, y: ny } = pt(na, R_I - 8);
+
   return `
-    <svg viewBox="0 0 240 130" fill="none" class="fng-svg">
-      <defs>
-        <filter id="fng-glow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <linearGradient id="fng-bg-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stop-color="#dc2626"/>
-          <stop offset="25%"  stop-color="#f97316"/>
-          <stop offset="50%"  stop-color="#f59e0b"/>
-          <stop offset="75%"  stop-color="#84cc16"/>
-          <stop offset="100%" stop-color="#16a34a"/>
-        </linearGradient>
-      </defs>
-
-      <!-- Faint full-arc gradient background (zone reference) -->
-      <path d="${arcPath}" stroke="url(#fng-bg-grad)" stroke-width="18" stroke-linecap="round" opacity="0.25"/>
-
-      <!-- Grey track -->
-      <path d="${arcPath}" stroke="var(--bg-3)" stroke-width="18" stroke-linecap="round"/>
-
-      <!-- Filled progress arc -->
-      <path d="${arcPath}" stroke="${color}" stroke-width="18" stroke-linecap="round"
-        stroke-dasharray="${DASHLEN.toFixed(1)}" stroke-dashoffset="${unfilled}"
-        filter="url(#fng-glow)" class="fng-arc"/>
-
-      <!-- Zone tick separators -->
-      ${ticks}
-
-      <!-- Needle -->
-      <line x1="${CX}" y1="${CY}" x2="${nx}" y2="${ny}"
-        stroke="var(--text)" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="${CX}" cy="${CY}" r="5" fill="var(--text)"/>
-    </svg>`;
+<svg viewBox="0 0 280 190" fill="none" xmlns="http://www.w3.org/2000/svg" class="fng-svg">
+  ${sectors}
+  ${zoneLabels}
+  ${dots.join('')}
+  ${nums.join('')}
+  <!-- Needle -->
+  <line x1="${CX}" y1="${CY}" x2="${nx}" y2="${ny}"
+    stroke="var(--text)" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="${CX}" cy="${CY}" r="7" fill="var(--text)"/>
+  <circle cx="${CX}" cy="${CY}" r="3" fill="var(--bg)"/>
+  <!-- Score + label below needle pivot -->
+  <text x="${CX}" y="${CY + 26}" text-anchor="middle"
+    font-size="34" font-weight="800" font-family="Inter,Heebo,sans-serif"
+    fill="${activeZone.color}">${score}</text>
+  <text x="${CX}" y="${CY + 42}" text-anchor="middle"
+    font-size="10" font-weight="700" font-family="Inter,Heebo,sans-serif"
+    fill="${activeZone.color}" letter-spacing="0.8">${label.toUpperCase()}</text>
+</svg>`;
 }
+
+// ── Badge background (light tint of zone color) ────────
+function badgeBg(color) { return color + '30'; } // 19% opacity
 
 // ── Compare row ────────────────────────────────────────
-function compareRow(labelKey, prevScore, currentScore) {
+function compareRow(periodKey, prevScore, currentScore) {
   if (prevScore == null) return '';
-  const prev = Math.round(prevScore);
-  const diff = Math.round(currentScore) - prev;
-  const zone = getZone(prev);
-  const arrow     = diff > 0 ? '▲' : diff < 0 ? '▼' : '—';
-  const arrowColor = diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--text-3)';
-  const diffStr   = diff !== 0 ? ` ${diff > 0 ? '+' : ''}${diff}` : '';
+  const prev    = Math.round(prevScore);
+  const zi      = getZoneIndex(prev);
+  const zone    = ZONES[zi];
+  const zLabel  = t(zone.key);
+  const diff    = Math.round(currentScore) - prev;
+  const arrow   = diff > 0 ? '▲' : diff < 0 ? '▼' : '—';
+  const diffClr = diff > 0 ? '#22c55e' : diff < 0 ? '#ef4444' : 'var(--text-3)';
 
   return `
-    <div class="fng-row">
-      <span class="fng-row-label">${t(labelKey)}</span>
-      <span class="fng-row-score" style="color:${zone.color}">${prev}</span>
-      <span class="fng-row-arrow" style="color:${arrowColor}">${arrow}${diffStr}</span>
-    </div>`;
+  <div class="fng-row">
+    <div class="fng-row-info">
+      <span class="fng-row-period">${t(periodKey)}</span>
+      <span class="fng-row-zone" style="color:${zone.color}">${zLabel}</span>
+    </div>
+    <div class="fng-row-right">
+      <span class="fng-row-arrow" style="color:${diffClr}">${arrow}</span>
+      <div class="fng-row-badge" style="background:${badgeBg(zone.color)};color:${zone.color}">${prev}</div>
+    </div>
+  </div>`;
 }
 
-// ── Public: load & render ──────────────────────────────
+// ── Timestamp formatter ────────────────────────────────
+function formatTimestamp(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  } catch { return ''; }
+}
+
+// ── Public ─────────────────────────────────────────────
 export async function loadFearGreed() {
   const container = document.getElementById('fng-container');
   if (!container) return;
@@ -120,16 +178,15 @@ export async function loadFearGreed() {
     if (!fg?.score) throw new Error('no_data');
 
     const score    = Math.round(fg.score);
-    const zone     = getZone(score);
-    const labelKey = ratingToKey(fg.rating);
+    const activeIdx = getZoneIndex(score);
+    const labelKey  = ratingToKey(fg.rating);
+    const label     = t(labelKey);
+    const ts        = formatTimestamp(fg.timestamp);
 
     container.innerHTML = `
       <div class="fng-gauge-wrap">
-        ${buildGaugeSVG(score, zone.color)}
-        <div class="fng-center">
-          <span class="fng-score" style="color:${zone.color}">${score}</span>
-          <span class="fng-label" style="color:${zone.color}">${t(labelKey)}</span>
-        </div>
+        ${buildGaugeSVG(score, activeIdx, label)}
+        ${ts ? `<p class="fng-updated">${ts}</p>` : ''}
       </div>
       <div class="fng-compare">
         ${compareRow('fng_prev_close', fg.previous_close,   score)}
