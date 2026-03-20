@@ -160,7 +160,7 @@
 /* ===== ABOUT ===== */
 .about-content {
   width: 80%;
-  max-width: 880px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 32px 20px 48px;
   display: flex;
@@ -237,7 +237,7 @@
 @media (min-width: 768px) {
   .compare-content, .watchlist-content {
     width: 80%;
-    max-width: 880px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 24px 32px;
   }

@@ -397,7 +397,7 @@
 
   .results-content {
     width: 80%;
-    max-width: 880px;
+    max-width: 1400px;
     margin: 0 auto;
   }
 
@@ -955,7 +955,7 @@ body.theme-dark .sg-svg {
 @media (min-width: 900px) {
   .results-content {
     width: 80%;
-    max-width: 880px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 14px 16px 32px !important;
     gap: 10px;

@@ -343,7 +343,7 @@
 @media (min-width: 768px) {
   .home-main {
     width: 80%;
-    max-width: 880px;
+    max-width: 1400px;
     padding: 72px 40px 48px;
     gap: 40px;
   }
@@ -364,5 +364,5 @@
 }
 
 @media (min-width: 1200px) {
-  .home-main { width: 80%; max-width: 880px; }
+  .home-main { width: 80%; max-width: 1400px; }
 }
