@@ -570,7 +570,17 @@ async function fetchFinvizData(symbol) {
 const TRENDING_DEFAULTS = ['AAPL', 'TSLA', 'NVDA', 'AMZN', 'MSFT'];
 
 export async function fetchTrending() {
-  return TRENDING_DEFAULTS;
+  try {
+    const url  = 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?scrIds=most_actives&count=5&formatted=false';
+    const res  = await fetchWithTimeout(proxyUrl(url), 8000);
+    if (!res.ok) throw new Error('screener fail');
+    const json = await res.json();
+    const quotes = json?.finance?.result?.[0]?.quotes;
+    if (!quotes?.length) throw new Error('no quotes');
+    return quotes.map(q => q.symbol).filter(Boolean).slice(0, 5);
+  } catch {
+    return TRENDING_DEFAULTS;
+  }
 }
 
 export function isCryptoSymbol(symbol) {
