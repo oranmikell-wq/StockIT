@@ -37,13 +37,31 @@
 
   <!-- ===== GLOBAL STICKY TOP-BAR (always visible on every page) ===== -->
   <header class="top-bar" dir="ltr">
-    <!-- Brand -->
-    <a class="tb-brand" href="#" onclick="navigateTo('home'); return false;">
-      <img src="logo2.png" alt="Bull Therapy logo" class="tb-logo" />
-      <span class="tb-brand-name">Bull Therapy</span>
-    </a>
 
-    <!-- Search -->
+    <!-- Row 1: Brand (left) + Nav icons (right) -->
+    <div class="tb-row-top">
+      <a class="tb-brand" href="#" onclick="navigateTo('home'); return false;">
+        <img src="logo2.png" alt="Bull Therapy logo" class="tb-logo" />
+        <div class="tb-brand-text">
+          <span class="tb-brand-name">Bull Therapy</span>
+          <span class="tb-brand-sub" data-i18n="tagline">Trade with a clear head</span>
+        </div>
+      </a>
+      <nav class="tb-nav">
+        <button class="tb-nav-btn nav-btn" data-page="home" title="Home">
+          <svg width="19" height="19" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2l6 4.5V14H10v-3H6v3H2V6.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="tb-nav-btn nav-btn" data-page="watchlist" title="Watchlist">
+          <svg width="19" height="19" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9L4.4 13l.7-4L2.2 6.2l4-.6L8 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span id="wl-count-badge" class="wl-count-badge" style="display:none">0</span>
+        </button>
+        <button class="tb-nav-btn nav-btn" data-page="about" title="About">
+          <svg width="19" height="19" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.6"/><line x1="8" y1="7" x2="8" y2="11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="4.8" r="0.9" fill="currentColor"/></svg>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Row 2: Search bar (centered, full width) -->
     <div class="tb-search-wrap">
       <div class="search-box">
         <input
@@ -55,7 +73,7 @@
           spellcheck="false"
         />
         <button id="search-btn" class="tb-search-btn" aria-label="Search">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.8"/>
             <line x1="10.2" y1="10.2" x2="14" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
@@ -64,23 +82,6 @@
       <div id="autocomplete-list" class="autocomplete-list hidden"></div>
     </div>
 
-    <!-- Nav buttons -->
-    <nav class="tb-nav">
-      <button class="tb-nav-btn nav-btn" data-page="home" title="Home">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2l6 4.5V14H10v-3H6v3H2V6.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        <span class="tb-nav-label" data-i18n="home">Home</span>
-      </button>
-      <button class="tb-nav-btn nav-btn" data-page="watchlist" title="Watchlist">
-        <span>★</span>
-        <span class="tb-nav-label" data-i18n="watchlist">Watchlist</span>
-        <span id="wl-count-badge" class="wl-count-badge" style="display:none">0</span>
-      </button>
-      <button class="tb-nav-btn nav-btn" data-page="about" title="About">
-        <span class="tb-nav-label" data-i18n="about">About</span>
-      </button>
-      <button id="btn-theme-drawer" class="tb-nav-btn theme-toggle-btn" aria-label="Toggle theme">Dark</button>
-      <button id="btn-lang-drawer" class="tb-nav-btn lang-btn">EN</button>
-    </nav>
   </header>
 
   <!-- ===== HOME PAGE ===== -->
@@ -272,6 +273,10 @@
 
   <!-- ===== FOOTER ===== -->
   <footer class="app-footer">
+    <div class="footer-controls">
+      <button id="btn-theme-drawer" class="footer-ctrl-btn theme-toggle-btn" aria-label="Toggle theme">Dark</button>
+      <button id="btn-lang-drawer" class="footer-ctrl-btn lang-btn">EN</button>
+    </div>
     <a href="mailto:info@bulltherapy.com" class="footer-contact">Contact Us: info@bulltherapy.com</a>
     <span class="footer-copy">Copyright 2026 © Bull Therapy</span>
   </footer>

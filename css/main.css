@@ -3,7 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&family=Heebo:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --topbar-h: 60px;   /* global top-bar height — mobile */
+  --topbar-h: 122px;   /* global top-bar height — mobile */
   --green:        #16a34a;
   --green-light:  #22c55e;
   --green-dark:   #15803d;
@@ -317,97 +317,59 @@ body {
   z-index: 100;
   background: #000;
   border-bottom: 1px solid rgba(255,255,255,0.07);
-  padding: 8px 14px;
+  padding: 12px 16px 12px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
-  height: 60px;
 }
 
-.theme-light .top-bar {
-  background: #000;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+/* Row 1: brand + nav icons */
+.tb-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 /* Brand */
 .tb-brand {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   text-decoration: none;
   color: #fff;
   flex-shrink: 0;
 }
 
 .tb-logo {
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
+  flex-shrink: 0;
+}
+
+.tb-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .tb-brand-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
   color: #fff;
-  white-space: nowrap;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.4px;
+  line-height: 1.1;
 }
 
-/* Search in top bar */
-.tb-search-wrap {
-  flex: 1;
-  position: relative;
-  min-width: 0;
-}
-
-.tb-search-wrap .search-box {
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 50px;
-  padding: 6px 6px 6px 14px;
-  box-shadow: none;
-}
-
-.tb-search-wrap .search-box:focus-within {
-  background: rgba(255,255,255,0.14);
-  border-color: var(--green);
-  box-shadow: 0 0 0 2px rgba(22,163,74,0.2);
-}
-
-.tb-search-wrap #search-input {
-  font-size: 13px;
-  color: #fff;
-}
-
-.tb-search-wrap #search-input::placeholder {
+.tb-brand-sub {
+  font-size: 10px;
   color: rgba(255,255,255,0.38);
+  font-weight: 400;
+  white-space: nowrap;
 }
 
-.tb-search-btn {
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  padding: 6px 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-}
-
-.tb-search-btn:hover { background: rgba(255,255,255,0.25); }
-
-/* Autocomplete dropdown stays under the search bar */
-.tb-search-wrap .autocomplete-list {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 200;
-}
-
-/* Nav buttons */
+/* Nav — icons only */
 .tb-nav {
   display: flex;
   align-items: center;
@@ -420,15 +382,12 @@ body {
   border: none;
   color: rgba(255,255,255,0.65);
   cursor: pointer;
-  padding: 6px 8px;
+  padding: 8px;
   border-radius: 8px;
-  font-size: 12px;
-  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-  font-family: inherit;
+  justify-content: center;
+  position: relative;
   transition: color 0.15s, background 0.15s;
 }
 
@@ -437,12 +396,58 @@ body {
   background: rgba(255,255,255,0.10);
 }
 
-.tb-nav-label {
-  display: none;
+.tb-nav-label { display: none; }
+
+/* Row 2: Search bar (full width) */
+.tb-search-wrap {
+  width: 100%;
+  position: relative;
 }
 
-@media (min-width: 640px) {
-  .tb-nav-label { display: inline; }
+.tb-search-wrap .search-box {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 50px;
+  padding: 8px 8px 8px 16px;
+  box-shadow: none;
+}
+
+.tb-search-wrap .search-box:focus-within {
+  background: rgba(255,255,255,0.14);
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(22,163,74,0.2);
+}
+
+.tb-search-wrap #search-input {
+  font-size: 14px;
+  color: #fff;
+}
+
+.tb-search-wrap #search-input::placeholder {
+  color: rgba(255,255,255,0.38);
+}
+
+.tb-search-btn {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 7px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.tb-search-btn:hover { background: rgba(255,255,255,0.25); }
+
+.tb-search-wrap .autocomplete-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 200;
 }
 
 /* Sub-page headers stick below the global top-bar */
@@ -653,14 +658,38 @@ body {
   text-align: center;
   font-size: 10px;
   font-weight: 400;
-  padding: 10px 20px;
-  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding: 14px 20px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid rgba(255,255,255,0.08);
   letter-spacing: 0.2px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+}
+
+.footer-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.footer-ctrl-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.55);
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.footer-ctrl-btn:hover {
+  background: rgba(255,255,255,0.16);
+  color: #fff;
 }
 .footer-sep { opacity: 0.3; }
 .footer-copy { display: block; }
@@ -686,7 +715,7 @@ body {
    DESKTOP LAYOUT (768px+)
    ================================================================ */
 @media (min-width: 768px) {
-  :root { --topbar-h: 60px; }   /* top-bar height on desktop */
+  :root { --topbar-h: 122px; }   /* top-bar height on desktop */
 
   .notification { bottom: 20px; }
 
