@@ -602,7 +602,7 @@
   .market-section {
     background: var(--bg-2);
     border-radius: var(--radius-lg);
-    padding: 14px;
+    padding: 0 14px 14px;
   }
   .market-indices {
     flex-direction: column;
@@ -628,7 +628,7 @@
   .trending-section {
     background: var(--bg-2);
     border-radius: var(--radius-lg);
-    padding: 14px;
+    padding: 0 14px 14px;
   }
   .trending-list { gap: 6px; }
   .trending-item {
