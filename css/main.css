@@ -3,7 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&family=Heebo:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --topbar-h: 80px;   /* global top-bar height — mobile */
+  --topbar-h: 110px;   /* global top-bar height — mobile */
   --green:        #16a34a;
   --green-light:  #22c55e;
   --green-dark:   #15803d;
@@ -317,11 +317,17 @@ body {
   z-index: 100;
   background: #000;
   border-bottom: 1px solid rgba(255,255,255,0.07);
-  padding: 10px 16px;
+  padding: 10px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tb-row-top {
   display: flex;
   flex-direction: row;
   align-items: center;
-  flex-wrap: nowrap;
+  justify-content: space-between;
   gap: 10px;
 }
 
@@ -336,8 +342,8 @@ body {
 }
 
 .tb-logo {
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -349,27 +355,24 @@ body {
 }
 
 .tb-brand-name {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 800;
   color: #fff;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.5px;
   line-height: 1.1;
 }
 
 .tb-brand-sub {
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(255,255,255,0.38);
   font-weight: 400;
   white-space: nowrap;
-  display: none; /* hidden on mobile */
 }
 
-/* Search (center, flex-grow) */
+/* Search — bottom row, full width */
 .tb-search-wrap {
-  flex: 1;
+  width: 100%;
   position: relative;
-  min-width: 0;
-  margin-inline-start: 20px;
 }
 
 .tb-search-wrap .search-box {
@@ -712,11 +715,7 @@ body {
    DESKTOP LAYOUT (768px+)
    ================================================================ */
 @media (min-width: 768px) {
-  :root { --topbar-h: 80px; }   /* top-bar height on desktop */
-
-  .tb-logo { width: 56px; height: 56px; }
-  .tb-brand-name { font-size: 20px; }
-  .tb-brand-sub { display: block; }
+  :root { --topbar-h: 110px; }   /* top-bar height on desktop */
 
   .notification { bottom: 20px; }
 
