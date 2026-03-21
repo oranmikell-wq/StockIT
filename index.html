@@ -104,6 +104,15 @@
             </div>
           </div>
         </section>
+
+        <section class="fng-section">
+          <h2 class="section-title" data-i18n="cryptoFngTab">Crypto Fear &amp; Greed</h2>
+          <div class="fng-card">
+            <div id="fng-crypto-container" class="fng-container">
+              <div class="fng-skeleton"></div>
+            </div>
+          </div>
+        </section>
       </div>
 
       <section class="history-section" id="history-section" style="display:none">
@@ -194,35 +203,17 @@
 
       <!-- Chart — standalone block -->
       <section class="chart-section">
-
-        <!-- View toggle -->
-        <div class="chart-view-toggle" dir="ltr">
-          <button class="view-tab active" data-view="chart" data-i18n="chartTab">Chart</button>
-          <button class="view-tab" data-view="fng-crypto" data-i18n="cryptoFngTab">Crypto Fear &amp; Greed</button>
+        <div class="chart-ranges">
+          <button class="range-btn" data-range="1D">1D</button>
+          <button class="range-btn" data-range="1W">1W</button>
+          <button class="range-btn active" data-range="1M">1M</button>
+          <button class="range-btn" data-range="3M">3M</button>
+          <button class="range-btn" data-range="6M">6M</button>
+          <button class="range-btn" data-range="1Y">1Y</button>
+          <button class="range-btn" data-range="3Y">3Y</button>
+          <button class="range-btn" data-range="5Y">5Y</button>
         </div>
-
-        <!-- Price chart view -->
-        <div id="chart-view">
-          <div class="chart-ranges">
-            <button class="range-btn" data-range="1D">1D</button>
-            <button class="range-btn" data-range="1W">1W</button>
-            <button class="range-btn active" data-range="1M">1M</button>
-            <button class="range-btn" data-range="3M">3M</button>
-            <button class="range-btn" data-range="6M">6M</button>
-            <button class="range-btn" data-range="1Y">1Y</button>
-            <button class="range-btn" data-range="3Y">3Y</button>
-            <button class="range-btn" data-range="5Y">5Y</button>
-          </div>
-          <div id="chart-container"></div>
-        </div>
-
-        <!-- Crypto Fear & Greed view -->
-        <div id="fng-crypto-view" class="hidden">
-          <div id="fng-crypto-container" class="fng-container">
-            <div class="fng-skeleton"></div>
-          </div>
-        </div>
-
+        <div id="chart-container"></div>
       </section>
 
       <!-- Criteria table -->

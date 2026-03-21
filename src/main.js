@@ -43,7 +43,6 @@ let autoRefreshTimer = null;
 let activeLoadSymbol = null; // tracks the latest requested symbol to cancel stale loads
 let lastFullStockData  = null;   // stored for lang-change re-render
 let lastSummaryScored  = null;   // stored for lang-change re-render
-let cryptoFngLoaded    = false;  // lazy-load flag for Crypto F&G panel
 
 // ── Notification ───────────────────────────────────────
 let notifTimer = null;
@@ -143,6 +142,7 @@ window.__onLangChange = function() {
 
   // 3. Re-render Fear & Greed + AAII labels on lang change
   loadFearGreed();
+  loadCryptoFearGreed();
   loadAAII();
 };
 
@@ -222,11 +222,6 @@ async function loadResults(symbol) {
     }
 
     loadChart(symbol, '1M');
-    // Reset chart/FNG toggle to chart view on each new stock
-    document.getElementById('chart-view')?.classList.remove('hidden');
-    document.getElementById('fng-crypto-view')?.classList.add('hidden');
-    document.querySelectorAll('.view-tab').forEach(b => b.classList.toggle('active', b.dataset.view === 'chart'));
-    cryptoFngLoaded = false;
     updateWatchlistBtn(symbol);
     updateCompareBtn(symbol);
 
@@ -427,25 +422,6 @@ function bindEvents() {
     });
   });
 
-  // Chart view toggle (Chart ↔ Crypto Fear & Greed)
-  document.querySelectorAll('.view-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const view    = btn.dataset.view;
-      const chartV  = document.getElementById('chart-view');
-      const fngV    = document.getElementById('fng-crypto-view');
-      if (view === 'chart') {
-        chartV?.classList.remove('hidden');
-        fngV?.classList.add('hidden');
-      } else {
-        chartV?.classList.add('hidden');
-        fngV?.classList.remove('hidden');
-        if (!cryptoFngLoaded) { loadCryptoFearGreed(); cryptoFngLoaded = true; }
-      }
-    });
-  });
-
   // Add to compare
   document.getElementById('btn-add-compare')?.addEventListener('click', () => {
     if (!currentStock) return;
@@ -477,6 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   checkURLParam();
   loadFearGreed();
+  loadCryptoFearGreed();
   loadAAII();
   renderHistory();
 
