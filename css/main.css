@@ -321,7 +321,8 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 12px;
+  flex-wrap: nowrap;
+  gap: 10px;
 }
 
 /* Brand (left) */
@@ -335,8 +336,8 @@ body {
 }
 
 .tb-logo {
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -348,18 +349,19 @@ body {
 }
 
 .tb-brand-name {
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 800;
   color: #fff;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
   line-height: 1.1;
 }
 
 .tb-brand-sub {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255,255,255,0.38);
   font-weight: 400;
   white-space: nowrap;
+  display: none; /* hidden on mobile */
 }
 
 /* Search (center, flex-grow) */
@@ -710,7 +712,11 @@ body {
    DESKTOP LAYOUT (768px+)
    ================================================================ */
 @media (min-width: 768px) {
-  :root { --topbar-h: 122px; }   /* top-bar height on desktop */
+  :root { --topbar-h: 80px; }   /* top-bar height on desktop */
+
+  .tb-logo { width: 56px; height: 56px; }
+  .tb-brand-name { font-size: 20px; }
+  .tb-brand-sub { display: block; }
 
   .notification { bottom: 20px; }
 
