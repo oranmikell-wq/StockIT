@@ -3,6 +3,151 @@
 import { cacheGet, cacheSet, cacheGetStale, fundGet, fundSet, fullCacheGet, fullCacheSet } from './CacheService.js';
 
 function getTwelveKey() { return localStorage.getItem('bon-twelve-key') || 'demo'; }
+function getFmpKey()    { return localStorage.getItem('bon-fmp-key') || ''; }
+function getAvKey()     { return localStorage.getItem('bon-av-key')  || ''; }
+
+// ── Financial Modeling Prep (FMP) fallback ────────────────────────────────────
+// Free tier: 250 req/day. Key stored in localStorage as 'bon-fmp-key'.
+// Called when Yahoo Finance HTML scrape fails (e.g. GDPR consent wall on IL/EU IPs).
+async function fetchFMPFundamentals(symbol) {
+  const key = getFmpKey();
+  if (!key) return null;
+
+  const base = `https://financialmodelingprep.com/api/v3`;
+  const qs   = `apikey=${key}`;
+
+  // Fetch profile + key-metrics + income growth in parallel
+  const [profileRaw, metricsRaw, growthRaw, analystRaw, targetRaw] = await Promise.all([
+    fetchWithTimeout(`${base}/profile/${encodeURIComponent(symbol)}?${qs}`, 8000)
+      .then(r => r.ok ? r.json() : null).catch(() => null),
+    fetchWithTimeout(`${base}/key-metrics-ttm/${encodeURIComponent(symbol)}?${qs}`, 8000)
+      .then(r => r.ok ? r.json() : null).catch(() => null),
+    fetchWithTimeout(`${base}/income-statement-growth/${encodeURIComponent(symbol)}?limit=1&${qs}`, 8000)
+      .then(r => r.ok ? r.json() : null).catch(() => null),
+    fetchWithTimeout(`${base}/analyst-stock-recommendations/${encodeURIComponent(symbol)}?${qs}`, 8000)
+      .then(r => r.ok ? r.json() : null).catch(() => null),
+    fetchWithTimeout(`${base}/price-target-consensus/${encodeURIComponent(symbol)}?${qs}`, 8000)
+      .then(r => r.ok ? r.json() : null).catch(() => null),
+  ]);
+
+  const prof    = Array.isArray(profileRaw) ? profileRaw[0] : null;
+  const metrics = Array.isArray(metricsRaw) ? metricsRaw[0] : null;
+  const growth  = Array.isArray(growthRaw)  ? growthRaw[0]  : null;
+
+  if (!prof && !metrics) return null;
+
+  // Map analyst recommendations to our internal format
+  let analystScore = null;
+  if (Array.isArray(analystRaw) && analystRaw.length > 0) {
+    const counts = { strongBuy: 0, buy: 0, hold: 0, sell: 0 };
+    const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    for (const r of analystRaw) {
+      if (r.date < cutoff) continue;
+      const rc = (r.analystRatingsStrongBuy ?? 0);
+      const rb = (r.analystRatingsbuy      ?? 0);
+      const rh = (r.analystRatingsHold     ?? 0);
+      const rs = (r.analystRatingsSell     ?? 0) + (r.analystRatingsStrongSell ?? 0);
+      counts.strongBuy += rc;
+      counts.buy       += rb;
+      counts.hold      += rh;
+      counts.sell      += rs;
+    }
+    const total = counts.strongBuy + counts.buy + counts.hold + counts.sell;
+    if (total > 0) analystScore = counts;
+  }
+
+  // Map to v10 quoteSummary structure so parseAllData works unchanged
+  return {
+    summaryDetail: {
+      trailingPE:   metrics?.peRatioTTM    ?? null,
+      priceToBook:  metrics?.pbRatioTTM    ?? null,
+      beta:         prof?.beta             ?? null,
+      marketCap:    prof?.mktCap           ?? null,
+      dividendYield: prof?.lastDiv != null && prof.price
+        ? prof.lastDiv / prof.price : null,
+    },
+    defaultKeyStatistics: {
+      priceToSalesTrailing12Months: metrics?.priceToSalesRatioTTM ?? null,
+      heldPercentInstitutions:      null,
+    },
+    financialData: {
+      earningsGrowth:          growth?.growthEPS      != null ? growth.growthEPS      : null,
+      revenueGrowth:           growth?.growthRevenue  != null ? growth.growthRevenue  : null,
+      debtToEquity:            metrics?.debtToEquityTTM != null ? metrics.debtToEquityTTM * 100 : null,
+      targetMeanPrice:         targetRaw?.targetConsensus  ?? null,
+      targetHighPrice:         targetRaw?.targetHigh        ?? null,
+      targetLowPrice:          targetRaw?.targetLow         ?? null,
+      recommendationMean:      null,
+      numberOfAnalystOpinions: null,
+    },
+    assetProfile: {
+      longName: prof?.companyName ?? null,
+      sector:   prof?.sector      ?? null,
+      industry: prof?.industry    ?? null,
+    },
+    calendarEvents: { earnings: { earningsDate: [] } },
+    // Attach raw analystScore so parseAllData can use it
+    _fmpAnalystScore: analystScore,
+  };
+}
+
+// ── Alpha Vantage fallback ────────────────────────────────────────────────────
+// Free tier: 25 req/day. OVERVIEW endpoint returns all fundamentals in one call.
+// Key stored in localStorage as 'bon-av-key'. Register free at alphavantage.co.
+async function fetchAVFundamentals(symbol) {
+  const key = getAvKey();
+  if (!key) return null;
+
+  const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${encodeURIComponent(symbol)}&apikey=${key}`;
+  let d;
+  try {
+    const res = await fetchWithTimeout(url, 8000);
+    if (!res.ok) return null;
+    d = await res.json();
+  } catch { return null; }
+
+  if (!d?.Symbol || d?.Information) return null; // demo key restriction or error
+
+  const n = (v) => v != null && v !== 'None' && v !== '-' ? +v : null;
+
+  const strongBuy = n(d.AnalystRatingStrongBuy) ?? 0;
+  const buy       = n(d.AnalystRatingBuy)        ?? 0;
+  const hold      = n(d.AnalystRatingHold)        ?? 0;
+  const sell      = (n(d.AnalystRatingSell) ?? 0) + (n(d.AnalystRatingStrongSell) ?? 0);
+  const total     = strongBuy + buy + hold + sell;
+  const analystScore = total > 0 ? { strongBuy, buy, hold, sell } : null;
+
+  return {
+    summaryDetail: {
+      trailingPE:   n(d.TrailingPE),
+      priceToBook:  n(d.PriceToBookRatio),
+      beta:         n(d.Beta),
+      marketCap:    n(d.MarketCapitalization),
+      dividendYield: n(d.DividendYield),
+    },
+    defaultKeyStatistics: {
+      priceToSalesTrailing12Months: n(d.PriceToSalesRatioTTM),
+      heldPercentInstitutions: null,
+    },
+    financialData: {
+      earningsGrowth:          n(d.QuarterlyEarningsGrowthYOY),
+      revenueGrowth:           n(d.QuarterlyRevenueGrowthYOY),
+      debtToEquity:            null, // not in OVERVIEW
+      targetMeanPrice:         n(d.AnalystTargetPrice),
+      targetHighPrice:         null,
+      targetLowPrice:          null,
+      recommendationMean:      null,
+      numberOfAnalystOpinions: null,
+    },
+    assetProfile: {
+      longName: d.Name   ?? null,
+      sector:   d.Sector ?? null,
+      industry: d.Industry ?? null,
+    },
+    calendarEvents: { earnings: { earningsDate: [] } },
+    _fmpAnalystScore: analystScore,
+  };
+}
 
 // ── CORS Proxy configuration ─────────────────────────────────
 // Our own Cloudflare Worker proxy — set after deploying cloudflare-worker/worker.js
@@ -103,24 +248,21 @@ export async function yahooFundamentals(symbol) {
     if (q?.symbol) return _v7ToV10(q);
   } catch {}
 
-  // ── 3. v10/quoteSummary (needs crumb — will likely return 401) ──────────
+  // ── 3. v10/quoteSummary via worker crumb-auth ────────────────────────────
+  // The Cloudflare Worker now performs the Yahoo Finance cookie+crumb handshake
+  // automatically before forwarding the v10 request.
   const modules = 'summaryDetail,defaultKeyStatistics,financialData,assetProfile,calendarEvents';
-  try {
-    const raw = await fetchProxy(
-      `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&formatted=false&corsDomain=finance.yahoo.com`
-    );
-    if (raw?.quoteSummary?.error || !raw?.quoteSummary?.result?.[0]) {
-      const raw2 = await fetchProxy(
-        `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&formatted=false`
+  for (const host of ['query1', 'query2']) {
+    try {
+      const raw = await fetchProxy(
+        `https://${host}.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=${modules}&formatted=false&corsDomain=finance.yahoo.com`
       );
-      const result2 = raw2?.quoteSummary?.result?.[0];
-      if (!result2 || raw2?.quoteSummary?.error) return null;
-      return result2;
-    }
-    return raw.quoteSummary.result[0];
-  } catch {
-    return null;
+      const result = raw?.quoteSummary?.result?.[0];
+      if (result && !raw?.quoteSummary?.error) return result;
+    } catch {}
   }
+
+  return null;
 }
 
 async function tdGet(endpoint) {
@@ -263,7 +405,8 @@ export function parseAllData({ meta, yfFund, stats, ratings, target, earning, ne
 
   const analystMean  = yfFin.recommendationMean?.raw ?? yfFin.recommendationMean ?? null;
   const analystCount = yfFin.numberOfAnalystOpinions?.raw ?? yfFin.numberOfAnalystOpinions ?? null;
-  const analystScore = aggregateRatings(ratings);
+  // Use FMP analyst score if Yahoo/TwelveData ratings are unavailable
+  const analystScore = aggregateRatings(ratings) ?? yfFund?._fmpAnalystScore ?? null;
 
   const yfTargetMean = yfFin.targetMeanPrice?.raw ?? yfFin.targetMeanPrice ?? null;
   const yfTargetHigh = yfFin.targetHighPrice?.raw ?? yfFin.targetHighPrice ?? null;
@@ -342,6 +485,12 @@ export async function fetchAllData(symbol, lite = false) {
         earning  = cached24h.earning  ?? null;
       } else {
         yfFund = await yahooFundamentals(symbol);
+
+        // Fallback: FMP or Alpha Vantage when Yahoo scrape fails (e.g. GDPR consent wall)
+        if (!yfFund) {
+          yfFund = await fetchFMPFundamentals(symbol).catch(() => null)
+                ?? await fetchAVFundamentals(symbol).catch(() => null);
+        }
 
         if (!lite) {
           if (!yfFund) {

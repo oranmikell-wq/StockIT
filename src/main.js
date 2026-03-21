@@ -305,50 +305,6 @@ function doSearch(query) {
   navigateTo('results', query);
 }
 
-// ── Pull-to-Refresh ────────────────────────────────────
-function initPullToRefresh() {
-  const page      = document.getElementById('page-results');
-  const indicator = document.getElementById('ptr-indicator');
-  if (!page || !indicator) return;
-
-  const THRESHOLD = 65;
-  let startY      = 0;
-  let pulling     = false;
-  let triggered   = false;
-
-  page.addEventListener('touchstart', e => {
-    if (page.scrollTop === 0) {
-      startY    = e.touches[0].clientY;
-      pulling   = true;
-      triggered = false;
-    }
-  }, { passive: true });
-
-  page.addEventListener('touchmove', e => {
-    if (!pulling) return;
-    const delta = e.touches[0].clientY - startY;
-    if (delta <= 0) return;
-    indicator.classList.add('ptr-visible');
-    indicator.classList.toggle('ptr-ready', delta >= THRESHOLD);
-  }, { passive: true });
-
-  page.addEventListener('touchend', e => {
-    if (!pulling) return;
-    pulling = false;
-    const delta = e.changedTouches[0].clientY - startY;
-    if (delta >= THRESHOLD && currentStock && !triggered) {
-      triggered = true;
-      indicator.classList.remove('ptr-ready');
-      indicator.classList.add('ptr-refreshing');
-      loadResults(currentStock.symbol).finally(() => {
-        indicator.classList.remove('ptr-visible', 'ptr-refreshing', 'ptr-ready');
-      });
-    } else {
-      indicator.classList.remove('ptr-visible', 'ptr-ready');
-    }
-  }, { passive: true });
-}
-
 // ── URL param (?s=AAPL) ────────────────────────────────
 function checkURLParam() {
   const params = new URLSearchParams(window.location.search);
@@ -463,7 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initWatchlistSidebar(navigateTo, showNotification, updateWatchlistBtn, renderWatchlist);
   updateSidebarCount();
 
-  initPullToRefresh();
   checkURLParam();
   loadFearGreed();
   loadAAII();
