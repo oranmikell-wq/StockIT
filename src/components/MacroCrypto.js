@@ -50,7 +50,7 @@ function daysUntil(dateStr) {
 }
 
 // ── Block 1: US Macro ──────────────────────────────────────────────────────
-// Uses NY Fed API (EFFR) + World Bank API (CPI) — both CORS-enabled, no proxy needed
+// NY Fed EFFR (daily rate) + Alpha Vantage CPI monthly (no proxy needed, CORS-enabled)
 export async function loadMacroData(containerId = 'macro-container') {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -58,7 +58,7 @@ export async function loadMacroData(containerId = 'macro-container') {
   try {
     const [effrRes, cpiRes] = await Promise.all([
       fetch('https://markets.newyorkfed.org/api/rates/unsecured/effr/last/1.json'),
-      fetch('https://api.worldbank.org/v2/country/US/indicator/FP.CPI.TOTL.ZG?format=json&mrv=2'),
+      fetch('https://www.alphavantage.co/query?function=CPI&interval=monthly&apikey=demo'),
     ]);
 
     if (!effrRes.ok || !cpiRes.ok) throw new Error('api_error');
@@ -66,28 +66,43 @@ export async function loadMacroData(containerId = 'macro-container') {
     const effrJson = await effrRes.json();
     const cpiJson  = await cpiRes.json();
 
-    const fedRate = effrJson?.refRates?.[0]?.percentRate;
-    const cpiEntry = cpiJson?.[1]?.find(e => e.value !== null);
-    const cpiYoY  = cpiEntry?.value;
-    const cpiYear = cpiEntry?.date;
+    // Fed Funds Rate (effective, daily)
+    const fedEntry = effrJson?.refRates?.[0];
+    const fedRate  = fedEntry?.percentRate;
+    const fedDate  = fedEntry?.effectiveDate; // e.g. "2026-03-21"
 
-    if (fedRate == null || cpiYoY == null) throw new Error('no_data');
+    // CPI YoY from monthly index values
+    const cpiData = cpiJson?.data ?? [];
+    const latest  = cpiData.find(d => d.value !== '.');
+    const yearAgo = cpiData.find(d => {
+      if (!latest) return false;
+      const latestYear = parseInt(latest.date.slice(0,4));
+      const latestMon  = latest.date.slice(5,7);
+      return d.date.startsWith((latestYear - 1) + '-' + latestMon);
+    });
+
+    if (fedRate == null || !latest || !yearAgo) throw new Error('no_data');
+
+    const cpiYoY   = ((parseFloat(latest.value) / parseFloat(yearAgo.value)) - 1) * 100;
+    const cpiMonth = new Date(latest.date + 'T00:00:00').toLocaleString('en', { month: 'short', year: 'numeric' });
 
     const fedColor = fedRate >= 4 ? 'negative' : fedRate <= 2 ? 'positive' : '';
-    const cpiColor = cpiYoY >= 4  ? 'negative' : cpiYoY  <= 2 ? 'positive' : '';
+    const cpiColor = cpiYoY  >= 4 ? 'negative' : cpiYoY  <= 2 ? 'positive' : '';
+
+    const fedLabel = fedDate ? new Date(fedDate + 'T00:00:00').toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Current';
 
     container.innerHTML = `
       <div class="macro-item">
         <div>
           <div class="macro-label">Interest Rate</div>
-          <div class="macro-sublabel">Fed Funds Rate (EFFR)</div>
+          <div class="macro-sublabel">Fed Funds Rate · ${fedLabel}</div>
         </div>
         <div class="macro-value ${fedColor}">${fedRate.toFixed(2)}%</div>
       </div>
       <div class="macro-item">
         <div>
-          <div class="macro-label">Inflation (CPI)</div>
-          <div class="macro-sublabel">Annual ${cpiYear} — World Bank</div>
+          <div class="macro-label">Inflation (CPI YoY)</div>
+          <div class="macro-sublabel">Monthly · ${cpiMonth}</div>
         </div>
         <div class="macro-value ${cpiColor}">${cpiYoY.toFixed(1)}%</div>
       </div>`;

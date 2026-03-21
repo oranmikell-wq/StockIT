@@ -525,12 +525,12 @@
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 10px 14px;
   box-shadow: var(--shadow-sm);
 }
 
 .macro-skeleton {
-  height: 80px;
+  height: 60px;
   width: 100%;
   background: var(--bg-3);
   border-radius: var(--radius);
@@ -541,24 +541,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 7px 0;
   border-bottom: 1px solid var(--border);
 }
 .macro-item:last-child { border-bottom: none; }
 
 .macro-label {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-2);
   font-weight: 500;
 }
 .macro-sublabel {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-3);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .macro-value {
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--text);
 }
@@ -569,23 +569,23 @@
   font-size: 12px;
   color: var(--text-3);
   text-align: center;
-  padding: 20px;
+  padding: 14px;
 }
 
 /* Crypto price rows */
 .crypto-price-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 0;
+  gap: 8px;
+  padding: 7px 0;
   border-bottom: 1px solid var(--border);
 }
 .crypto-price-row:last-child { border-bottom: none; }
 
 .crypto-coin-icon {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 900;
-  width: 28px;
+  width: 22px;
   text-align: center;
   flex-shrink: 0;
 }
@@ -594,21 +594,21 @@
 
 .crypto-coin-name {
   flex: 1;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-2);
 }
 
 .crypto-coin-price {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
 }
 
 .crypto-coin-change {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  min-width: 58px;
+  min-width: 52px;
   text-align: right;
   flex-shrink: 0;
 }
@@ -618,9 +618,9 @@
 /* Upcoming events */
 .event-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  padding: 9px 0;
+  padding: 7px 0;
   border-bottom: 1px solid var(--border);
 }
 .event-item:last-child { border-bottom: none; }
@@ -628,16 +628,16 @@
 .event-date-col {
   flex-shrink: 0;
   text-align: center;
-  min-width: 38px;
+  min-width: 32px;
 }
 .event-day {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text);
   line-height: 1;
 }
 .event-month {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
   color: var(--text-3);
   text-transform: uppercase;
@@ -645,7 +645,7 @@
 
 .event-info { flex: 1; min-width: 0; }
 .event-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -653,9 +653,9 @@
   text-overflow: ellipsis;
 }
 .event-countdown {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-3);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 .event-countdown.soon { color: var(--green); font-weight: 600; }
 
