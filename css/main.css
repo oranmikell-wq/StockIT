@@ -3,7 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&family=Heebo:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --topbar-h: 122px;   /* global top-bar height — mobile */
+  --topbar-h: 80px;   /* global top-bar height — mobile */
   --green:        #16a34a;
   --green-light:  #22c55e;
   --green-dark:   #15803d;
@@ -317,21 +317,14 @@ body {
   z-index: 100;
   background: #000;
   border-bottom: 1px solid rgba(255,255,255,0.07);
-  padding: 12px 16px 12px;
+  padding: 10px 16px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Row 1: brand + nav icons */
-.tb-row-top {
-  display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
-/* Brand */
+/* Brand (left) */
 .tb-brand {
   display: flex;
   align-items: center;
@@ -342,8 +335,8 @@ body {
 }
 
 .tb-logo {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -351,57 +344,29 @@ body {
 .tb-brand-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .tb-brand-name {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 800;
   color: #fff;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.5px;
   line-height: 1.1;
 }
 
 .tb-brand-sub {
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(255,255,255,0.38);
   font-weight: 400;
   white-space: nowrap;
 }
 
-/* Nav — icons only */
-.tb-nav {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.tb-nav-btn {
-  background: none;
-  border: none;
-  color: rgba(255,255,255,0.65);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  transition: color 0.15s, background 0.15s;
-}
-
-.tb-nav-btn:hover {
-  color: #fff;
-  background: rgba(255,255,255,0.10);
-}
-
-.tb-nav-label { display: none; }
-
-/* Row 2: Search bar (full width) */
+/* Search (center, flex-grow) */
 .tb-search-wrap {
-  width: 100%;
+  flex: 1;
   position: relative;
+  min-width: 0;
 }
 
 .tb-search-wrap .search-box {
@@ -449,6 +414,35 @@ body {
   right: 0;
   z-index: 200;
 }
+
+/* Nav — icons only (right) */
+.tb-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.tb-nav-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.65);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: color 0.15s, background 0.15s;
+}
+
+.tb-nav-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.10);
+}
+
+.tb-nav-label { display: none; }
 
 /* Sub-page headers stick below the global top-bar */
 .results-header {
