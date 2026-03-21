@@ -114,12 +114,11 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  border-radius: 0;
-  overflow: visible;
-  padding: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow, 0 2px 8px rgba(0,0,0,0.07));
+  padding: 12px;
 }
 
 /* Last chip alone on row → span 2 (mobile) */
@@ -154,6 +153,8 @@
 .info-change {
   font-size: 12px;
   font-weight: 600;
+  direction: ltr;
+  text-align: start;
 }
 
 .info-change.positive, .info-value.positive { color: var(--green); }
@@ -167,14 +168,12 @@
 
 /* ===== CHART ===== */
 .chart-section {
-  padding: 16px;
+  padding: 0;
+  overflow: hidden;
 }
 
 .chart-ranges {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
+  display: none; /* TradingView widget has its own range/interval selector */
 }
 
 .range-btn {
@@ -199,8 +198,7 @@
 }
 
 #chart-container {
-  height: 300px;
-  border-radius: var(--radius);
+  height: 480px;
   overflow: hidden;
   background: var(--bg-2);
 }
@@ -406,15 +404,12 @@
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
     background: var(--card-bg);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
   }
 
   #chart-container {
-    flex: 1;
-    height: auto;
-    min-height: 440px;
+    height: 560px;
   }
 
   /* Below the main 2-col: criteria + news in wider layout */
@@ -633,7 +628,8 @@ body.theme-dark .sg-svg {
 }
 
 @media (min-width: 768px) {
-  .sg-svg-wrap { width: 240px; }
+  .sg-svg-wrap { width: 260px; }
+  .sg-body { max-width: 860px; margin: 0 auto; }
   .sg-factor-name { font-size: 12px; }
   .sg-factor-weight { font-size: 10px; }
   .sg-factor-score { font-size: 16px; }

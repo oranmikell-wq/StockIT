@@ -1,119 +1,108 @@
-// Chart.js — TradingView Lightweight Charts wrapper
-// LightweightCharts is a global loaded from CDN — referenced directly
+// Chart.js — TradingView Advanced Chart widget (main) + Lightweight Charts (compare)
+// tv.js loaded from CDN in index.html; LightweightCharts global used for compare only
 
 import { fetchHistory } from '../services/StockService.js';
 
-let mainChart = null;
-let mainSeries = null;
-let mainRO = null;
 let compareChart = null;
 let currentSymbol = null;
-let currentRange = '1M';
-let chartLoadGen = 0;
+let currentRange   = '1M';
 
-const CANDLE_UP   = '#16a34a';
-const CANDLE_DOWN = '#dc2626';
+// Map our range keys → TradingView widget params
+const RANGE_MAP = {
+  '1D': { range: '1D',  interval: '5'  },
+  '1W': { range: '5D',  interval: '30' },
+  '1M': { range: '1M',  interval: 'D'  },
+  '3M': { range: '3M',  interval: 'D'  },
+  '6M': { range: '6M',  interval: 'D'  },
+  '1Y': { range: '12M', interval: 'W'  },
+  '3Y': { range: '36M', interval: 'W'  },
+  '5Y': { range: '60M', interval: 'M'  },
+};
+
+function getTVSymbol(symbol) {
+  // TASE stocks: "TEVA.TA" → "TASE:TEVA"
+  if (symbol.endsWith('.TA')) return 'TASE:' + symbol.replace('.TA', '');
+  return symbol;
+}
 
 export function initChart() {
-  const container = document.getElementById('chart-container');
-  if (!container) return;
-  if (mainRO) { mainRO.disconnect(); mainRO = null; }
-  if (mainChart) { try { mainChart.remove(); } catch {} }
-  mainChart = null;
-  mainSeries = null;
-  container.innerHTML = '';
-  const isDark = document.body.classList.contains('theme-dark');
-  const w = container.clientWidth || container.offsetWidth || 360;
-  const h = Math.max(container.clientHeight || 0, 300);
-  try {
-    mainChart = LightweightCharts.createChart(container, {
-      width: w, height: h,
-      layout: { background: { color: isDark ? '#111113' : '#ffffff' }, textColor: isDark ? '#94a3b8' : '#475569' },
-      grid: { vertLines: { color: isDark ? '#1e1e21' : '#f1f5f9' }, horzLines: { color: isDark ? '#1e1e21' : '#f1f5f9' } },
-      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-      rightPriceScale: { borderColor: isDark ? '#2a2a2a' : '#e2e8f0' },
-      timeScale: { borderColor: isDark ? '#2a2a2a' : '#e2e8f0', timeVisible: true },
-      handleScroll: true, handleScale: true,
-    });
-    mainSeries = mainChart.addSeries(LightweightCharts.CandlestickSeries, {
-      upColor:          CANDLE_UP,
-      downColor:        CANDLE_DOWN,
-      borderUpColor:    CANDLE_UP,
-      borderDownColor:  CANDLE_DOWN,
-      wickUpColor:      CANDLE_UP,
-      wickDownColor:    CANDLE_DOWN,
-      priceLineVisible: false,
-    });
-    mainRO = new ResizeObserver(entries => {
-      if (!mainChart) return;
-      for (const entry of entries) {
-        const rw = entry.contentRect.width;
-        const rh = Math.max(entry.contentRect.height, 300);
-        if (rw > 0) mainChart.applyOptions({ width: rw, height: rh });
-      }
-    });
-    mainRO.observe(container);
-  } catch (e) { mainChart = null; mainSeries = null; }
+  // No-op — widget is created on loadChart
 }
 
 export async function loadChart(symbol, range = '1M') {
-  if (symbol !== currentSymbol || !mainChart || !mainSeries) initChart();
-  if (!mainSeries) return;
+  const container = document.getElementById('chart-container');
+  if (!container) return;
+
   currentSymbol = symbol;
   currentRange  = range;
-  const gen = ++chartLoadGen;
-  try {
-    const data = await fetchHistory(symbol, range);
-    if (gen !== chartLoadGen || !mainSeries) return;
-    if (!data.length) return;
 
-    // Build candlestick data — each bar needs open/high/low/close
-    const candleData = data
-      .map(p => ({
-        time:  p.time,
-        open:  p.open  ?? p.value,
-        high:  p.high  ?? p.value,
-        low:   p.low   ?? p.value,
-        close: p.close ?? p.value,
-      }))
-      .filter(p => p.open != null && p.close != null);
+  const isDark    = document.body.classList.contains('theme-dark');
+  const { range: tvRange, interval } = RANGE_MAP[range] || RANGE_MAP['1M'];
+  const tvSymbol  = getTVSymbol(symbol);
 
-    if (!candleData.length) return;
-    mainSeries.setData(candleData);
-    mainChart.timeScale().fitContent();
-  } catch {}
+  // Clear previous widget
+  container.innerHTML = '';
+
+  if (typeof TradingView === 'undefined') return;
+
+  // TradingView widget needs a child div with an ID
+  const inner = document.createElement('div');
+  inner.id    = 'tv_main_chart';
+  inner.style.cssText = 'width:100%;height:100%';
+  container.appendChild(inner);
+
+  new TradingView.widget({
+    container_id:       'tv_main_chart',
+    autosize:           true,
+    symbol:             tvSymbol,
+    interval:           interval,
+    range:              tvRange,
+    timezone:           'Etc/UTC',
+    theme:              isDark ? 'dark' : 'light',
+    style:              '1',          // Candlestick
+    locale:             'en',
+    toolbar_bg:         isDark ? '#111113' : '#f8fafc',
+    enable_publishing:  false,
+    allow_symbol_change: false,
+    save_image:         true,
+    withdateranges:     true,
+    hide_side_toolbar:  false,
+    details:            false,
+    hotlist:            false,
+    calendar:           false,
+    studies:            ['Volume@tv-basicstudies', 'RSI@tv-basicstudies'],
+    show_popup_button:  false,
+    no_referral_id:     true,
+    loading_screen:     { backgroundColor: isDark ? '#111113' : '#ffffff' },
+  });
 }
 
 export function updateChartTheme(isDark) {
-  if (!mainChart) return;
-  mainChart.applyOptions({
-    layout: { background: { color: isDark ? '#0a0a0a' : '#ffffff' }, textColor: isDark ? '#94a3b8' : '#475569' },
-    grid: { vertLines: { color: isDark ? '#1a1a1a' : '#f1f5f9' }, horzLines: { color: isDark ? '#1a1a1a' : '#f1f5f9' } },
-    rightPriceScale: { borderColor: isDark ? '#2a2a2a' : '#e2e8f0' },
-    timeScale: { borderColor: isDark ? '#2a2a2a' : '#e2e8f0' },
-  });
+  if (!currentSymbol) return;
+  loadChart(currentSymbol, currentRange);
 }
 
 export async function initCompareChart(symbols) {
   const container = document.getElementById('compare-chart');
   if (!container) return;
   if (compareChart) { compareChart.remove(); compareChart = null; }
-  const isDark = document.body.classList.contains('theme-dark');
-  const COLORS = ['#16a34a', '#2563eb', '#dc2626'];
-  compareChart = LightweightCharts.createChart(container, {
-    width: container.clientWidth, height: 220,
+  const isDark  = document.body.classList.contains('theme-dark');
+  const COLORS  = ['#16a34a', '#2563eb', '#dc2626'];
+  compareChart  = LightweightCharts.createChart(container, {
+    width:  container.clientWidth,
+    height: 220,
     layout: { background: { color: isDark ? '#0a0a0a' : '#ffffff' }, textColor: isDark ? '#94a3b8' : '#475569' },
-    grid: { vertLines: { color: isDark ? '#1a1a1a' : '#f1f5f9' }, horzLines: { color: isDark ? '#1a1a1a' : '#f1f5f9' } },
+    grid:   { vertLines: { color: isDark ? '#1a1a1a' : '#f1f5f9' }, horzLines: { color: isDark ? '#1a1a1a' : '#f1f5f9' } },
     rightPriceScale: { borderColor: isDark ? '#2a2a2a' : '#e2e8f0' },
-    timeScale: { borderColor: isDark ? '#2a2a2a' : '#e2e8f0', timeVisible: true },
+    timeScale:       { borderColor: isDark ? '#2a2a2a' : '#e2e8f0', timeVisible: true },
   });
   for (let i = 0; i < symbols.length; i++) {
     try {
       const data = await fetchHistory(symbols[i], '1Y');
       if (!data.length) continue;
-      const base = data[0].value;
+      const base    = data[0].value;
       const relData = data.map(p => ({ time: p.time, value: ((p.value - base) / base) * 100 }));
-      const series = compareChart.addSeries(LightweightCharts.LineSeries, { color: COLORS[i % COLORS.length], lineWidth: 2, title: symbols[i] });
+      const series  = compareChart.addSeries(LightweightCharts.LineSeries, { color: COLORS[i % COLORS.length], lineWidth: 2, title: symbols[i] });
       series.setData(relData);
     } catch {}
   }
