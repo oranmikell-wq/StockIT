@@ -8,7 +8,7 @@ import { calcSummaryScore, renderSummaryGauge } from './components/SummaryGauge.
 import { renderCriteriaTable } from './components/CriteriaTable.js';
 import { renderStrategyChecklist, countNewHighs } from './components/StrategyChecklist.js';
 import { renderNews, renderAIInsight } from './components/NewsRenderer.js';
-import { loadFearGreed, loadCryptoFearGreed } from './components/FearGreedGauge.js';
+import { loadFearGreed, loadCryptoFearGreed } from './components/FearGreedGauge.js?v=2';
 import { loadTrending, renderTrendingList }   from './components/TrendingList.js';
 import { loadAAII }      from './components/AAIISentiment.js';
 import { showAutocomplete, hideAutocomplete, selectAutocomplete, confirmAutocomplete, showRecentSearches, initAutocomplete } from './components/Autocomplete.js';

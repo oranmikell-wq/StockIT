@@ -48,85 +48,71 @@ function sectorPath(s1, s2) {
 // ── Build SVG ──────────────────────────────────────────
 function buildGaugeSVG(score, activeIdx, label) {
   const activeZone = ZONES[activeIdx];
+  const GAP = 0.7; // gap between sectors (in score units)
 
-  // 1. Sector shapes
+  // 1. Background track (full arc, subtle)
+  const bgTrack = `<path d="${sectorPath(0, 100)}" fill="var(--bg-3)" stroke="none"/>`;
+
+  // 2. Colored sectors — vivid, with small gaps between them
   const sectors = ZONES.map((z, i) => {
     const isActive = i === activeIdx;
-    return `<path d="${sectorPath(z.s1, z.s2)}"
-      fill="${z.color}" fill-opacity="${isActive ? '0.22' : '0.10'}"
-      stroke="${isActive ? z.color : 'var(--border)'}" stroke-width="${isActive ? '1.5' : '0.8'}"/>`;
+    const s1g = z.s1 === 0   ? z.s1 : z.s1 + GAP;
+    const s2g = z.s2 === 100 ? z.s2 : z.s2 - GAP;
+    return `<path d="${sectorPath(s1g, s2g)}"
+      fill="${z.color}"
+      fill-opacity="${isActive ? '1' : '0.22'}"
+      stroke="none"/>`;
   }).join('');
 
-  // 2. Zone text labels (rotated along radius)
-  const zoneLabels = ZONES.map((z, i) => {
-    const mid = (z.s1 + z.s2) / 2;
-    const a   = PI * (1 - mid / 100);
-    const { x: lx, y: ly } = pt(a, R_MID);
-    const rot = -(a * 180 / PI - 90);
-    const col = i === activeIdx ? activeZone.color : 'var(--text-3)';
-    const fw  = i === activeIdx ? '800' : '600';
-    const fs  = 9;
-    if (z.l2) {
-      return `<g transform="translate(${lx},${ly}) rotate(${rot.toFixed(1)})">
-        <text text-anchor="middle" font-size="${fs}" font-weight="${fw}" fill="${col}" letter-spacing="0.7">
-          <tspan x="0" dy="-5.5">${z.l1}</tspan><tspan x="0" dy="12">${z.l2}</tspan>
-        </text></g>`;
-    }
-    return `<g transform="translate(${lx},${ly}) rotate(${rot.toFixed(1)})">
-      <text text-anchor="middle" font-size="${fs}" font-weight="${fw}" fill="${col}" letter-spacing="0.7" dy="4">${z.l1}</text>
-    </g>`;
-  }).join('');
+  // 3. Active sector rim highlight (outer stroke)
+  const az = ZONES[activeIdx];
+  const as1g = az.s1 === 0   ? az.s1 : az.s1 + GAP;
+  const as2g = az.s2 === 100 ? az.s2 : az.s2 - GAP;
+  const activeRim = `<path d="${sectorPath(as1g, as2g)}"
+    fill="none" stroke="${az.color}" stroke-width="1.5" opacity="0.6"/>`;
 
-  // 3. Tick dots — same radius as the 25/50/75 numbers, centred between each pair
-  const R_NUM = R_I - 18; // shared radius for both dots and arc numbers
-  const dotPositions = [13, 38, 63, 88]; // midpoints between 0–25, 25–50, 50–75, 75–100
-  const dots = dotPositions.map(s => {
-    const { x: dx, y: dy } = pt(PI * (1 - s / 100), R_NUM);
-    return `<circle cx="${dx}" cy="${dy}" r="1.8" fill="var(--text-3)" opacity="0.45"/>`;
-  });
-
-  // 4. Numbers: 0 and 100 at base endpoints; 25, 50, 75 along inner arc
-  const arcNums = [
-    { s: 25,  label: '25'  },
-    { s: 50,  label: '50'  },
-    { s: 75,  label: '75'  },
-  ].map(({ s, label }) => {
-    const { x: nx2, y: ny2 } = pt(PI * (1 - s / 100), R_NUM);
-    return `<text x="${nx2}" y="${(ny2 + 3.5).toFixed(2)}" text-anchor="middle"
-      font-size="8" font-weight="500" fill="var(--text-3)">${label}</text>`;
-  });
-  const nums = [
-    { x: 10,  y: CY + 16, label: '0'   },
-    { x: 270, y: CY + 16, label: '100' },
-  ].map(({ x, y, label }) =>
-    `<text x="${x}" y="${y}" text-anchor="middle"
-      font-size="9" font-weight="500" fill="var(--text-3)">${label}</text>`
-  );
-
-  // 5. Needle
+  // 4. Needle — thin elegant triangle
   const na = PI * (1 - score / 100);
-  const { x: nx, y: ny } = pt(na, R_I - 8);
+  const tipPt  = pt(na,          R_O - 4);          // tip near outer arc
+  const basePt = pt(na + PI / 2, 5);                // base left (perpendicular)
+  const base2  = pt(na - PI / 2, 5);                // base right
+  const tailPt = pt(na + PI,     12);               // short counterbalance tail
+  const needle = `<polygon
+    points="${tipPt.x},${tipPt.y} ${basePt.x},${basePt.y} ${tailPt.x},${tailPt.y} ${base2.x},${base2.y}"
+    fill="var(--text)" opacity="0.9"/>`;
+
+  // 5. Pivot cap
+  const pivot = `
+    <circle cx="${CX}" cy="${CY}" r="10" fill="var(--card-bg)" stroke="var(--border)" stroke-width="1.5"/>
+    <circle cx="${CX}" cy="${CY}" r="4"  fill="var(--text)"/>`;
+
+  // 6. Score & label (below pivot, clear of needle)
+  const scoreText = `
+    <text x="${CX}" y="${CY + 46}" text-anchor="middle"
+      font-size="50" font-weight="900" font-family="Inter,Rubik,sans-serif"
+      fill="${activeZone.color}">${score}</text>
+    <text x="${CX}" y="${CY + 64}" text-anchor="middle"
+      font-size="9.5" font-weight="700" font-family="Inter,Rubik,sans-serif"
+      fill="${activeZone.color}" letter-spacing="1.2">${label.toUpperCase()}</text>`;
+
+  // 7. Edge labels — just 0 and 100
+  const lp = pt(PI, R_I - 14);
+  const rp = pt(0,  R_I - 14);
+  const edgeNums = `
+    <text x="${lp.x.toFixed(1)}" y="${(lp.y + 4).toFixed(1)}" text-anchor="middle"
+      font-size="9" font-weight="600" fill="var(--text-3)" opacity="0.55">0</text>
+    <text x="${rp.x.toFixed(1)}" y="${(rp.y + 4).toFixed(1)}" text-anchor="middle"
+      font-size="9" font-weight="600" fill="var(--text-3)" opacity="0.55">100</text>`;
 
   return `
 <svg viewBox="0 0 280 218" fill="none" xmlns="http://www.w3.org/2000/svg" class="fng-svg">
+  ${bgTrack}
   ${sectors}
-  ${zoneLabels}
-  ${dots.join('')}
-  ${arcNums.join('')}
-  ${nums.join('')}
-  <!-- Needle -->
-  <line x1="${CX}" y1="${CY}" x2="${nx}" y2="${ny}"
-    stroke="var(--text)" stroke-width="3.5" stroke-linecap="round"/>
-  <circle cx="${CX}" cy="${CY}" r="7" fill="var(--text)"/>
-  <circle cx="${CX}" cy="${CY}" r="3" fill="var(--bg)"/>
-  <!-- Score — safely below needle pivot (clearance ≥ 12px) -->
-  <text x="${CX}" y="${CY + 44}" text-anchor="middle"
-    font-size="36" font-weight="800" font-family="Inter,Heebo,sans-serif"
-    fill="${activeZone.color}">${score}</text>
-  <!-- Zone label -->
-  <text x="${CX}" y="${CY + 60}" text-anchor="middle"
-    font-size="10" font-weight="700" font-family="Inter,Heebo,sans-serif"
-    fill="${activeZone.color}" letter-spacing="0.8">${label.toUpperCase()}</text>
+  ${activeRim}
+  ${needle}
+  ${pivot}
+  ${scoreText}
+  ${edgeNums}
 </svg>`;
 }
 
