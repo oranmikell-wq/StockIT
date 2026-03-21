@@ -93,17 +93,8 @@ function removeHistoryBound(symbol) {
 }
 
 // ── Expose window.* for inline onclick attributes ───────
-window.openDrawer = function() {
-  document.getElementById('nav-drawer')?.classList.add('open');
-  document.getElementById('drawer-overlay')?.classList.add('open');
-  document.getElementById('nav-drawer')?.removeAttribute('aria-hidden');
-};
-
-window.closeDrawer = function() {
-  document.getElementById('nav-drawer')?.classList.remove('open');
-  document.getElementById('drawer-overlay')?.classList.remove('open');
-  document.getElementById('nav-drawer')?.setAttribute('aria-hidden', 'true');
-};
+window.openDrawer  = function() {}; // drawer removed — kept as no-op for safety
+window.closeDrawer = function() {}; // drawer removed — kept as no-op for safety
 
 window.navigateTo = navigateTo;
 
@@ -367,9 +358,6 @@ function bindEvents() {
   document.getElementById('btn-theme-drawer')?.addEventListener('click', () => _toggleTheme(updateChartTheme));
   document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', toggleLang));
 
-  // Close drawer on Escape
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') window.closeDrawer(); });
-
   // Search
   const input = document.getElementById('search-input');
   const btn   = document.getElementById('search-btn');
@@ -395,7 +383,7 @@ function bindEvents() {
 
   // Close autocomplete on outside click
   document.addEventListener('click', e => {
-    if (!e.target.closest('.search-wrap')) hideAutocomplete();
+    if (!e.target.closest('.tb-search-wrap') && !e.target.closest('.search-wrap')) hideAutocomplete();
   });
 
   // Back buttons
@@ -405,8 +393,8 @@ function bindEvents() {
   document.getElementById('btn-back-watchlist')?.addEventListener('click', () => navigateTo('home'));
   document.getElementById('btn-back-about')?.addEventListener('click', () => navigateTo('home'));
 
-  // Drawer nav items
-  document.querySelectorAll('.drawer-nav-item').forEach(btn => {
+  // Top-bar nav items
+  document.querySelectorAll('.tb-nav-btn[data-page]').forEach(btn => {
     btn.addEventListener('click', () => {
       const page = btn.dataset.page;
       navigateTo(page, page === 'results' ? currentStock?.symbol : null);
@@ -474,8 +462,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', syncTopbarHeight);
   bindEvents();
 
-  // Mark home as active in drawer
-  const homeBtn = document.querySelector('.drawer-nav-item[data-page="home"]');
+  // Mark home as active in top-bar nav
+  const homeBtn = document.querySelector('.tb-nav-btn[data-page="home"]');
   if (homeBtn) homeBtn.classList.add('active');
 
   // Move footer into active page

@@ -3,7 +3,7 @@
 export const TRANSLATIONS = {
   he: {
     tagline: 'Trade with a clear head',
-    searchPlaceholder: 'חפש מניה... (AAPL, Tesla, אמזון)',
+    searchPlaceholder: 'Stock analysis in one click...',
     search: 'חפש',
     trending: 'מניות טרנדינג',
     fng_title:        'מדד פחד וחמדנות',
@@ -209,7 +209,7 @@ export const TRANSLATIONS = {
   },
   en: {
     tagline: 'Trade with a clear head',
-    searchPlaceholder: 'Search stock... (AAPL, Tesla, Apple)',
+    searchPlaceholder: 'Stock analysis in one click...',
     search: 'Search',
     trending: 'Trending Stocks',
     fng_title:        'Fear & Greed Index',
