@@ -29,7 +29,7 @@
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script src="https://s3.tradingview.com/tv.js"></script>
   <link rel="stylesheet" href="css/main.css?v=20" />
-  <link rel="stylesheet" href="css/home.css?v=27" />
+  <link rel="stylesheet" href="css/home.css?v=28" />
   <link rel="stylesheet" href="css/results.css?v=20" />
   <link rel="stylesheet" href="css/compare.css?v=9" />
 </head>
@@ -142,6 +142,21 @@
           <div id="history-list" class="history-list"></div>
         </section>
       </div>
+
+      <section class="macro-section">
+        <h2 class="section-title">US ECONOMY</h2>
+        <div class="macro-card" id="macro-container"><div class="macro-skeleton"></div></div>
+      </section>
+
+      <section class="crypto-prices-section">
+        <h2 class="section-title">CRYPTO PRICES</h2>
+        <div class="macro-card" id="crypto-prices-container"><div class="macro-skeleton"></div></div>
+      </section>
+
+      <section class="events-section">
+        <h2 class="section-title">UPCOMING EVENTS</h2>
+        <div class="macro-card" id="events-container"><div class="macro-skeleton"></div></div>
+      </section>
     </main>
   </div>
 
@@ -308,7 +323,7 @@
   <!-- ===== IN-APP NOTIFICATION ===== -->
   <div id="notification" class="notification hidden"></div>
 
-  <script type="module" src="src/main.js?v=8"></script>
+  <script type="module" src="src/main.js?v=13"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {

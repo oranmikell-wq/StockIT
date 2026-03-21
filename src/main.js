@@ -11,6 +11,7 @@ import { renderNews, renderAIInsight } from './components/NewsRenderer.js';
 import { loadFearGreed, loadCryptoFearGreed } from './components/FearGreedGauge.js?v=2';
 import { loadTrending, renderTrendingList }   from './components/TrendingList.js';
 import { loadAAII }      from './components/AAIISentiment.js';
+import { loadMacroData, loadCryptoPrices, loadUpcomingEvents } from './components/MacroCrypto.js?v=5';
 import { showAutocomplete, hideAutocomplete, selectAutocomplete, confirmAutocomplete, showRecentSearches, initAutocomplete } from './components/Autocomplete.js';
 import { initChart, loadChart, updateChartTheme, initCompareChart } from './components/Chart.js';
 import {
@@ -485,6 +486,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadMarketIndices();
   loadTrending(navigateTo);
   renderHistory();
+  loadMacroData();
+  loadCryptoPrices();
+  loadUpcomingEvents();
 
   // FNG toggle: Stocks ↔ Crypto
   let cryptoFngLoaded = true; // already loaded above
