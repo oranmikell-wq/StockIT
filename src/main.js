@@ -1,7 +1,7 @@
 // main.js — entry point, orchestrates all modules
 
 import { applyTranslations, toggleLang, t } from './utils/i18n.js';
-import { fetchAllData, fetchHistory, fetchStockFullData } from './services/StockService.js';
+import { fetchAllData, fetchHistory, fetchStockFullData, fetchIndexQuote } from './services/StockService.js';
 import { calcScore } from './utils/scoring.js';
 import { calcSummaryScore, renderSummaryGauge } from './components/SummaryGauge.js';
 
@@ -152,6 +152,31 @@ window.__onLangChange = function() {
 function syncTopbarHeight() {
   const h = document.querySelector('.top-bar')?.offsetHeight;
   if (h) document.documentElement.style.setProperty('--topbar-h', h + 'px');
+}
+
+// ── Market Indices ──────────────────────────────────────
+async function loadMarketIndices() {
+  const indices = [
+    { id: 'idx-sp500',  symbol: '^GSPC' },
+    { id: 'idx-nasdaq', symbol: '^IXIC' },
+  ];
+  for (const { id, symbol } of indices) {
+    const card = document.getElementById(id);
+    if (!card) continue;
+    const priceEl  = card.querySelector('.market-price');
+    const changeEl = card.querySelector('.market-change');
+    try {
+      const quote = await fetchIndexQuote(symbol);
+      if (quote && quote.price != null) {
+        priceEl.textContent  = quote.price.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        const sign = (quote.changePct ?? 0) >= 0 ? '+' : '';
+        changeEl.textContent = quote.changePct != null ? `${sign}${quote.changePct.toFixed(2)}%` : '--';
+        changeEl.className   = `market-change ${(quote.changePct ?? 0) >= 0 ? 'positive' : 'negative'}`;
+      }
+    } catch {
+      // silently fail — cards keep showing '--'
+    }
+  }
 }
 
 // ── Results ────────────────────────────────────────────
@@ -457,6 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadFearGreed();
   loadCryptoFearGreed();
   loadAAII();
+  loadMarketIndices();
   loadTrending(navigateTo);
   renderHistory();
 

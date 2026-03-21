@@ -206,6 +206,7 @@ export const TRANSLATIONS = {
     aaii_source:          'מקור: AAII / FRED',
     aaii_error:           'לא ניתן לטעון נתוני AAII',
     aaii_no_key:          'הוסף FRED API key (bon-fred-key) ב-localStorage להצגת נתוני AAII',
+    marketOverview: 'סקירת שוק',
   },
   en: {
     tagline: 'Trade with a clear head',
@@ -412,6 +413,7 @@ export const TRANSLATIONS = {
     aaii_source:          'Source: AAII / FRED',
     aaii_error:           'Unable to load AAII data',
     aaii_no_key:          'Add your free FRED API key (bon-fred-key) to localStorage to enable AAII data',
+    marketOverview: 'Market Overview',
   }
 };
 

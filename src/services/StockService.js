@@ -391,6 +391,24 @@ export async function yahooNewsSearch(symbol) {
   return fetchProxy(url);
 }
 
+// Fetch current price and daily % change for a market index (e.g. '^GSPC', '^IXIC')
+export async function fetchIndexQuote(symbol) {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1d&includePrePost=false`;
+    const data = await fetchProxy(url);
+    const meta = data?.chart?.result?.[0]?.meta;
+    if (!meta) return null;
+    const price = meta.regularMarketPrice ?? null;
+    const prevClose = meta.chartPreviousClose ?? meta.previousClose ?? null;
+    const changePct = (price != null && prevClose != null && prevClose !== 0)
+      ? ((price - prevClose) / prevClose) * 100
+      : null;
+    return { price, changePct };
+  } catch {
+    return null;
+  }
+}
+
 // Convert flat Yahoo Finance v7 quote object into the nested v10 structure
 // that parseAllData expects.
 function _v7ToV10(q) {
