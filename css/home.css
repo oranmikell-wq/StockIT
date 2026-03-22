@@ -576,6 +576,25 @@
   letter-spacing: 0.3px;
 }
 
+/* ===== MOVERS + TRENDING ROW ===== */
+.movers-trending-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+.movers-trending-row .movers-section {
+  flex: 3;
+  min-width: 0;
+}
+.trending-recent-col {
+  flex: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* ===== MOVERS (Gainers & Losers) ===== */
 .movers-section {
   width: 100%;
