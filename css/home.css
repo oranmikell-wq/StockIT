@@ -735,8 +735,11 @@
     min-width: 0;
     align-items: start;
   }
-  .aaii-events-wrap .events-section {
+  .aaii-events-wrap .left-col {
     flex: 0 0 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
   .aaii-events-wrap .aaii-section {
     flex: 1;
