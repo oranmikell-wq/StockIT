@@ -499,7 +499,7 @@ export const TRANSLATIONS = {
     sectionMarketMovers: 'Market Movers',
     sectionCryptoOverview: 'Crypto Overview',
     sectionCommodities: 'Commodities',
-    sectionForex: 'Forex',
+    sectionForex: 'Exchange Rates',
     // Movers tabs
     topGainers: 'Top Gainers',
     topLosers: 'Top Losers',
