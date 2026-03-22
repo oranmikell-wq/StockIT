@@ -361,6 +361,7 @@ body {
 
 .tb-brand-sub {
   font-size: 11px;
+  line-height: 1.2;
   color: rgba(255,255,255,0.38);
   font-weight: 400;
   white-space: nowrap;
@@ -684,14 +685,15 @@ body {
   direction: ltr; /* always LTR — prevents RTL from flipping footer */
   text-align: left;
 }
-/* Override RTL text-align cascade inside footer */
+/* Override RTL text-align + line-height cascade inside footer */
 .app-footer span,
-.app-footer a { text-align: left; }
+.app-footer a { text-align: left; line-height: 1.2; }
 
 .footer-info {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  line-height: 1.2;
 }
 
 .footer-controls {
