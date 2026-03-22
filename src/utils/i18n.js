@@ -2,8 +2,8 @@
 
 export const TRANSLATIONS = {
   he: {
-    tagline: 'Trade with a clear head',
-    searchPlaceholder: 'Stock analysis in one click...',
+    tagline: 'סחר בראש צלול',
+    searchPlaceholder: 'ניתוח מניה בלחיצה אחת...',
     search: 'חפש',
     trending: 'מניות טרנדינג',
     fng_title:        'Stocks',
@@ -207,6 +207,82 @@ export const TRANSLATIONS = {
     aaii_error:           'לא ניתן לטעון נתוני AAII',
     aaii_no_key:          'הוסף FRED API key (bon-fred-key) ב-localStorage להצגת נתוני AAII',
     marketOverview: 'סקירת שוק',
+    // Section titles
+    sectionFearGreed: 'פחד וחמדנות',
+    sectionSectorPerf: 'ביצועי סקטורים',
+    sectionUsEconomy: 'כלכלת ארה"ב',
+    sectionUpcomingEvents: 'אירועים קרובים',
+    sectionMarketMovers: 'מניות בתנועה',
+    sectionCryptoOverview: 'קריפטו',
+    sectionCommodities: 'סחורות',
+    // Movers tabs
+    topGainers: 'עולות',
+    topLosers: 'יורדות',
+    // Market status
+    marketOpen: 'שוק פתוח',
+    marketClosedWeekend: 'שוק סגור (סוף שבוע)',
+    marketClosed: 'שוק סגור',
+    marketPreMarket: 'טרום מסחר · נפתח בעוד {h}ש {m}ד',
+    marketAfterHours: 'אחרי שעות מסחר',
+    // Macro / Economy
+    macroInterestRate: 'ריבית',
+    macroFedFundsRate: 'ריבית פד · {date}',
+    macroInflation: 'אינפלציה (CPI שנתי)',
+    macroMonthly: 'חודשי · {month}',
+    macroError: 'לא ניתן לטעון נתוני מאקרו',
+    cryptoPricesError: 'לא ניתן לטעון מחירי קריפטו',
+    // Events
+    noUpcomingEvents: 'אין אירועים קרובים',
+    eventToday: 'היום',
+    eventTomorrow: 'מחר',
+    eventInDays: 'בעוד {n} ימים',
+    // Event names
+    eventFOMC: 'החלטת ריבית FOMC 🏦',
+    eventCPI: 'פרסום CPI ({ref})',
+    eventPPI: 'פרסום PPI',
+    eventNFP: 'שכר חוץ חקלאי (NFP)',
+    // Compare table labels
+    compareEpsGrowth: 'צמיחת EPS',
+    compareRevenueGrowth: 'צמיחת הכנסות',
+    compareDebtEquity: 'חוב/הון',
+    compareScore: 'ציון',
+    // Criteria raw data labels
+    criteriaEpsGrowthLabel: 'צמיחת EPS',
+    criteriaRevenueGrowthLabel: 'צמיחת הכנסות',
+    criteriaDailyChange: 'שינוי יומי',
+    criteria52wHigh: 'שיא 52 שבועות',
+    // Movers error
+    moversDataUnavailable: 'נתונים לא זמינים',
+    // Sector names (for MarketMovers)
+    sectorNameTechnology: 'טכנולוגיה',
+    sectorNameFinancials: 'פיננסים',
+    sectorNameEnergy: 'אנרגיה',
+    sectorNameHealthCare: 'בריאות',
+    sectorNameConsumerDisc: 'צריכה שיקולית',
+    sectorNameIndustrials: 'תעשייה',
+    sectorNameCommServices: 'תקשורת',
+    sectorNameRealEstate: 'נדל"ן',
+    sectorNameMaterials: 'חומרים',
+    sectorNameUtilities: 'תשתיות',
+    // Footer
+    footerContact: 'צור קשר: info@bulltherapy.com',
+    footerPrivacy: 'מדיניות פרטיות',
+    footerCopyright: 'זכויות יוצרים 2026 © Bull Therapy',
+    // Cookie banner
+    cookieText: 'אנו משתמשים בקוקיז להתאמה אישית של פרסומות וניתוח תעבורה.',
+    cookieAccept: 'אישור',
+    cookieDecline: 'דחייה',
+    cookiePrivacyLink: 'מדיניות פרטיות',
+    // Watchlist sidebar
+    watchlistSidebarTitle: '★ מעקב',
+    // Last updated
+    lastUpdated: 'עודכן לאחרונה:',
+    // Analyst labels
+    analystStrongBuy: 'קנייה חזקה',
+    analystBuy: 'קנייה',
+    analystHold: 'המתנה',
+    analystUnderperform: 'ביצוע נמוך',
+    analystSell: 'מכירה',
   },
   en: {
     tagline: 'Trade with a clear head',
@@ -414,6 +490,82 @@ export const TRANSLATIONS = {
     aaii_error:           'Unable to load AAII data',
     aaii_no_key:          'Add your free FRED API key (bon-fred-key) to localStorage to enable AAII data',
     marketOverview: 'Market Overview',
+    // Section titles
+    sectionFearGreed: 'Fear & Greed',
+    sectionSectorPerf: 'Sector Performance',
+    sectionUsEconomy: 'US Economy',
+    sectionUpcomingEvents: 'Upcoming Events',
+    sectionMarketMovers: 'Market Movers',
+    sectionCryptoOverview: 'Crypto Overview',
+    sectionCommodities: 'Commodities',
+    // Movers tabs
+    topGainers: 'Top Gainers',
+    topLosers: 'Top Losers',
+    // Market status
+    marketOpen: 'Market Open',
+    marketClosedWeekend: 'Market Closed (Weekend)',
+    marketClosed: 'Market Closed',
+    marketPreMarket: 'Pre-Market · Opens in {h}h {m}m',
+    marketAfterHours: 'After Hours',
+    // Macro / Economy
+    macroInterestRate: 'Interest Rate',
+    macroFedFundsRate: 'Fed Funds Rate · {date}',
+    macroInflation: 'Inflation (CPI YoY)',
+    macroMonthly: 'Monthly · {month}',
+    macroError: 'Unable to load macro data',
+    cryptoPricesError: 'Unable to load crypto prices',
+    // Events
+    noUpcomingEvents: 'No upcoming events',
+    eventToday: 'Today',
+    eventTomorrow: 'Tomorrow',
+    eventInDays: 'In {n} days',
+    // Event names
+    eventFOMC: 'FOMC Rate Decision 🏦',
+    eventCPI: 'CPI Release ({ref})',
+    eventPPI: 'PPI Release',
+    eventNFP: 'Non-Farm Payrolls',
+    // Compare table labels
+    compareEpsGrowth: 'EPS Growth',
+    compareRevenueGrowth: 'Revenue Growth',
+    compareDebtEquity: 'Debt/Equity',
+    compareScore: 'Score',
+    // Criteria raw data labels
+    criteriaEpsGrowthLabel: 'EPS Growth',
+    criteriaRevenueGrowthLabel: 'Revenue Growth',
+    criteriaDailyChange: 'Daily Change',
+    criteria52wHigh: '52w High',
+    // Movers error
+    moversDataUnavailable: 'Data unavailable',
+    // Sector names (for MarketMovers)
+    sectorNameTechnology: 'Technology',
+    sectorNameFinancials: 'Financials',
+    sectorNameEnergy: 'Energy',
+    sectorNameHealthCare: 'Health Care',
+    sectorNameConsumerDisc: 'Consumer Disc.',
+    sectorNameIndustrials: 'Industrials',
+    sectorNameCommServices: 'Comm. Services',
+    sectorNameRealEstate: 'Real Estate',
+    sectorNameMaterials: 'Materials',
+    sectorNameUtilities: 'Utilities',
+    // Footer
+    footerContact: 'Contact Us: info@bulltherapy.com',
+    footerPrivacy: 'Privacy Policy',
+    footerCopyright: 'Copyright 2026 © Bull Therapy',
+    // Cookie banner
+    cookieText: 'We use cookies to personalize ads and analyze traffic.',
+    cookieAccept: 'Accept',
+    cookieDecline: 'Decline',
+    cookiePrivacyLink: 'Privacy Policy',
+    // Watchlist sidebar
+    watchlistSidebarTitle: '★ Watchlist',
+    // Last updated
+    lastUpdated: 'Last updated:',
+    // Analyst labels
+    analystStrongBuy: 'Strong Buy',
+    analystBuy: 'Buy',
+    analystHold: 'Hold',
+    analystUnderperform: 'Underperform',
+    analystSell: 'Sell',
   }
 };
 

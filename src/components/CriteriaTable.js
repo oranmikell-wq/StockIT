@@ -7,26 +7,27 @@ export function renderCriteriaTable(scored, data) {
   if (!container) return;
 
   const CRITERIA = [
-    { key: 'eps',           rawData: () => data.epsGrowth != null ? [`EPS Growth: ${data.epsGrowth.toFixed(1)}%`] : [] },
+    { key: 'eps',           rawData: () => data.epsGrowth != null ? [`${t('criteriaEpsGrowthLabel')}: ${data.epsGrowth.toFixed(1)}%`] : [] },
     { key: 'multiples',     rawData: () => [
         data.pe != null ? (data.pe > 0 ? `P/E: ${data.pe.toFixed(1)}` : 'P/E: N/A') : null,
         data.pb && data.pb > 0 ? `P/B: ${data.pb.toFixed(1)}` : null,
         data.ps && data.ps > 0 ? `P/S: ${data.ps.toFixed(1)}` : null,
       ].filter(Boolean) },
-    { key: 'revenue',       rawData: () => data.revenueGrowth != null ? [`Revenue Growth: ${data.revenueGrowth.toFixed(1)}%`] : [] },
+    { key: 'revenue',       rawData: () => data.revenueGrowth != null ? [`${t('criteriaRevenueGrowthLabel')}: ${data.revenueGrowth.toFixed(1)}%`] : [] },
     { key: 'analysts',      rawData: () => {
         if (data.analystMean != null) {
-          const labels = ['', 'Strong Buy', 'Buy', 'Hold', 'Underperform', 'Sell'];
-          const label = labels[Math.round(data.analystMean)] || '';
-          const countStr = data.analystCount ? ` (${data.analystCount} analysts)` : '';
+          const labelKeys = ['', 'analystStrongBuy', 'analystBuy', 'analystHold', 'analystUnderperform', 'analystSell'];
+          const labelKey = labelKeys[Math.round(data.analystMean)];
+          const label = labelKey ? t(labelKey) : '';
+          const countStr = data.analystCount ? ` (${data.analystCount})` : '';
           return [`Mean: ${data.analystMean.toFixed(1)} — ${label}${countStr}`];
         }
         if (data.analystScore) {
-          return [`Buy: ${data.analystScore.buy + data.analystScore.strongBuy}`, `Hold: ${data.analystScore.hold}`, `Sell: ${data.analystScore.sell}`];
+          return [`${t('analystBuy')}: ${data.analystScore.buy + data.analystScore.strongBuy}`, `${t('analystHold')}: ${data.analystScore.hold}`, `${t('analystSell')}: ${data.analystScore.sell}`];
         }
         return [];
       }},
-    { key: 'momentum',      rawData: () => [data.changePct != null && `Daily Change: ${data.changePct.toFixed(2)}%`, data.high52w && `52w High: ${data.high52w.toFixed(2)}`].filter(Boolean) },
+    { key: 'momentum',      rawData: () => [data.changePct != null && `${t('criteriaDailyChange')}: ${data.changePct.toFixed(2)}%`, data.high52w && `${t('criteria52wHigh')}: ${data.high52w.toFixed(2)}`].filter(Boolean) },
     { key: 'institutional', rawData: () => data.instPct != null ? [`Holdings: ${(data.instPct * 100).toFixed(1)}%`] : [] },
     { key: 'debt',          rawData: () => data.debtEquity != null ? [`D/E: ${data.debtEquity.toFixed(2)}`] : [] },
     { key: 'technical',     rawData: () => [scored.technicals?.rsi != null && `RSI: ${scored.technicals.rsi.toFixed(1)}`, scored.technicals?.macd != null && `MACD: ${scored.technicals.macd.toFixed(2)}`].filter(Boolean) },

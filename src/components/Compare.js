@@ -82,15 +82,15 @@ export async function renderCompare(showNotif) {
       </div>`;
 
     const rows = [
-      { label: t('price'),     vals: results.map(r => r.price ? `${r.currency} ${r.price.toLocaleString()}` : t('noData')) },
-      { label: 'P/E',          vals: results.map(r => r.pe?.toFixed(1) ?? t('noData')) },
-      { label: 'P/B',          vals: results.map(r => r.pb?.toFixed(1) ?? t('noData')) },
-      { label: t('marketCap'), vals: results.map(r => formatMarketCap(r.marketCap)) },
-      { label: 'EPS Growth',   vals: results.map(r => r.epsGrowth != null ? r.epsGrowth.toFixed(1) + '%' : t('noData')) },
-      { label: 'Revenue Growth', vals: results.map(r => r.revenueGrowth != null ? r.revenueGrowth.toFixed(1) + '%' : t('noData')) },
-      { label: 'Debt/Equity',  vals: results.map(r => r.debtEquity != null ? r.debtEquity.toFixed(1) : t('noData')) },
-      { label: t('beta'),      vals: results.map(r => r.beta?.toFixed(2) ?? t('noData')) },
-      { label: 'Score',        vals: results.map(r => r.score ?? t('noData')), isScore: true },
+      { label: t('price'),                vals: results.map(r => r.price ? `${r.currency} ${r.price.toLocaleString()}` : t('noData')) },
+      { label: 'P/E',                     vals: results.map(r => r.pe?.toFixed(1) ?? t('noData')) },
+      { label: 'P/B',                     vals: results.map(r => r.pb?.toFixed(1) ?? t('noData')) },
+      { label: t('marketCap'),            vals: results.map(r => formatMarketCap(r.marketCap)) },
+      { label: t('compareEpsGrowth'),     vals: results.map(r => r.epsGrowth != null ? r.epsGrowth.toFixed(1) + '%' : t('noData')) },
+      { label: t('compareRevenueGrowth'), vals: results.map(r => r.revenueGrowth != null ? r.revenueGrowth.toFixed(1) + '%' : t('noData')) },
+      { label: t('compareDebtEquity'),    vals: results.map(r => r.debtEquity != null ? r.debtEquity.toFixed(1) : t('noData')) },
+      { label: t('beta'),                 vals: results.map(r => r.beta?.toFixed(2) ?? t('noData')) },
+      { label: t('compareScore'),         vals: results.map(r => r.score ?? t('noData')), isScore: true },
     ];
 
     const tableHtml = `

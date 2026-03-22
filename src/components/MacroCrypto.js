@@ -1,6 +1,8 @@
 // MacroCrypto.js — US Macro (FRED), Crypto Prices (CoinGecko), Upcoming Economic Events (Finnhub)
 /* global AbortSignal */
 
+import { t } from '../utils/i18n.js';
+
 // ── Proxy helpers ──────────────────────────────────────────────────────────
 // allorigins works best for FRED CSV (corsproxy blocks CSV on free plan)
 async function fetchProxyText(url) {
@@ -89,25 +91,25 @@ export async function loadMacroData(containerId = 'macro-container') {
     const fedColor = fedRate >= 4 ? 'negative' : fedRate <= 2 ? 'positive' : '';
     const cpiColor = cpiYoY  >= 4 ? 'negative' : cpiYoY  <= 2 ? 'positive' : '';
 
-    const fedLabel = fedDate ? new Date(fedDate + 'T00:00:00').toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Current';
+    const fedLabel = fedDate ? new Date(fedDate + 'T00:00:00').toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
     container.innerHTML = `
       <div class="macro-item">
         <div>
-          <div class="macro-label">Interest Rate</div>
-          <div class="macro-sublabel">Fed Funds Rate · ${fedLabel}</div>
+          <div class="macro-label">${t('macroInterestRate')}</div>
+          <div class="macro-sublabel">${t('macroFedFundsRate', { date: fedLabel })}</div>
         </div>
         <div class="macro-value ${fedColor}">${fedRate.toFixed(2)}%</div>
       </div>
       <div class="macro-item">
         <div>
-          <div class="macro-label">Inflation (CPI YoY)</div>
-          <div class="macro-sublabel">Monthly · ${cpiMonth}</div>
+          <div class="macro-label">${t('macroInflation')}</div>
+          <div class="macro-sublabel">${t('macroMonthly', { month: cpiMonth })}</div>
         </div>
         <div class="macro-value ${cpiColor}">${cpiYoY.toFixed(1)}%</div>
       </div>`;
   } catch {
-    container.innerHTML = `<p class="macro-error">Unable to load macro data</p>`;
+    container.innerHTML = `<p class="macro-error">${t('macroError')}</p>`;
   }
 }
 
@@ -144,7 +146,7 @@ export async function loadCryptoPrices(containerId = 'crypto-prices-container') 
     </div>`;
 
   } catch {
-    container.innerHTML = `<p class="macro-error">Unable to load crypto prices</p>`;
+    container.innerHTML = `<p class="macro-error">${t('cryptoPricesError')}</p>`;
   }
 }
 
@@ -168,7 +170,7 @@ function generateEvents(todayStr) {
 
   // FOMC rate decisions
   FOMC_DATES.forEach(date => {
-    if (date >= todayStr) events.push({ date, name: 'FOMC Rate Decision 🏦', icon: '🏛' });
+    if (date >= todayStr) events.push({ date, nameKey: 'eventFOMC', nameVars: {}, icon: '🏛' });
   });
 
   // CPI, PPI, NFP for the next 4 months (approximate, mid-month)
@@ -181,19 +183,19 @@ function generateEvents(todayStr) {
     const cpiDate = new Date(y, m, 15).toISOString().slice(0, 10);
     if (cpiDate >= todayStr) {
       const ref = new Date(y, m - 1, 1).toLocaleString('en', { month: 'short', year: 'numeric' });
-      events.push({ date: cpiDate, name: `CPI Release (${ref})`, icon: '📊' });
+      events.push({ date: cpiDate, nameKey: 'eventCPI', nameVars: { ref }, icon: '📊' });
     }
 
     // PPI: ~11th of the month
     const ppiDate = new Date(y, m, 11).toISOString().slice(0, 10);
     if (ppiDate >= todayStr) {
-      events.push({ date: ppiDate, name: 'PPI Release', icon: '🏭' });
+      events.push({ date: ppiDate, nameKey: 'eventPPI', nameVars: {}, icon: '🏭' });
     }
 
     // NFP: first Friday of the month
     const nfpDate = firstFridayOfMonth(y, m);
     if (nfpDate >= todayStr) {
-      events.push({ date: nfpDate, name: 'Non-Farm Payrolls', icon: '👷' });
+      events.push({ date: nfpDate, nameKey: 'eventNFP', nameVars: {}, icon: '👷' });
     }
   }
 
@@ -211,7 +213,7 @@ export function loadUpcomingEvents(containerId = 'events-container') {
   const events = generateEvents(todayStr);
 
   if (!events.length) {
-    container.innerHTML = `<p class="macro-error">No upcoming events</p>`;
+    container.innerHTML = `<p class="macro-error">${t('noUpcomingEvents')}</p>`;
     return;
   }
 
@@ -220,8 +222,9 @@ export function loadUpcomingEvents(containerId = 'events-container') {
     const day   = d.getDate();
     const month = d.toLocaleString('en', { month: 'short' });
     const days  = daysUntil(e.date);
-    const countdownText  = days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `In ${days} days`;
+    const countdownText  = days === 0 ? t('eventToday') : days === 1 ? t('eventTomorrow') : t('eventInDays', { n: days });
     const countdownClass = days <= 3 ? 'event-countdown soon' : 'event-countdown';
+    const eventName = t(e.nameKey, e.nameVars);
 
     return `
       <div class="event-item">
@@ -230,7 +233,7 @@ export function loadUpcomingEvents(containerId = 'events-container') {
           <div class="event-month">${month}</div>
         </div>
         <div class="event-info">
-          <div class="event-name">${e.name}</div>
+          <div class="event-name">${eventName}</div>
           <div class="${countdownClass}">${countdownText}</div>
         </div>
       </div>`;

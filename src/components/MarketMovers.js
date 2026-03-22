@@ -1,6 +1,7 @@
 // MarketMovers.js — Market Status, Commodities, Sectors, Gainers/Losers
 
 import { fetchIndexQuote } from '../services/StockService.js';
+import { t } from '../utils/i18n.js';
 
 // ── 1. Market Status (calculated from ET clock, no API) ──────────────────
 export function renderMarketStatus() {
@@ -14,18 +15,18 @@ export function renderMarketStatus() {
   const mins = et.getHours() * 60 + et.getMinutes();
 
   let open = false;
-  let text = 'Market Closed';
+  let text = t('marketClosed');
 
   if (day === 0 || day === 6) {
-    text = 'Market Closed (Weekend)';
+    text = t('marketClosedWeekend');
   } else if (mins >= 570 && mins < 960) {   // 9:30–16:00
     open = true;
-    text = 'Market Open';
+    text = t('marketOpen');
   } else if (mins >= 240 && mins < 570) {   // 04:00–9:30 pre-market
     const left = 570 - mins;
-    text = `Pre-Market · Opens in ${Math.floor(left / 60)}h ${left % 60}m`;
+    text = t('marketPreMarket', { h: Math.floor(left / 60), m: left % 60 });
   } else {
-    text = 'After Hours';
+    text = t('marketAfterHours');
   }
 
   dot.className   = `market-status-dot ${open ? 'open' : 'closed'}`;
@@ -82,23 +83,24 @@ export async function loadCommodities() {
 
 // ── 4. Sector Performance — SPDR ETFs ────────────────────────────────────
 const SECTORS = [
-  { sym: 'XLK',  name: 'Technology'      },
-  { sym: 'XLF',  name: 'Financials'      },
-  { sym: 'XLE',  name: 'Energy'          },
-  { sym: 'XLV',  name: 'Health Care'     },
-  { sym: 'XLY',  name: 'Consumer Disc.'  },
-  { sym: 'XLI',  name: 'Industrials'     },
-  { sym: 'XLC',  name: 'Comm. Services'  },
-  { sym: 'XLRE', name: 'Real Estate'     },
-  { sym: 'XLB',  name: 'Materials'       },
-  { sym: 'XLU',  name: 'Utilities'       },
+  { sym: 'XLK',  nameKey: 'sectorNameTechnology'  },
+  { sym: 'XLF',  nameKey: 'sectorNameFinancials'   },
+  { sym: 'XLE',  nameKey: 'sectorNameEnergy'       },
+  { sym: 'XLV',  nameKey: 'sectorNameHealthCare'   },
+  { sym: 'XLY',  nameKey: 'sectorNameConsumerDisc' },
+  { sym: 'XLI',  nameKey: 'sectorNameIndustrials'  },
+  { sym: 'XLC',  nameKey: 'sectorNameCommServices' },
+  { sym: 'XLRE', nameKey: 'sectorNameRealEstate'   },
+  { sym: 'XLB',  nameKey: 'sectorNameMaterials'    },
+  { sym: 'XLU',  nameKey: 'sectorNameUtilities'    },
 ];
 
 export async function loadSectorPerformance() {
   const container = document.getElementById('sector-container');
   if (!container) return;
 
-  const results = await Promise.all(SECTORS.map(async ({ sym, name }) => {
+  const results = await Promise.all(SECTORS.map(async ({ sym, nameKey }) => {
+    const name = t(nameKey);
     try {
       const q = await fetchIndexQuote(sym);
       return { name, pct: q?.changePct ?? null };
@@ -148,7 +150,7 @@ async function fetchScreener(scrId) {
 
 function renderMoverList(list, el) {
   if (!list.length) {
-    el.innerHTML = '<p class="macro-error">Data unavailable</p>';
+    el.innerHTML = `<p class="macro-error">${t('moversDataUnavailable')}</p>`;
     return;
   }
   el.innerHTML = list.map(q => {

@@ -148,6 +148,13 @@ window.__onLangChange = function() {
   loadCryptoFearGreed();
   loadAAII();
   renderTrendingList(navigateTo);
+
+  // 4. Re-render home-page sections that have translated strings
+  renderMarketStatus();
+  loadMacroData();
+  loadUpcomingEvents();
+  loadSectorPerformance();
+  loadMovers();
 };
 
 // ── Utility ─────────────────────────────────────────────

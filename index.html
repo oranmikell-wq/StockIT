@@ -132,7 +132,7 @@
       <div class="sentiment-row">
         <div class="fng-col">
           <section class="fng-section">
-            <h2 class="section-title">Fear &amp; Greed</h2>
+            <h2 class="section-title" data-i18n="sectionFearGreed">Fear &amp; Greed</h2>
             <div class="fng-card">
               <!-- Toggle inside card -->
               <div class="fng-toggle" dir="ltr">
@@ -150,7 +150,7 @@
 
           <!-- Sector Performance -->
           <section class="sector-section">
-            <h2 class="section-title">SECTOR PERFORMANCE</h2>
+            <h2 class="section-title" data-i18n="sectionSectorPerf">SECTOR PERFORMANCE</h2>
             <div class="sector-card">
               <div id="sector-container"><div class="macro-skeleton"></div></div>
             </div>
@@ -161,12 +161,12 @@
         <div class="aaii-events-wrap">
           <div class="left-col">
             <section class="macro-section">
-              <h2 class="section-title">US ECONOMY</h2>
+              <h2 class="section-title" data-i18n="sectionUsEconomy">US ECONOMY</h2>
               <div class="macro-card" id="macro-container"><div class="macro-skeleton"></div></div>
             </section>
 
             <section class="events-section">
-              <h2 class="section-title">UPCOMING EVENTS</h2>
+              <h2 class="section-title" data-i18n="sectionUpcomingEvents">UPCOMING EVENTS</h2>
               <div class="macro-card" id="events-container"><div class="macro-skeleton"></div></div>
             </section>
           </div>
@@ -183,11 +183,11 @@
 
             <!-- Gainers & Losers -->
             <section class="movers-section">
-              <h2 class="section-title">MARKET MOVERS</h2>
+              <h2 class="section-title" data-i18n="sectionMarketMovers">MARKET MOVERS</h2>
               <div class="movers-card">
                 <div class="movers-header">
-                  <button class="movers-tab active" data-tab="gainers">Top Gainers</button>
-                  <button class="movers-tab" data-tab="losers">Top Losers</button>
+                  <button class="movers-tab active" data-tab="gainers" data-i18n="topGainers">Top Gainers</button>
+                  <button class="movers-tab" data-tab="losers" data-i18n="topLosers">Top Losers</button>
                 </div>
                 <div id="gainers-container" class="movers-list"><div class="macro-skeleton"></div></div>
                 <div id="losers-container"  class="movers-list hidden"><div class="macro-skeleton"></div></div>
@@ -231,12 +231,12 @@
         </section>
 
         <section class="crypto-prices-section">
-          <h2 class="section-title">CRYPTO OVERVIEW</h2>
+          <h2 class="section-title" data-i18n="sectionCryptoOverview">CRYPTO OVERVIEW</h2>
           <div id="crypto-prices-container"><div class="macro-skeleton"></div></div>
         </section>
 
         <section class="commodities-section">
-          <h2 class="section-title">COMMODITIES</h2>
+          <h2 class="section-title" data-i18n="sectionCommodities">COMMODITIES</h2>
           <div id="commodities-container" class="market-indices"><div class="macro-skeleton"></div></div>
         </section>
 
@@ -499,7 +499,7 @@
   <div id="wl-sidebar-overlay" class="wl-sidebar-overlay" onclick="window.closeWatchlistSidebar()"></div>
   <aside id="wl-sidebar" class="wl-sidebar" aria-label="Watchlist">
     <div class="wl-sidebar-header">
-      <span class="wl-sidebar-title">★ Watchlist</span>
+      <span class="wl-sidebar-title" data-i18n="watchlistSidebarTitle">★ Watchlist</span>
       <button class="icon-btn" onclick="window.closeWatchlistSidebar()" aria-label="Close">✕</button>
     </div>
     <div id="wl-sidebar-body" class="wl-sidebar-body"></div>
@@ -508,11 +508,11 @@
   <!-- ===== FOOTER ===== -->
   <footer class="app-footer">
     <div class="footer-info">
-      <a href="mailto:info@bulltherapy.com" class="footer-contact">Contact Us: info@bulltherapy.com</a>
+      <a href="mailto:info@bulltherapy.com" class="footer-contact" data-i18n="footerContact">Contact Us: info@bulltherapy.com</a>
       <div class="footer-links">
-        <span class="footer-copy">Copyright 2026 © Bull Therapy</span>
+        <span class="footer-copy" data-i18n="footerCopyright">Copyright 2026 © Bull Therapy</span>
         <span class="footer-sep">·</span>
-        <a href="#" class="footer-contact" onclick="navigateTo('privacy'); return false;">Privacy Policy</a>
+        <a href="#" class="footer-contact" onclick="navigateTo('privacy'); return false;" data-i18n="footerPrivacy">Privacy Policy</a>
       </div>
     </div>
     <div class="footer-controls">
@@ -537,12 +537,12 @@
   <div id="cookie-banner" class="cookie-banner" style="display:none" role="dialog" aria-label="Cookie consent">
     <div class="cookie-content">
       <p class="cookie-text">
-        We use cookies to personalize ads and analyze traffic.
-        <a href="#" onclick="navigateTo('privacy');document.getElementById('cookie-banner').style.display='none';return false;" class="cookie-policy-link">Privacy Policy</a>
+        <span data-i18n="cookieText">We use cookies to personalize ads and analyze traffic.</span>
+        <a href="#" onclick="navigateTo('privacy');document.getElementById('cookie-banner').style.display='none';return false;" class="cookie-policy-link" data-i18n="cookiePrivacyLink">Privacy Policy</a>
       </p>
       <div class="cookie-actions">
-        <button id="cookie-decline" class="cookie-btn cookie-btn-decline">Decline</button>
-        <button id="cookie-accept" class="cookie-btn cookie-btn-accept">Accept</button>
+        <button id="cookie-decline" class="cookie-btn cookie-btn-decline" data-i18n="cookieDecline">Decline</button>
+        <button id="cookie-accept" class="cookie-btn cookie-btn-accept" data-i18n="cookieAccept">Accept</button>
       </div>
     </div>
   </div>
