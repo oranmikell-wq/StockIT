@@ -153,20 +153,17 @@ function renderMoverList(list, el) {
     el.innerHTML = `<p class="macro-error">${t('moversDataUnavailable')}</p>`;
     return;
   }
-  el.innerHTML = list.map(q => {
+  el.innerHTML = list.map((q, i) => {
     const pct  = q.regularMarketChangePercent ?? 0;
     const cls  = pct >= 0 ? 'positive' : 'negative';
     const sign = pct >= 0 ? '+' : '';
     const price = (q.regularMarketPrice ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
     return `<div class="mover-row" role="button" tabindex="0" onclick="window.navigateTo && navigateTo('results', '${q.symbol}')" title="View ${q.symbol}">
-      <div class="mover-left">
-        <span class="mover-sym">${q.symbol}</span>
-        <span class="mover-name">${q.shortName ?? ''}</span>
-      </div>
-      <div class="mover-right">
-        <span class="mover-price">$${price}</span>
-        <span class="mover-pct ${cls}">${sign}${pct.toFixed(2)}%</span>
-      </div>
+      <span class="mover-rank">${i + 1}</span>
+      <span class="mover-sym">${q.symbol}</span>
+      <span class="mover-name">${q.shortName ?? ''}</span>
+      <span class="mover-price">$${price}</span>
+      <span class="mover-pct ${cls}">${sign}${pct.toFixed(2)}%</span>
     </div>`;
   }).join('');
 }
