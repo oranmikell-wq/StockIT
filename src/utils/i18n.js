@@ -257,6 +257,22 @@ export const TRANSLATIONS = {
     info_title_crit_technical:     'אינדיקטורים טכניים',
     info_body_crit_technical:      'RSI (14): מדד תנע בין 0-100. מעל 70 = קנוי יתר (Overbought). מתחת ל-30 = מכור יתר (Oversold). 40-60 = אזור ניטרלי. MACD: מודד את ההפרש בין ממוצעים נעים (12 ו-26 ימים). מעל אפס = מגמת עלייה, מתחת = ירידה.',
 
+    // ── Strategy Checklist popup info (HE) ─────────────────────
+    info_title_sc_ma150:        'ממוצע נע 150 יום (MA150)',
+    info_body_sc_ma150:         'MA150 הוא ממוצע מחיר הסגירה של 150 הימים האחרונים. Stan Weinstein: מניה בשלב עלייה (Stage 2) נסחרת מעל ה-MA150. מחיר מעל הממוצע = מגמת עלייה. מתחת = מגמת ירידה.',
+    info_title_sc_ma200:        'ממוצע נע 200 יום (MA200)',
+    info_body_sc_ma200:         'MA200 הוא אחד האינדיקטורים הנפוצים ביותר. מוסדיים רבים משתמשים בו לקביעת מגמה ארוכת טווח. מחיר מעל MA200 = שוק שורי (Bull). מתחת = דובי (Bear). "Death Cross" = MA50 חוצה מתחת ל-MA200.',
+    info_title_sc_new_highs:    'שיאים חדשים שנשברו',
+    info_body_sc_new_highs:     'כמה פעמים המניה שברה שיא חדש של 52 שבועות במהלך השנה האחרונה. William O\'Neil (CANSLIM): מניות שבוקעות לשיאים חדשים עם נפח גבוה הן לרוב בתחילת עלייה גדולה.',
+    info_title_sc_cup_handle:   'תבנית גביע וידית (Cup & Handle)',
+    info_body_sc_cup_handle:    'תבנית שנחקרה על ידי William O\'Neil. מניה עולה → יורדת 15-33% (הגביע) → עולה חזרה → ירידה קלה (הידית) → פריצה לשיא. פריצה עם נפח גבוה = סיגנל קנייה קלאסי.',
+    info_title_sc_double_bottom:'תבנית תחתית כפולה (Double Bottom)',
+    info_body_sc_double_bottom: 'תבנית היפוך שורי: מניה יורדת לשפל → עולה → יורדת שוב לאותו שפל (±3%) → עולה. הפריצה מעל השיא שבין שני השפלים מאשרת את ההיפוך. נפוץ בסיום ירידות.',
+    info_title_sc_pe_sector:    'שווי יחסי לסקטור',
+    info_body_sc_pe_sector:     'השוואת P/E (מכפיל רווח) של המניה מול ממוצע הסקטור. P/E נמוך ב-20%+ מהסקטור = מניה "זולה" יחסית. P/E גבוה ב-20%+ = "יקרה" יחסית. השוואה בתוך סקטור חיונית כי לכל ענף יש רמות שונות.',
+    info_title_sc_spy:          'חוזק יחסי מול SPY',
+    info_body_sc_spy:           'SPY = תעודת סל שעוקבת אחרי ה-S&P 500. השוואת הירידה מהשיא (Drawdown) של המניה מול SPY. מניה שיורדת פחות מהשוק בירידות = סיגנל חוזק. מניה שיורדת יותר = חולשה יחסית.',
+
     // Movers tabs
     topGainers: 'עולות',
     topLosers: 'יורדות',
@@ -581,6 +597,22 @@ export const TRANSLATIONS = {
     info_body_crit_debt:           'D/E = Total Debt ÷ Shareholders\' Equity. A measure of financial health. Low D/E = stable company. High D/E = high leverage, higher risk. Note: in some sectors (banks, real estate) a high D/E is normal.',
     info_title_crit_technical:     'Technical Indicators',
     info_body_crit_technical:      'RSI (14): Momentum oscillator from 0–100. Above 70 = Overbought. Below 30 = Oversold. 40–60 = Neutral zone. MACD: Measures the gap between moving averages (12 & 26 days). Above zero = uptrend, below = downtrend.',
+
+    // ── Strategy Checklist popup info (EN) ─────────────────────
+    info_title_sc_ma150:        'Moving Average 150 Days (MA150)',
+    info_body_sc_ma150:         'MA150 is the average closing price over the last 150 days. Stan Weinstein: a stock in Stage 2 (uptrend) trades above its MA150. Price above = uptrend. Price below = downtrend.',
+    info_title_sc_ma200:        'Moving Average 200 Days (MA200)',
+    info_body_sc_ma200:         'MA200 is one of the most widely followed indicators. Institutions use it to define long-term trend. Above MA200 = bullish. Below = bearish. "Death Cross" = MA50 crosses below MA200.',
+    info_title_sc_new_highs:    'New 52-Week Highs Broken',
+    info_body_sc_new_highs:     'How many times the stock broke a new 52-week high over the past year. William O\'Neil (CANSLIM): stocks breaking to new highs on high volume are often at the start of a major move.',
+    info_title_sc_cup_handle:   'Cup & Handle Pattern',
+    info_body_sc_cup_handle:    'A bullish pattern researched by William O\'Neil. Stock rises → pulls back 15–33% (the cup) → recovers → slight pullback (the handle) → breakout. A breakout on high volume is a classic buy signal.',
+    info_title_sc_double_bottom:'Double Bottom Pattern',
+    info_body_sc_double_bottom: 'A bullish reversal pattern: stock falls to a low → bounces → falls again to roughly the same low (±3%) → recovers. A breakout above the peak between the two lows confirms the reversal.',
+    info_title_sc_pe_sector:    'Valuation vs. Sector',
+    info_body_sc_pe_sector:     'Compares the stock\'s P/E (price-to-earnings) to the sector average. P/E 20%+ below sector = relatively "cheap". P/E 20%+ above = relatively "expensive". Sector comparison is essential since each industry has different norms.',
+    info_title_sc_spy:          'Relative Strength vs. SPY',
+    info_body_sc_spy:           'SPY is the S&P 500 ETF. This compares the stock\'s drawdown from its high vs. SPY\'s drawdown. A stock that falls less than the market during downturns shows relative strength — often a bullish signal.',
 
     // Movers tabs
     topGainers: 'Top Gainers',

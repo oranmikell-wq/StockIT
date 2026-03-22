@@ -3,6 +3,7 @@
 import { calcSMA, yahooChart } from '../services/StockService.js';
 import { getSectorKey, SECTOR_PS } from '../utils/scoring.js';
 import { t } from '../utils/i18n.js';
+import { initInfoButtons } from './InfoPopup.js';
 
 // Industry average P/S ratios (midpoint of sector benchmarks)
 const INDUSTRY_PS_AVG = {
@@ -47,10 +48,13 @@ function statusCell(type, label) {
   return `<span class="sc-status ${s.cls}">${label ?? fallback}</span>`;
 }
 
-function row(criteria, statusType, statusLabel, insight) {
+function row(criteria, statusType, statusLabel, insight, infoKey) {
+  const btn = infoKey
+    ? `<button class="info-icon-btn" data-info="${infoKey}" onclick="event.stopPropagation()">i</button>`
+    : '';
   return `
     <tr class="sc-row">
-      <td class="sc-criteria">${criteria}</td>
+      <td class="sc-criteria">${criteria}${btn}</td>
       <td class="sc-status-cell">${statusCell(statusType, statusLabel)}</td>
       <td class="sc-insight">${insight}</td>
     </tr>`;
@@ -215,9 +219,9 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
     const above = currentPrice > ma150;
     const pct   = Math.abs((currentPrice / ma150 - 1) * 100).toFixed(1);
     rows += row(t('sc_ma150'), above ? 'YES' : 'NO', null,
-      above ? t('sc_i_ma150_above', { pct }) : t('sc_i_ma150_below', { pct }));
+      above ? t('sc_i_ma150_above', { pct }) : t('sc_i_ma150_below', { pct }), 'sc_ma150');
   } else {
-    rows += row(t('sc_ma150'), 'NA', null, t('sc_i_ma_nodata', { n: 150 }));
+    rows += row(t('sc_ma150'), 'NA', null, t('sc_i_ma_nodata', { n: 150 }), 'sc_ma150');
   }
 
   // MA200
@@ -225,9 +229,9 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
     const above = indicators.priceAboveMA200;
     const pct   = Math.abs((currentPrice / indicators.ma200 - 1) * 100).toFixed(1);
     rows += row(t('sc_ma200'), above ? 'YES' : 'NO', null,
-      above ? t('sc_i_ma200_above', { pct }) : t('sc_i_ma200_below', { pct }));
+      above ? t('sc_i_ma200_above', { pct }) : t('sc_i_ma200_below', { pct }), 'sc_ma200');
   } else {
-    rows += row(t('sc_ma200'), 'NA', null, t('sc_i_ma_nodata', { n: 200 }));
+    rows += row(t('sc_ma200'), 'NA', null, t('sc_i_ma_nodata', { n: 200 }), 'sc_ma200');
   }
 
   // New 52-week highs count
@@ -237,7 +241,7 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
     highCount >= 10 ? t('sc_i_highs_high', { n: highCount })
     : highCount >= 3 ? t('sc_i_highs_mid',  { n: highCount })
     : highCount === 0 ? t('sc_i_highs_zero')
-    : t('sc_i_highs_few', { n: highCount }));
+    : t('sc_i_highs_few', { n: highCount }), 'sc_new_highs');
 
   // ── GROUP 2: Pattern Recognition ──────────────────────
   rows += groupHeader(t('sc_group_patterns'));
@@ -249,7 +253,7 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
     cup.detected ? t('sc_forming') : t('sc_not_detected'),
     cup.detected
       ? t('sc_i_cup_found', { depth: cup.depth, handle: cup.handlePct, msg: cup.confidence === 'high' ? t('sc_i_cup_break') : t('sc_i_cup_forming') })
-      : t('sc_i_cup_none'));
+      : t('sc_i_cup_none'), 'sc_cup_handle');
 
   // Double Bottom
   const dbl = detectDoubleBottom(closes);
@@ -258,7 +262,7 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
     dbl.detected ? (dbl.confirmed ? t('sc_confirmed') : t('sc_forming')) : t('sc_not_detected'),
     dbl.detected
       ? t('sc_i_dbl_found', { v: dbl.variance, r: dbl.recovery, msg: dbl.confirmed ? t('sc_i_dbl_confirmed') : t('sc_i_dbl_forming') })
-      : t('sc_i_dbl_none'));
+      : t('sc_i_dbl_none'), 'sc_double_bottom');
 
   // ── GROUP 3: Valuation vs. Sector ─────────────────────
   rows += groupHeader(t('sc_group_valuation'));
@@ -280,7 +284,7 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
       vType = 'NO'; vLabel = t('sc_expensive');
       vInsight = t('sc_i_pe_expensive', { pe: data.pe.toFixed(1), pct: ((ratio - 1) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPE });
     }
-    rows += row(t('sc_pe_vs_sector'), vType, vLabel, vInsight);
+    rows += row(t('sc_pe_vs_sector'), vType, vLabel, vInsight, 'sc_pe_sector');
   } else if (data.ps != null && data.ps > 0) {
     // PE is N/A (negative earnings) — use P/S vs sector average instead
     const industryAvgPS = INDUSTRY_PS_AVG[sectorKey] || INDUSTRY_PS_AVG.default;
@@ -296,9 +300,9 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
       vType = 'NO'; vLabel = t('sc_expensive');
       vInsight = t('sc_i_ps_expensive', { ps: data.ps.toFixed(1), pct: ((ratio - 1) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPS });
     }
-    rows += row(t('sc_ps_vs_sector'), vType, vLabel, vInsight);
+    rows += row(t('sc_ps_vs_sector'), vType, vLabel, vInsight, 'sc_pe_sector');
   } else {
-    rows += row(t('sc_pe_vs_sector'), 'NA', null, t('sc_i_pe_nodata'));
+    rows += row(t('sc_pe_vs_sector'), 'NA', null, t('sc_i_pe_nodata'), 'sc_pe_sector');
   }
 
   // ── GROUP 4: Relative Strength vs. SPY ────────────────
@@ -307,7 +311,7 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
   const spyId = `sc-spy-${Date.now()}`;
   rows += `
     <tr class="sc-row" id="${spyId}">
-      <td class="sc-criteria">${t('sc_spy_drawdown')}</td>
+      <td class="sc-criteria">${t('sc_spy_drawdown')}<button class="info-icon-btn" data-info="sc_spy" onclick="event.stopPropagation()">i</button></td>
       <td class="sc-status-cell">${statusCell('NEUTRAL', t('sc_neutral'))}</td>
       <td class="sc-insight sc-insight-loading">${t('sc_loading_spy')}</td>
     </tr>`;
@@ -326,6 +330,8 @@ export async function renderStrategyChecklist(container, data, history1Y, indica
         <tbody>${rows}</tbody>
       </table>
     </div>`;
+
+  initInfoButtons(container);
 
   // ── Async: fetch SPY and update row ───────────────────
   try {
