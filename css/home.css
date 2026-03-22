@@ -725,11 +725,22 @@
   /* Unwrap sentiment-row so children sit directly in the grid */
   .sentiment-row { display: contents; }
 
-  /* Column 1 — AAII */
-  .aaii-section {
+  /* Column 1 — EVENTS (left) + AAII (right) inside a shared flex wrapper */
+  .aaii-events-wrap {
     grid-column: 1;
     grid-row: 1;
-    flex: none;
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    min-width: 0;
+    align-items: start;
+  }
+  .aaii-events-wrap .events-section {
+    flex: 0 0 220px;
+  }
+  .aaii-events-wrap .aaii-section {
+    flex: 1;
+    min-width: 0;
   }
 
   /* Column 2 — F&G */

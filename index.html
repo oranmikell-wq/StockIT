@@ -29,7 +29,7 @@
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script src="https://s3.tradingview.com/tv.js"></script>
   <link rel="stylesheet" href="css/main.css?v=23" />
-  <link rel="stylesheet" href="css/home.css?v=33" />
+  <link rel="stylesheet" href="css/home.css?v=34" />
   <link rel="stylesheet" href="css/results.css?v=20" />
   <link rel="stylesheet" href="css/compare.css?v=9" />
 </head>
@@ -106,14 +106,22 @@
           </div>
         </section>
 
-        <section class="aaii-section">
-          <h2 class="section-title" data-i18n="aaii_title">סקר סנטימנט AAII</h2>
-          <div class="aaii-card">
-            <div id="aaii-container" class="aaii-container">
-              <div class="aaii-skeleton"></div>
+        <!-- Wrapper: EVENTS (left) + AAII (right) share the same grid column -->
+        <div class="aaii-events-wrap">
+          <section class="events-section">
+            <h2 class="section-title">UPCOMING EVENTS</h2>
+            <div class="macro-card" id="events-container"><div class="macro-skeleton"></div></div>
+          </section>
+
+          <section class="aaii-section">
+            <h2 class="section-title" data-i18n="aaii_title">סקר סנטימנט AAII</h2>
+            <div class="aaii-card">
+              <div id="aaii-container" class="aaii-container">
+                <div class="aaii-skeleton"></div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
 
       <div class="sidebar">
@@ -158,10 +166,6 @@
           <div class="macro-card" id="macro-container"><div class="macro-skeleton"></div></div>
         </section>
 
-        <section class="events-section">
-          <h2 class="section-title">UPCOMING EVENTS</h2>
-          <div class="macro-card" id="events-container"><div class="macro-skeleton"></div></div>
-        </section>
       </div>
     </main>
   </div>
