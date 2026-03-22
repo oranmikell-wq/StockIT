@@ -89,16 +89,13 @@ html {
 }
 
 body {
-  font-family: var(--font-he);
+  font-family: 'Heebo', sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100dvh;
   transition: background var(--transition-slow), color var(--transition-slow);
   -webkit-font-smoothing: antialiased;
 }
-
-[data-lang="en"] body { font-family: var(--font-en); }
-[data-lang="he"] body { font-family: var(--font-he); }
 
 /* ===== PAGES ===== */
 .page {
