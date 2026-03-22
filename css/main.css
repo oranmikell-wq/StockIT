@@ -167,13 +167,7 @@ body {
 }
 .nav-drawer.open { transform: translateX(0); }
 
-/* RTL override: slides in from RIGHT */
-[dir="rtl"] .nav-drawer {
-  left: auto;
-  right: 0;
-  transform: translateX(100%);
-}
-[dir="rtl"] .nav-drawer.open { transform: translateX(0); }
+/* nav-drawer always slides in from LEFT regardless of language */
 
 .drawer-header-row {
   display: flex;
@@ -914,13 +908,7 @@ body {
 }
 .wl-sidebar.open { transform: translateX(0); }
 
-/* RTL: sidebar slides from left */
-[dir="rtl"] .wl-sidebar {
-  right: auto;
-  left: 0;
-  transform: translateX(-100%);
-}
-[dir="rtl"] .wl-sidebar.open { transform: translateX(0); }
+/* wl-sidebar always slides in from RIGHT regardless of language */
 
 .wl-sidebar-header {
   display: flex;
