@@ -219,6 +219,14 @@ export const TRANSLATIONS = {
     fxUsdIls: 'USD/ILS',
     fxEurIls: 'EUR/ILS',
 
+    // ── Quick Score widget (HE) ────────────────────────────────
+    qs_title:     'ניתוח מהיר',
+    qs_rsi:       'RSI (14)',
+    qs_ma:        'ממוצעים נעים',
+    qs_valuation: 'שווי (P/E)',
+    qs_rs:        'חוזק יחסי',
+    qs_total:     'ציון כולל',
+
     // ── Info popup — titles & bodies (HE) ──────────────────────
     info_title_price:       'מחיר המניה',
     info_body_price:        'המחיר הנוכחי של מניה אחת בשוק. המחיר משתנה בזמן אמת בשעות המסחר, ומושפע מהיצע וביקוש.',
@@ -559,6 +567,14 @@ export const TRANSLATIONS = {
     sectionForex: 'Exchange Rates',
     fxUsdIls: 'USD/ILS',
     fxEurIls: 'EUR/ILS',
+
+    // ── Quick Score widget (EN) ────────────────────────────────
+    qs_title:     'Quick Analysis',
+    qs_rsi:       'RSI (14)',
+    qs_ma:        'Moving Averages',
+    qs_valuation: 'Valuation (P/E)',
+    qs_rs:        'Relative Strength',
+    qs_total:     'Weighted Score',
 
     // ── Info popup — titles & bodies (EN) ──────────────────────
     info_title_price:       'Stock Price',
