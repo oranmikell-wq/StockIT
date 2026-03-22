@@ -28,7 +28,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script src="https://s3.tradingview.com/tv.js"></script>
-  <link rel="stylesheet" href="css/main.css?v=20" />
+  <link rel="stylesheet" href="css/main.css?v=21" />
   <link rel="stylesheet" href="css/home.css?v=33" />
   <link rel="stylesheet" href="css/results.css?v=20" />
   <link rel="stylesheet" href="css/compare.css?v=9" />
@@ -38,7 +38,7 @@
   <!-- ===== GLOBAL STICKY TOP-BAR (always visible on every page) ===== -->
   <header class="top-bar" dir="ltr">
 
-    <!-- שורה עליונה: לוגו+כותרת (שמאל) | אייקוני ניווט (ימין) -->
+    <!-- שורה יחידה: לוגו | חיפוש (דסקטופ: באמצע) | ניווט -->
     <div class="tb-row-top">
       <a class="tb-brand" href="#" onclick="navigateTo('home'); return false;">
         <img src="logo2.png" alt="Bull Therapy logo" class="tb-logo" />
@@ -47,6 +47,28 @@
           <span class="tb-brand-sub" data-i18n="tagline">Trade with a clear head</span>
         </div>
       </a>
+
+      <!-- חיפוש: באמצע בדסקטופ, שורה שנייה במובייל -->
+      <div class="tb-search-wrap">
+        <div class="search-box">
+          <input
+            id="search-input"
+            type="text"
+            data-i18n-placeholder="searchPlaceholder"
+            placeholder="Stock analysis in one click..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="search-btn" class="tb-search-btn" aria-label="Search">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.8"/>
+              <line x1="10.2" y1="10.2" x2="14" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div id="autocomplete-list" class="autocomplete-list hidden"></div>
+      </div>
+
       <nav class="tb-nav">
         <button class="tb-nav-btn nav-btn" data-page="home" title="Home">
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2l6 4.5V14H10v-3H6v3H2V6.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
@@ -59,27 +81,6 @@
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.6"/><line x1="8" y1="7" x2="8" y2="11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="4.8" r="0.9" fill="currentColor"/></svg>
         </button>
       </nav>
-    </div>
-
-    <!-- שורה תחתונה: שורת חיפוש מלאה -->
-    <div class="tb-search-wrap">
-      <div class="search-box">
-        <input
-          id="search-input"
-          type="text"
-          data-i18n-placeholder="searchPlaceholder"
-          placeholder="Stock analysis in one click..."
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button id="search-btn" class="tb-search-btn" aria-label="Search">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="10.2" y1="10.2" x2="14" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-      <div id="autocomplete-list" class="autocomplete-list hidden"></div>
     </div>
 
   </header>

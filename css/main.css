@@ -317,15 +317,12 @@ body {
   z-index: 100;
   background: #000;
   border-bottom: 1px solid rgba(255,255,255,0.07);
-  padding: 10px 16px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding: 10px 16px;
 }
 
 .tb-row-top {
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;          /* mobile: search wraps to 2nd row */
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -369,8 +366,9 @@ body {
   white-space: nowrap;
 }
 
-/* Search — bottom row, full width */
+/* Search — mobile: full-width 2nd row; desktop: inline middle */
 .tb-search-wrap {
+  order: 10;       /* push below brand+nav on mobile */
   width: 100%;
   position: relative;
 }
@@ -723,7 +721,19 @@ body {
 
   /* Taller, more spacious header on desktop — content aligned with 80% page */
   .top-bar, .results-header {
-    padding: 14px 10%;
+    padding: 12px 10%;
+  }
+
+  /* Desktop: search bar moves into the header row — logo | search | icons */
+  .tb-row-top {
+    flex-wrap: nowrap;
+    gap: 16px;
+  }
+  .tb-search-wrap {
+    order: 0;        /* back to DOM order (between brand and nav) */
+    flex: 1;
+    min-width: 0;
+    width: auto;
   }
 
   .app-footer {
