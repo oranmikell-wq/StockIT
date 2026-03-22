@@ -166,6 +166,101 @@
   margin-top: 1px;
 }
 
+/* ── Info label row (label + ⓘ button) ──────────────────────── */
+.info-label-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.info-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-3);
+  background: transparent;
+  color: var(--text-3);
+  font-size: 8px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: border-color 0.15s, color 0.15s;
+  font-family: Georgia, serif;
+}
+.info-icon-btn:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* ── Popup overlay ────────────────────────────────────────────── */
+.info-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+.info-popup-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.info-popup-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 22px 22px;
+  max-width: 360px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+  transform: translateY(10px);
+  transition: transform 0.18s ease;
+}
+.info-popup-overlay.visible .info-popup-box {
+  transform: translateY(0);
+}
+.info-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+}
+[dir="rtl"] .info-popup-close {
+  right: unset;
+  left: 14px;
+}
+.info-popup-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px;
+  padding-inline-end: 24px;
+}
+.info-popup-body {
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.65;
+  margin: 0;
+}
+
 /* ===== CHART ===== */
 .chart-section {
   padding: 0;

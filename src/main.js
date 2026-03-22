@@ -13,6 +13,7 @@ import { loadTrending, renderTrendingList }   from './components/TrendingList.js
 import { loadAAII }      from './components/AAIISentiment.js';
 import { loadMacroData, loadCryptoPrices, loadUpcomingEvents } from './components/MacroCrypto.js?v=7';
 import { renderMarketStatus, loadDXY, loadCommodities, loadSectorPerformance, loadMovers } from './components/MarketMovers.js?v=1';
+import { initInfoButtons } from './components/InfoPopup.js';
 import { showAutocomplete, hideAutocomplete, selectAutocomplete, confirmAutocomplete, showRecentSearches, initAutocomplete } from './components/Autocomplete.js';
 import { initChart, loadChart, updateChartTheme, initCompareChart } from './components/Chart.js';
 import {
@@ -519,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
   syncTopbarHeight();
   window.addEventListener('resize', syncTopbarHeight);
   bindEvents();
+  initInfoButtons();
 
   // Mark home as active in top-bar nav
   const homeBtn = document.querySelector('.tb-nav-btn[data-page="home"]');
