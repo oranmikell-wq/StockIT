@@ -707,6 +707,38 @@ body {
 }
 .footer-contact:hover { color: rgba(255,255,255,0.7) !important; -webkit-text-fill-color: rgba(255,255,255,0.7); }
 
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ===== PRIVACY POLICY ===== */
+.privacy-h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+.privacy-list {
+  padding-left: 18px;
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.privacy-list li {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.privacy-link {
+  color: var(--green);
+  text-decoration: none;
+}
+.privacy-link:hover { text-decoration: underline; }
+
 /* ===== ADS ===== */
 .ad-banner-wrap {
   width: 100%;
