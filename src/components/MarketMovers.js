@@ -156,7 +156,7 @@ function renderMoverList(list, el) {
     const cls  = pct >= 0 ? 'positive' : 'negative';
     const sign = pct >= 0 ? '+' : '';
     const price = (q.regularMarketPrice ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
-    return `<div class="mover-row">
+    return `<div class="mover-row" role="button" tabindex="0" onclick="window.navigateTo && navigateTo('results', '${q.symbol}')" title="View ${q.symbol}">
       <div class="mover-left">
         <span class="mover-sym">${q.symbol}</span>
         <span class="mover-name">${q.shortName ?? ''}</span>
