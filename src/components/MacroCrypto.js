@@ -127,21 +127,21 @@ export async function loadCryptoPrices(containerId = 'crypto-prices-container') 
     const eth = data.ethereum;
     if (!btc || !eth) throw new Error('no_data');
 
-    function cryptoRow(symbol, coinClass, name, price, change) {
+    function cryptoCard(name, price, change) {
       const chgClass = change >= 0 ? 'positive' : 'negative';
       const sign     = change >= 0 ? '+' : '';
       return `
-        <div class="crypto-price-row">
-          <span class="crypto-coin-icon ${coinClass}">${symbol}</span>
-          <span class="crypto-coin-name">${name}</span>
-          <span class="crypto-coin-price">$${price.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-          <span class="crypto-coin-change ${chgClass}">${sign}${change.toFixed(2)}%</span>
+        <div class="market-card ${chgClass}">
+          <span class="market-name">${name}</span>
+          <span class="market-price">$${price.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+          <span class="market-change ${chgClass}">${sign}${change.toFixed(2)}%</span>
         </div>`;
     }
 
-    container.innerHTML =
-      cryptoRow('₿', 'btc', 'Bitcoin',  btc.usd, btc.usd_24h_change) +
-      cryptoRow('Ξ', 'eth', 'Ethereum', eth.usd, eth.usd_24h_change);
+    container.innerHTML = `<div class="market-indices">
+      ${cryptoCard('Bitcoin',  btc.usd, btc.usd_24h_change)}
+      ${cryptoCard('Ethereum', eth.usd, eth.usd_24h_change)}
+    </div>`;
 
   } catch {
     container.innerHTML = `<p class="macro-error">Unable to load crypto prices</p>`;
