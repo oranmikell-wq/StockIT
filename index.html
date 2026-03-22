@@ -12,6 +12,33 @@
   <meta charset="UTF-8" />
   <!-- <meta name="google-adsense-account" content="ca-pub-6713759975495292"> -->
   <link rel="canonical" href="https://www.bulltherapy.com/" />
+
+  <!-- Google Consent Mode v2 — must run BEFORE AdSense -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    // Default: all denied until user consents
+    gtag('consent', 'default', {
+      ad_storage:          'denied',
+      ad_user_data:        'denied',
+      ad_personalization:  'denied',
+      analytics_storage:   'denied',
+      wait_for_update:     500
+    });
+    // If user already consented in a previous visit, restore immediately
+    (function(){
+      var c = localStorage.getItem('bon-consent');
+      if (c === 'granted') {
+        gtag('consent', 'update', {
+          ad_storage:         'granted',
+          ad_user_data:       'granted',
+          ad_personalization: 'granted',
+          analytics_storage:  'granted'
+        });
+      }
+    })();
+  </script>
+
   <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6713759975495292" crossorigin="anonymous"></script> -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#000000" />
@@ -499,6 +526,55 @@
         regs.forEach(r => r.update());
       });
     }
+  </script>
+
+  <!-- Cookie Consent Banner -->
+  <div id="cookie-banner" class="cookie-banner" style="display:none" role="dialog" aria-label="Cookie consent">
+    <div class="cookie-content">
+      <div class="cookie-text">
+        <strong>We use cookies</strong>
+        <span>We and our partners use cookies to personalize ads and analyze traffic. You can accept or decline non-essential cookies.</span>
+        <a href="#" onclick="navigateTo('privacy');document.getElementById('cookie-banner').style.display='none';return false;" class="cookie-policy-link">Privacy Policy</a>
+      </div>
+      <div class="cookie-actions">
+        <button id="cookie-decline" class="cookie-btn cookie-btn-decline">Decline</button>
+        <button id="cookie-accept" class="cookie-btn cookie-btn-accept">Accept</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var stored = localStorage.getItem('bon-consent');
+      if (stored) return; // already decided
+
+      // Show only to EU users (by timezone)
+      var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      var isEU = tz.startsWith('Europe/') ||
+                 ['Atlantic/Azores','Atlantic/Canary','Atlantic/Madeira',
+                  'Atlantic/Reykjavik','Africa/Ceuta'].includes(tz);
+
+      // Show to everyone (safer for AdSense approval)
+      var banner = document.getElementById('cookie-banner');
+      banner.style.display = 'flex';
+
+      function grantConsent(granted) {
+        var val = granted ? 'granted' : 'denied';
+        localStorage.setItem('bon-consent', granted ? 'granted' : 'declined');
+        if (window.gtag) {
+          gtag('consent', 'update', {
+            ad_storage:         val,
+            ad_user_data:       val,
+            ad_personalization: val,
+            analytics_storage:  val
+          });
+        }
+        banner.style.display = 'none';
+      }
+
+      document.getElementById('cookie-accept').addEventListener('click', function() { grantConsent(true); });
+      document.getElementById('cookie-decline').addEventListener('click', function() { grantConsent(false); });
+    })();
   </script>
 </body>
 </html>
