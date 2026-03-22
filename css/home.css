@@ -973,21 +973,18 @@
     align-self: start;
   }
 
-  .market-section {
-    background: var(--bg-2);
-    border-radius: var(--radius-lg);
-    padding: 0 14px 14px;
-  }
+  .market-section { background: none; }
   .market-indices {
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
-  .crypto-prices-section,
-  .commodities-section {
+  .sidebar-card {
     background: var(--bg-2);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 0 14px 14px;
+    padding: 14px;
+    box-shadow: var(--shadow-sm);
   }
   .market-card {
     flex-direction: row;
@@ -1006,11 +1003,7 @@
   .market-price  { font-size: 17px; }
   .market-change { font-size: 12px; }
 
-  .trending-section {
-    background: var(--bg-2);
-    border-radius: var(--radius-lg);
-    padding: 0 14px 14px;
-  }
+  .trending-section { background: none; }
   .trending-list { gap: 6px; }
   .trending-item {
     padding: 7px 10px;
