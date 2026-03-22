@@ -318,6 +318,7 @@ body {
   background: #000;
   border-bottom: 1px solid rgba(255,255,255,0.07);
   padding: 10px 16px;
+  direction: ltr; /* always LTR — logo left, icons right */
 }
 
 .tb-row-top {
@@ -677,6 +678,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  direction: ltr; /* always LTR — prevents RTL from flipping footer */
 }
 
 .footer-info {
@@ -1246,10 +1248,7 @@ body {
   text-align: right;
 }
 
-/* Footer */
-[dir="rtl"] .app-footer {
-  text-align: center;
-}
+/* Footer — direction is forced ltr in .app-footer, no RTL override needed */
 
 
 

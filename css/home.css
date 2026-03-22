@@ -16,6 +16,7 @@
   max-width: 680px;
   margin: 0 auto;
   width: 100%;
+  direction: ltr; /* always LTR — prevents RTL from flipping the grid */
 }
 
 /* ===== SECTION TITLE — base style (all breakpoints) ===== */
