@@ -728,6 +728,12 @@ body {
 }
 .ad-results-wrap:empty { display: none; }
 
+.ad-sidebar-wrap {
+  width: 100%;
+  min-height: 100px;
+}
+.ad-sidebar-wrap:empty { display: none; }
+
 /* ===== HIDDEN UTIL ===== */
 .hidden { display: none !important; }
 
