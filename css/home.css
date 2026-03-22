@@ -778,6 +778,11 @@
     flex-direction: column;
     gap: 10px;
   }
+  .crypto-prices-section {
+    background: var(--bg-2);
+    border-radius: var(--radius-lg);
+    padding: 0 14px 14px;
+  }
   .market-card {
     flex-direction: row;
     justify-content: space-between;
