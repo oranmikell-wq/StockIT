@@ -377,7 +377,8 @@
 .market-section { width: 100%; }
 
 .market-indices {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
@@ -915,6 +916,7 @@
     padding: 0 14px 14px;
   }
   .market-indices {
+    display: flex;
     flex-direction: column;
     gap: 10px;
   }
