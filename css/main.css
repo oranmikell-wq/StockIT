@@ -735,6 +735,10 @@ body {
     min-width: 0;
     width: auto;
   }
+  .tb-logo {
+    width: 76px;
+    height: 76px;
+  }
 
   .app-footer {
     padding-left: 10%;
