@@ -1193,6 +1193,10 @@ body {
   text-align: right;
 }
 
+/* Top-bar brand stays left-aligned regardless of page direction */
+[dir="rtl"] .tb-brand-name,
+[dir="rtl"] .tb-brand-sub { text-align: left; }
+
 /* Flex rows — reverse direction in RTL (NOT top-bar / results-header — those have dir="ltr" in HTML) */
 /* NOTE: .info-card is intentionally excluded — it uses flex-direction:column and must not be reversed */
 [dir="rtl"] .header-actions,
