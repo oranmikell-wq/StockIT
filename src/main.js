@@ -160,7 +160,7 @@ function syncTopbarHeight() {
 async function loadMarketIndices() {
   const indices = [
     { id: 'idx-sp500',  symbol: '^GSPC' },
-    { id: 'idx-nasdaq', symbol: '^IXIC' },
+    { id: 'idx-nasdaq', symbol: '^NDX'  },
     { id: 'idx-vix',    symbol: '^VIX'  },
   ];
   for (const { id, symbol } of indices) {
