@@ -81,7 +81,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html { font-size: 16px; scroll-behavior: smooth; }
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%; /* prevent browser from auto-scaling text when lang changes */
+}
 
 body {
   font-family: var(--font-he);
@@ -372,8 +377,10 @@ body {
   background: rgba(255,255,255,0.10);
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 50px;
-  padding: 2px 2px 2px 14px;
+  padding: 0 2px 0 14px;
+  height: 44px;
   box-shadow: none;
+  align-items: center;
 }
 
 .tb-search-wrap .search-box:focus-within {
@@ -385,6 +392,8 @@ body {
 .tb-search-wrap #search-input {
   font-size: 13px;
   color: #fff;
+  line-height: 1;
+  height: 100%;
 }
 
 .tb-search-wrap #search-input::placeholder {
@@ -696,12 +705,15 @@ body {
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 6px;
   color: rgba(255,255,255,0.55);
-  padding: 5px 14px;
+  padding: 0 14px;
+  height: 28px;
+  line-height: 28px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
 .footer-ctrl-btn:hover {
