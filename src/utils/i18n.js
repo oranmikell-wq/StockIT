@@ -584,16 +584,20 @@ export function getCurrentLang() {
 export function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('bon-lang', lang);
-  document.documentElement.lang = lang;
+  // Keep lang='en' always — changing it to 'he' causes browsers to auto-scale fonts.
+  // Use dir + data-lang for layout/CSS targeting instead.
+  document.documentElement.lang = 'en';
   document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+  document.documentElement.dataset.lang = lang;
   applyTranslations();
   if (window.__onLangChange) window.__onLangChange();
 }
 
 export function applyTranslations() {
   // Apply direction on every call (including initial page load)
-  document.documentElement.lang = currentLang;
+  document.documentElement.lang = 'en'; // always 'en' to prevent browser font scaling
   document.documentElement.dir  = currentLang === 'he' ? 'rtl' : 'ltr';
+  document.documentElement.dataset.lang = currentLang;
 
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.dataset.i18n;
