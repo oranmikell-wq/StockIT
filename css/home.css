@@ -661,6 +661,7 @@
 /* ===== MACRO / CRYPTO / EVENTS ===== */
 .macro-section,
 .crypto-prices-section,
+.commodities-section,
 .events-section { width: 100%; }
 
 .macro-card {
@@ -917,7 +918,8 @@
     flex-direction: column;
     gap: 10px;
   }
-  .crypto-prices-section {
+  .crypto-prices-section,
+  .commodities-section {
     background: var(--bg-2);
     border-radius: var(--radius-lg);
     padding: 0 14px 14px;
