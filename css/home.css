@@ -804,22 +804,42 @@
 }
 .event-countdown.soon { color: var(--green); font-weight: 600; }
 
+/* ===== MOBILE-ONLY fixes (<768px) ===== */
+@media (max-width: 767px) {
+  /* Market data first, analysis sections below */
+  .sidebar        { order: -1; }
+  .sentiment-row  { order:  0; }
+
+  /* Limit events list height on mobile so it doesn't dominate */
+  .events-container {
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  /* Sector name narrower on small screens */
+  .sector-name { width: 90px; font-size: 10px; }
+}
+
 /* ===== TABLET (768px) ===== */
 @media (min-width: 768px) {
   .home-main {
     width: 94%;
-    max-width: 860px;
+    max-width: 940px;
     padding: 24px 20px 40px;
     gap: 20px;
   }
 
-  /* F&G + AAII side by side */
+  /* F&G col (left) + AAII-events col (right) side by side */
   .sentiment-row {
     flex-direction: row;
     align-items: stretch;
-    gap: 16px;
+    gap: 20px;
   }
-  .fng-section  { flex: 0 0 320px; display: flex; flex-direction: column; }
+  /* Give explicit widths so columns don't collapse */
+  .fng-col         { flex: 0 0 360px; min-width: 0; }
+  .aaii-events-wrap{ flex: 1;         min-width: 0; }
+
+  .fng-section  { display: flex; flex-direction: column; }
   .aaii-section { flex: 1; min-width: 0; }
 
   .fng-card {
