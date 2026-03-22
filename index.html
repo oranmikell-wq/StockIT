@@ -103,22 +103,30 @@
 
     <main class="home-main">
       <div class="sentiment-row">
-        <section class="fng-section">
-          <h2 class="section-title">Fear &amp; Greed</h2>
-          <div class="fng-card">
-            <!-- Toggle inside card -->
-            <div class="fng-toggle" dir="ltr">
-              <button class="fng-tab active" data-fng="stocks" data-i18n="fng_title">Stocks</button>
-              <button class="fng-tab" data-fng="crypto" data-i18n="cryptoFngTab">Crypto</button>
+        <div class="fng-col">
+          <section class="fng-section">
+            <h2 class="section-title">Fear &amp; Greed</h2>
+            <div class="fng-card">
+              <!-- Toggle inside card -->
+              <div class="fng-toggle" dir="ltr">
+                <button class="fng-tab active" data-fng="stocks" data-i18n="fng_title">Stocks</button>
+                <button class="fng-tab" data-fng="crypto" data-i18n="cryptoFngTab">Crypto</button>
+              </div>
+              <div id="fng-container" class="fng-container">
+                <div class="fng-skeleton"></div>
+              </div>
+              <div id="fng-crypto-container" class="fng-container hidden">
+                <div class="fng-skeleton"></div>
+              </div>
             </div>
-            <div id="fng-container" class="fng-container">
-              <div class="fng-skeleton"></div>
-            </div>
-            <div id="fng-crypto-container" class="fng-container hidden">
-              <div class="fng-skeleton"></div>
-            </div>
-          </div>
-        </section>
+          </section>
+
+          <!-- Sector Performance -->
+          <section class="sector-section">
+            <h2 class="section-title">SECTOR PERFORMANCE</h2>
+            <div id="sector-container"><div class="macro-skeleton"></div></div>
+          </section>
+        </div>
 
         <!-- Wrapper: LEFT COLUMN (Economy + Events) + AAII (right) share the same grid column -->
         <div class="aaii-events-wrap">
@@ -156,12 +164,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Sector Performance -->
-      <section class="sector-section">
-        <h2 class="section-title">SECTOR PERFORMANCE</h2>
-        <div id="sector-container"><div class="macro-skeleton"></div></div>
-      </section>
 
       <div class="sidebar">
         <section class="market-section">
