@@ -578,6 +578,8 @@
 /* ===== MOVERS (Gainers & Losers) ===== */
 .movers-section {
   width: 100%;
+}
+.movers-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -630,6 +632,8 @@
 /* ===== SECTOR PERFORMANCE ===== */
 .sector-section {
   width: 100%;
+}
+.sector-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
