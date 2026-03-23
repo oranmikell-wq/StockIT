@@ -186,11 +186,15 @@ async function fetchFMPFundamentals(symbol) {
     defaultKeyStatistics: {
       priceToSalesTrailing12Months: metrics?.priceToSalesRatioTTM ?? null,
       heldPercentInstitutions:      null,
+      pegRatio:                     metrics?.pegRatioTTM ?? null,
     },
     financialData: {
       earningsGrowth:          growth?.growthEPS      != null ? growth.growthEPS      : null,
       revenueGrowth:           growth?.growthRevenue  != null ? growth.growthRevenue  : null,
       debtToEquity:            metrics?.debtToEquityTTM != null ? metrics.debtToEquityTTM * 100 : null,
+      returnOnEquity:          metrics?.returnOnEquityTTM != null ? metrics.returnOnEquityTTM * 100 : null,
+      currentRatio:            metrics?.currentRatioTTM  ?? null,
+      freeCashflow:            metrics?.freeCashFlowTTM  ?? null,
       targetMeanPrice:         targetRaw?.targetConsensus  ?? null,
       targetHighPrice:         targetRaw?.targetHigh        ?? null,
       targetLowPrice:          targetRaw?.targetLow         ?? null,
@@ -263,6 +267,8 @@ async function fetchFinnhubFundamentals(symbol) {
   const revGrowth = m.revenueGrowthTTMYoy ?? m.revenueGrowth3Y ?? null;
   const debtEq    = m.longTermDebt_equityAnnual ?? m.totalDebt_totalEquityAnnual ?? null;
   const instPct   = m.institutionalOwnershipPercentage != null ? m.institutionalOwnershipPercentage / 100 : null;
+  const roe          = m.roeTTM          ?? null;   // already %
+  const currentRatio = m.currentRatioAnnual ?? m.currentRatioQuarterly ?? null;
 
   return {
     summaryDetail: {
@@ -275,11 +281,15 @@ async function fetchFinnhubFundamentals(symbol) {
     defaultKeyStatistics: {
       priceToSalesTrailing12Months: ps,
       heldPercentInstitutions:      instPct,
+      pegRatio:                     null,   // Finnhub metric=all doesn't provide PEG
     },
     financialData: {
       earningsGrowth:          epsGrowth != null ? epsGrowth / 100 : null,
       revenueGrowth:           revGrowth != null ? revGrowth / 100 : null,
       debtToEquity:            debtEq != null ? debtEq * 100 : null,
+      returnOnEquity:          roe,
+      currentRatio:            currentRatio,
+      freeCashflow:            null,        // not in Finnhub metric=all
       targetMeanPrice:         priceTargetRaw?.targetMean   ?? null,
       targetHighPrice:         priceTargetRaw?.targetHigh   ?? null,
       targetLowPrice:          priceTargetRaw?.targetLow    ?? null,
@@ -423,11 +433,15 @@ function _v7ToV10(q) {
     defaultKeyStatistics: {
       priceToSalesTrailing12Months: q.trailingPriceToSales ?? null,
       heldPercentInstitutions:      q.heldPercentInstitutions ?? null,
+      pegRatio:                     q.pegRatio ?? null,
     },
     financialData: {
       earningsGrowth:           q.earningsGrowth           ?? null,
       revenueGrowth:            q.revenueGrowth            ?? null,
       debtToEquity:             q.debtToEquity             ?? null,
+      returnOnEquity:           q.returnOnEquity           ?? null,
+      currentRatio:             q.currentRatio             ?? null,
+      freeCashflow:             q.freeCashflow             ?? null,
       targetMeanPrice:          q.targetMeanPrice          ?? null,
       targetHighPrice:          q.targetHighPrice          ?? null,
       targetLowPrice:           q.targetLowPrice           ?? null,
@@ -466,7 +480,8 @@ export async function yahooFundamentals(symbol) {
       'targetMeanPrice','targetHighPrice','targetLowPrice',
       'earningsTimestampStart','earningsTimestampEnd',
       'earningsGrowth','revenueGrowth','debtToEquity',
-      'heldPercentInstitutions','sector','industry','longName','shortName',
+      'returnOnEquity','currentRatio','freeCashflow',
+      'heldPercentInstitutions','pegRatio','sector','industry','longName','shortName',
     ].join(',');
     const raw7 = await fetchProxy(
       `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbol)}&fields=${fields}`
@@ -708,6 +723,19 @@ export function parseAllData({ meta, yfFund, stats, ratings, target, earning, ne
                      : tdDebtEquity != null ? tdDebtEquity / 100
                      : null;
 
+  // New indicators: PEG, Current Ratio, ROE, FCF
+  const rawPeg      = yfDef.pegRatio?.raw ?? yfDef.pegRatio ?? null;
+  const rawROE      = yfFin.returnOnEquity?.raw ?? yfFin.returnOnEquity ?? null;
+  const rawCR       = yfFin.currentRatio?.raw   ?? yfFin.currentRatio   ?? null;
+  const rawFCF      = yfFin.freeCashflow?.raw   ?? yfFin.freeCashflow   ?? null;
+  // PEG fallback: compute from P/E ÷ EPS growth (%)
+  const computedPeg = (pe != null && pe > 0 && epsGrowth != null && epsGrowth > 0)
+                    ? pe / epsGrowth : null;
+  const peg          = rawPeg    ?? computedPeg ?? null;
+  const roe          = rawROE != null ? rawROE * 100 : null;   // store as %
+  const currentRatio = rawCR   ?? null;
+  const fcf          = rawFCF  ?? null;
+
   const yfInstPct = yfDef.heldPercentInstitutions?.raw ?? yfDef.heldPercentInstitutions ?? null;
   const tdInstPct = sst.percent_held_by_institutions ?? null;
   const instPct   = yfInstPct ?? tdInstPct ?? finviz?.instOwn ?? null;
@@ -763,6 +791,7 @@ export function parseAllData({ meta, yfFund, stats, ratings, target, earning, ne
     targetMean, targetHigh, targetLow,
     debtEquity, earningsDate,
     instPct, epsGrowth, revenueGrowth,
+    peg, roe, currentRatio, fcf,
     newsItems,
   };
 }

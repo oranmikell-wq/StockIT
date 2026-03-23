@@ -141,6 +141,19 @@ function rawDataFor(key, scored, data) {
       return scored.technicals?.highs
         ? [`1Y: ${scored.technicals.highs.y1 ?? 0}×`, `3Y: ${scored.technicals.highs.y3 ?? 0}×`, `5Y: ${scored.technicals.highs.y5 ?? 0}×`]
         : [];
+    case 'peg':
+      return data.peg != null ? [`PEG: ${data.peg.toFixed(2)}`] : [];
+    case 'currentRatio':
+      return data.currentRatio != null ? [`${data.currentRatio.toFixed(2)}`] : [];
+    case 'roe':
+      return data.roe != null ? [`ROE: ${data.roe.toFixed(1)}%`] : [];
+    case 'fcf':
+      if (data.fcf == null) return [];
+      const fcfAbs = Math.abs(data.fcf);
+      const fcfFmt = fcfAbs >= 1e9 ? `${(data.fcf / 1e9).toFixed(1)}B`
+                   : fcfAbs >= 1e6 ? `${(data.fcf / 1e6).toFixed(0)}M`
+                   : `${data.fcf.toFixed(0)}`;
+      return [`FCF: $${fcfFmt}`];
     default:
       return [];
   }
@@ -162,7 +175,7 @@ export async function renderAnalysisTables(fundamentalEl, technicalEl, scored, d
   const sectorKey    = getSectorKey(data.sector);
 
   // ── FUNDAMENTAL rows ─────────────────────────────────────────
-  const FUNDAMENTAL_CRITERIA = ['eps', 'multiples', 'revenue', 'analysts', 'institutional', 'debt'];
+  const FUNDAMENTAL_CRITERIA = ['eps', 'multiples', 'revenue', 'analysts', 'institutional', 'debt', 'peg', 'currentRatio', 'roe', 'fcf'];
   let fundRows = '';
 
   for (const key of FUNDAMENTAL_CRITERIA) {

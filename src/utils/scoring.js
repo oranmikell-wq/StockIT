@@ -190,6 +190,43 @@ export function scoreHighs(highsBroken) {
   return score;
 }
 
+// PEG < 1 = undervalued, 1–2 = fair, > 2 = expensive
+export function scorePEG(peg) {
+  if (peg == null || peg <= 0) return null;
+  if (peg <= 0.5) return 100;
+  if (peg <= 1.0) return normalizeLinear(1.0 - peg, 0, 0.5) * 20 + 80;
+  if (peg <= 2.0) return normalizeLinear(2.0 - peg, 0, 1.0) * 40 + 40;
+  if (peg <= 4.0) return normalizeLinear(4.0 - peg, 0, 2.0) * 35 + 5;
+  return 5;
+}
+
+// Current ratio: > 2 excellent, 1.5–2 good, 1–1.5 ok, < 1 danger
+export function scoreCurrentRatio(cr) {
+  if (cr == null) return null;
+  if (cr >= 2.5) return 100;
+  if (cr >= 2.0) return 85;
+  if (cr >= 1.5) return 70;
+  if (cr >= 1.0) return 45;
+  if (cr >= 0.5) return 20;
+  return 5;
+}
+
+// ROE as %; > 20% excellent, normalised 0–30
+export function scoreROE(roe) {
+  if (roe == null) return null;
+  if (roe < 0) return 5;
+  return normalizeLinear(roe, 0, 30);
+}
+
+// FCF yield = FCF / marketCap * 100; normalised 0–10%
+export function scoreFCF(fcf, marketCap) {
+  if (fcf == null) return null;
+  if (fcf <= 0) return 10;
+  if (marketCap == null || marketCap <= 0) return 50; // positive but unknown yield
+  const yield_ = (fcf / marketCap) * 100;
+  return normalizeLinear(yield_, 0, 10);
+}
+
 // ── RSI + MACD from price history ─────────────────────
 export function calcRSI(closes, period = 14) {
   if (closes.length < period + 1) return null;
@@ -253,16 +290,22 @@ export function calcScore(data, history5y = []) {
   const ath       = closes.length ? Math.max(...closes) : null;
 
   const criteriaScores = {
-    eps:          scoreEPS(data.epsGrowth),
-    multiples:    scoreMultiples(data.pe, data.pb, data.ps, sectorKey),
-    revenue:      scoreRevenue(data.revenueGrowth),
-    analysts:     scoreAnalysts(data.analystScore, data.analystMean),
-    momentum:     scoreMomentum(data.changePct, data.price, data.high52w, data.low52w),
+    // ── Weighted (affect final score) ──────────────────
+    eps:           scoreEPS(data.epsGrowth),
+    multiples:     scoreMultiples(data.pe, data.pb, data.ps, sectorKey),
+    revenue:       scoreRevenue(data.revenueGrowth),
+    analysts:      scoreAnalysts(data.analystScore, data.analystMean),
+    momentum:      scoreMomentum(data.changePct, data.price, data.high52w, data.low52w),
     institutional: scoreInstitutional(data.instPct),
-    debt:         scoreDebt(data.debtEquity, sectorKey),
-    technical:    scoreTechnical(rsi, macd),
-    ath:          scoreATH(data.price, data.high52w, ath),
-    highs:        scoreHighs(highs),
+    debt:          scoreDebt(data.debtEquity, sectorKey),
+    technical:     scoreTechnical(rsi, macd),
+    ath:           scoreATH(data.price, data.high52w, ath),
+    highs:         scoreHighs(highs),
+    // ── Display-only (shown in table, not weighted) ────
+    peg:           scorePEG(data.peg),
+    currentRatio:  scoreCurrentRatio(data.currentRatio),
+    roe:           scoreROE(data.roe),
+    fcf:           scoreFCF(data.fcf, data.marketCap),
   };
 
   let totalWeight = 0;
@@ -270,8 +313,8 @@ export function calcScore(data, history5y = []) {
   let validCount  = 0;
 
   for (const [key, score] of Object.entries(criteriaScores)) {
-    if (score != null) {
-      const w = WEIGHTS[key];
+    const w = WEIGHTS[key];
+    if (score != null && w != null) {   // only WEIGHTS keys contribute to score
       weightedSum += score * w;
       totalWeight += w;
       validCount++;
