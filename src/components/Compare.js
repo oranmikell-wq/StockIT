@@ -2,7 +2,7 @@
 
 import { fetchAllData, fetchHistory } from '../services/StockService.js';
 import { calcScore } from '../utils/scoring.js';
-import { t } from '../utils/i18n.js';
+import { t } from '../utils/i18n.js?v=2';
 import { formatMarketCap } from '../utils/formatters.js';
 import { initCompareChart } from './Chart.js';
 

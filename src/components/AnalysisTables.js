@@ -2,7 +2,7 @@
 // Renders two unified analysis tables: Fundamental + Technical
 // Each row shows: name + ⓘ | score (0–100) or status (YES/NO/NEUTRAL) | expandable description
 
-import { t } from '../utils/i18n.js';
+import { t } from '../utils/i18n.js?v=2';
 import { calcSMA, yahooChart } from '../services/StockService.js';
 import { getSectorKey } from '../utils/scoring.js';
 import { initInfoButtons } from './InfoPopup.js';
