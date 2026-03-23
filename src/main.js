@@ -14,7 +14,6 @@ import { loadAAII }      from './components/AAIISentiment.js';
 import { loadMacroData, loadCryptoPrices, loadUpcomingEvents } from './components/MacroCrypto.js?v=7';
 import { renderMarketStatus, loadDXY, loadCommodities, loadSectorPerformance, loadMovers } from './components/MarketMovers.js?v=1';
 import { initInfoButtons } from './components/InfoPopup.js';
-import { renderQuickScore } from './components/QuickScore.js';
 import { showAutocomplete, hideAutocomplete, selectAutocomplete, confirmAutocomplete, showRecentSearches, initAutocomplete } from './components/Autocomplete.js';
 import { initChart, loadChart, updateChartTheme, initCompareChart } from './components/Chart.js';
 import {
@@ -262,10 +261,6 @@ async function loadResults(symbol) {
     }
 
     renderResults(data, scored);
-
-    // Quick Score widget (needs h5 closes for MA calculation)
-    const qsCloses = h5.map(p => p.value).filter(v => v != null && v > 0);
-    renderQuickScore(document.getElementById('quick-score-container'), scored, qsCloses, data.price);
 
     // Patch highs1y with rolling 52-week high count from 1Y history
     const highs1yEl = document.getElementById('info-highs1y');

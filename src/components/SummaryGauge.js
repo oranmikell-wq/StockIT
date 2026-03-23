@@ -5,6 +5,7 @@
 
 import { t } from '../utils/i18n.js';
 import { getSectorKey, SECTOR_PS, normalizeInverse } from '../utils/scoring.js';
+import { initInfoButtons } from './InfoPopup.js';
 
 // ── SVG geometry constants ────────────────────────────────
 const CX = 150, CY = 158, R = 110;
@@ -309,10 +310,10 @@ function animateGauge(svg, targetScore, duration = 1300) {
 // ═════════════════════════════════════════════════════════
 
 const FACTORS = [
-  { key: 'rsi', i18n: 'factor_rsi' },
-  { key: 'ma',  i18n: 'factor_ma'  },
-  { key: 'pe',  i18n: 'factor_valuation', i18n_ps: 'factor_valuation_ps' },
-  { key: 'rs',  i18n: 'factor_rs'  },
+  { key: 'rsi', i18n: 'factor_rsi',        infoKey: 'crit_technical' },
+  { key: 'ma',  i18n: 'factor_ma',          infoKey: 'sc_ma200'       },
+  { key: 'pe',  i18n: 'factor_valuation', i18n_ps: 'factor_valuation_ps', infoKey: 'crit_multiples' },
+  { key: 'rs',  i18n: 'factor_rs',          infoKey: 'crit_momentum'  },
 ];
 
 function buildBreakdown(breakdown, valuationMetric, weights) {
@@ -322,17 +323,19 @@ function buildBreakdown(breakdown, valuationMetric, weights) {
   // Only show factors that are part of the active weight set
   const activeFactors = FACTORS.filter(f => weights[f.key] != null);
 
-  activeFactors.forEach(({ key, i18n, i18n_ps }, idx) => {
+  activeFactors.forEach(({ key, i18n, i18n_ps, infoKey }, idx) => {
     const label  = (key === 'pe' && valuationMetric === 'ps' && i18n_ps) ? t(i18n_ps) : t(i18n);
     const weight = `${Math.round((weights[key] || 0) * 100)}%`;
     const score  = breakdown?.[key] ?? null;
     const color  = score != null ? scoreToColor(score) : '#cbd5e1';
+    const btn    = infoKey ? `<button class="info-icon-btn" data-info="${infoKey}">i</button>` : '';
 
     const row = document.createElement('div');
     row.className = 'sg-row';
     row.innerHTML = `
       <div class="sg-row-meta">
         <span class="sg-factor-name">${label}</span>
+        ${btn}
         <span class="sg-factor-weight">${weight}</span>
       </div>
       <div class="sg-bar-track">
@@ -423,4 +426,6 @@ export function renderSummaryGauge(container, summaryScored) {
 
   // Kick off animation on the next paint (element must be in the DOM)
   requestAnimationFrame(() => animateGauge(svg, score ?? 0));
+
+  initInfoButtons(card);
 }
