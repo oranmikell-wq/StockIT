@@ -41,7 +41,7 @@
 }
 
 .results-content {
-  padding: 12px 12px 32px;
+  padding: 0 0 32px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1120,19 +1120,20 @@ body.theme-dark .sg-svg {
    PREMIUM UI — Card Layout
    ============================================================ */
 
-/* Results content: flex column with gaps and edge padding */
+/* Results content: flex column with consistent gaps */
 .results-content {
   display: flex !important;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 10px 28px !important;
+  gap: 12px;
+  padding: 12px !important;
 }
 
 /* Every major section becomes a floating card */
 .criteria-section,
 .news-section,
 .summary-gauge-section,
-.chart-section {
+.chart-section,
+.strategy-checklist-section {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   overflow: hidden;
@@ -1154,7 +1155,8 @@ body.theme-dark .sg-svg {
 /* Elevated shadow in dark mode for prominent card lift */
 .theme-dark .criteria-section,
 .theme-dark .news-section,
-.theme-dark .summary-gauge-section {
+.theme-dark .summary-gauge-section,
+.theme-dark .strategy-checklist-section {
   box-shadow: var(--shadow-lg);
   border-color: var(--border);
 }
@@ -1199,7 +1201,7 @@ body.theme-dark .sg-svg {
     width: 80%;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 14px 24px 32px !important;
+    padding: 16px 24px 40px !important;
     gap: 12px;
   }
 }
@@ -1209,7 +1211,7 @@ body.theme-dark .sg-svg {
    ================================================================ */
 
 .strategy-checklist-section {
-  padding: 20px 16px;
+  padding: 20px 16px 16px;
 }
 
 
