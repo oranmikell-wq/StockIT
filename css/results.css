@@ -41,7 +41,10 @@
 }
 
 .results-content {
-  padding: 0 0 32px;
+  padding: 12px 12px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 
@@ -598,7 +601,6 @@
 /* ===== NEWS ===== */
 .news-section {
   padding: 20px 16px;
-  border-bottom: 1px solid var(--border);
 }
 
 .news-list {
@@ -1197,10 +1199,9 @@ body.theme-dark .sg-svg {
     width: 80%;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 14px 16px 32px !important;
-    gap: 10px;
+    padding: 14px 24px 32px !important;
+    gap: 12px;
   }
-
 }
 
 /* ================================================================
@@ -1208,8 +1209,7 @@ body.theme-dark .sg-svg {
    ================================================================ */
 
 .strategy-checklist-section {
-  padding: 28px 0 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 20px 16px;
 }
 
 
