@@ -76,18 +76,39 @@ function renderHomeWatchlist() {
   const items = getWatchlist();
   if (!items.length) { section.style.display = 'none'; return; }
   section.style.display = '';
+
+  // Render chips immediately with placeholder change
   list.innerHTML = items.map(item => {
-    const ratingKey  = item.rating === 'buy' ? 'buy' : item.rating === 'wait' ? 'wait' : 'sell';
-    const badgeCls   = item.rating === 'buy' ? 'badge-buy-bg' : item.rating === 'wait' ? 'badge-wait-bg' : 'badge-sell-bg';
+    const ratingKey = item.rating === 'buy' ? 'buy' : item.rating === 'wait' ? 'wait' : 'sell';
+    const badgeCls  = item.rating === 'buy' ? 'badge-buy-bg' : item.rating === 'wait' ? 'badge-wait-bg' : 'badge-sell-bg';
     return `
       <div class="hwl-item" data-symbol="${item.symbol}">
-        <span class="hwl-symbol">${item.symbol}</span>
-        <span class="hwl-name">${item.name || ''}</span>
-        <span class="wl-badge ${badgeCls}">${t(ratingKey)}</span>
+        <div class="hwl-left">
+          <span class="hwl-symbol">${item.symbol}</span>
+          <span class="hwl-name">${item.name || ''}</span>
+        </div>
+        <div class="hwl-right">
+          <span class="hwl-change hwl-change--loading" id="hwl-change-${item.symbol}">…</span>
+          <span class="wl-badge ${badgeCls}">${t(ratingKey)}</span>
+        </div>
       </div>`;
   }).join('');
+
   list.querySelectorAll('.hwl-item').forEach(el => {
     el.addEventListener('click', () => navigateTo('results', el.dataset.symbol));
+  });
+
+  // Async: fetch change % for each item
+  items.forEach(async item => {
+    try {
+      const quote = await fetchIndexQuote(item.symbol);
+      const el = document.getElementById(`hwl-change-${item.symbol}`);
+      if (!el || quote?.changePct == null) { if (el) el.textContent = ''; return; }
+      const pct  = quote.changePct;
+      const sign = pct >= 0 ? '+' : '';
+      el.textContent = `${sign}${pct.toFixed(2)}%`;
+      el.className   = `hwl-change ${pct >= 0 ? 'hwl-change--pos' : 'hwl-change--neg'}`;
+    } catch { const el = document.getElementById(`hwl-change-${item.symbol}`); if (el) el.textContent = ''; }
   });
 }
 
