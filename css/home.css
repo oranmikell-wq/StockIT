@@ -577,6 +577,21 @@
 }
 
 /* ===== MOVERS + TRENDING ROW ===== */
+/* F&G + Sector Performance side by side */
+.fng-sector-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.fng-sector-row .fng-section {
+  flex: 1;
+  min-width: 0;
+}
+.fng-sector-row .sector-section {
+  flex: 1;
+  min-width: 0;
+}
+
 .movers-trending-row {
   display: flex;
   gap: 16px;

@@ -57,7 +57,7 @@
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script src="https://s3.tradingview.com/tv.js"></script>
   <link rel="stylesheet" href="css/main.css?v=33" />
-  <link rel="stylesheet" href="css/home.css?v=42" />
+  <link rel="stylesheet" href="css/home.css?v=44" />
   <link rel="stylesheet" href="css/results.css?v=27" />
   <link rel="stylesheet" href="css/compare.css?v=12" />
 </head>
@@ -130,28 +130,40 @@
     <main class="home-main">
       <div class="sentiment-row">
         <div class="fng-col">
-          <section class="fng-section">
-            <h2 class="section-title" data-i18n="sectionFearGreed">Fear &amp; Greed</h2>
-            <div class="fng-card">
-              <!-- Toggle inside card -->
-              <div class="fng-toggle" dir="ltr">
-                <button class="fng-tab active" data-fng="stocks" data-i18n="fng_title">Stocks</button>
-                <button class="fng-tab" data-fng="crypto" data-i18n="cryptoFngTab">Crypto</button>
+          <!-- Gainers & Losers -->
+          <section class="movers-section">
+            <h2 class="section-title" data-i18n="sectionMarketMovers">MARKET MOVERS</h2>
+            <div class="movers-card">
+              <div class="movers-header">
+                <button class="movers-tab active" data-tab="gainers" data-i18n="topGainers">Top Gainers</button>
+                <button class="movers-tab" data-tab="losers" data-i18n="topLosers">Top Losers</button>
               </div>
-              <div id="fng-container" class="fng-container">
-                <div class="fng-skeleton"></div>
-              </div>
-              <div id="fng-crypto-container" class="fng-container hidden">
-                <div class="fng-skeleton"></div>
-              </div>
+              <div id="gainers-container" class="movers-list"><div class="macro-skeleton"></div></div>
+              <div id="losers-container"  class="movers-list hidden"><div class="macro-skeleton"></div></div>
             </div>
           </section>
 
-          <!-- Sector Performance -->
-          <section class="sector-section">
-            <h2 class="section-title" data-i18n="sectionSectorPerf">SECTOR PERFORMANCE</h2>
-            <div class="sector-card">
-              <div id="sector-container"><div class="macro-skeleton"></div></div>
+          <!-- Trending Stocks -->
+          <section class="trending-section">
+            <h2 class="section-title" data-i18n="trending">מניות טרנדינג</h2>
+            <div class="sidebar-card">
+              <div id="trending-list" class="trending-list"></div>
+            </div>
+          </section>
+
+          <!-- Recent Searches -->
+          <section class="history-section" id="history-section" style="display:none">
+            <h2 class="section-title" data-i18n="recentSearches">חיפושים אחרונים</h2>
+            <div class="sidebar-card">
+              <div id="history-list" class="history-list"></div>
+            </div>
+          </section>
+
+          <!-- Watchlist block on home page -->
+          <section class="home-watchlist-section" id="home-watchlist-section" style="display:none">
+            <h2 class="section-title" data-i18n="watchlist">רשימת מעקב</h2>
+            <div class="sidebar-card">
+              <div id="home-watchlist-list" class="home-watchlist-list"></div>
             </div>
           </section>
         </div>
@@ -171,6 +183,33 @@
           </div>
 
           <div class="aaii-col">
+            <!-- Fear & Greed + Sector Performance — side by side -->
+            <div class="fng-sector-row">
+              <section class="fng-section">
+                <h2 class="section-title" data-i18n="sectionFearGreed">Fear &amp; Greed</h2>
+                <div class="fng-card">
+                  <div class="fng-toggle" dir="ltr">
+                    <button class="fng-tab active" data-fng="stocks" data-i18n="fng_title">Stocks</button>
+                    <button class="fng-tab" data-fng="crypto" data-i18n="cryptoFngTab">Crypto</button>
+                  </div>
+                  <div id="fng-container" class="fng-container">
+                    <div class="fng-skeleton"></div>
+                  </div>
+                  <div id="fng-crypto-container" class="fng-container hidden">
+                    <div class="fng-skeleton"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="sector-section">
+                <h2 class="section-title" data-i18n="sectionSectorPerf">SECTOR PERFORMANCE</h2>
+                <div class="sector-card">
+                  <div id="sector-container"><div class="macro-skeleton"></div></div>
+                </div>
+              </section>
+            </div>
+
+            <!-- AAII Sentiment Survey -->
             <section class="aaii-section">
               <h2 class="section-title" data-i18n="aaii_title">סקר סנטימנט AAII</h2>
               <div class="aaii-card">
@@ -179,45 +218,6 @@
                 </div>
               </div>
             </section>
-
-            <!-- Movers + Trending + Recent Searches row -->
-            <div class="movers-trending-row">
-              <!-- Gainers & Losers -->
-              <section class="movers-section">
-                <h2 class="section-title" data-i18n="sectionMarketMovers">MARKET MOVERS</h2>
-                <div class="movers-card">
-                  <div class="movers-header">
-                    <button class="movers-tab active" data-tab="gainers" data-i18n="topGainers">Top Gainers</button>
-                    <button class="movers-tab" data-tab="losers" data-i18n="topLosers">Top Losers</button>
-                  </div>
-                  <div id="gainers-container" class="movers-list"><div class="macro-skeleton"></div></div>
-                  <div id="losers-container"  class="movers-list hidden"><div class="macro-skeleton"></div></div>
-                </div>
-              </section>
-
-              <!-- Trending + Recent -->
-              <div class="trending-recent-col">
-                <section class="trending-section">
-                  <h2 class="section-title" data-i18n="trending">מניות טרנדינג</h2>
-                  <div class="sidebar-card">
-                    <div id="trending-list" class="trending-list"></div>
-                  </div>
-                </section>
-                <section class="history-section" id="history-section" style="display:none">
-                  <h2 class="section-title" data-i18n="recentSearches">חיפושים אחרונים</h2>
-                  <div class="sidebar-card">
-                    <div id="history-list" class="history-list"></div>
-                  </div>
-                </section>
-                <!-- Watchlist block on home page -->
-                <section class="home-watchlist-section" id="home-watchlist-section" style="display:none">
-                  <h2 class="section-title" data-i18n="watchlist">רשימת מעקב</h2>
-                  <div class="sidebar-card">
-                    <div id="home-watchlist-list" class="home-watchlist-list"></div>
-                  </div>
-                </section>
-              </div>
-            </div>
           </div>
         </div>
       </div>
