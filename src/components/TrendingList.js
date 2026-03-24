@@ -22,6 +22,7 @@ export function renderTrendingList(onNavigate) {
     const ratingKey = stock.rating === 'buy' ? 'buy' : stock.rating === 'wait' ? 'wait' : 'sell';
     const badgeClass = stock.rating === 'buy' ? 'badge-buy-bg' : stock.rating === 'wait' ? 'badge-wait-bg' : 'badge-sell-bg';
     const changePct = stock.changePct != null ? `${stock.changePct > 0 ? '+' : ''}${stock.changePct.toFixed(1)}%` : '';
+    const price = stock.price != null ? `$${Number(stock.price).toLocaleString(undefined, { maximumFractionDigits: 2 })}` : '';
     return `
       <div class="trending-item" data-symbol="${stock.symbol}">
         <div class="trending-left">
@@ -29,6 +30,7 @@ export function renderTrendingList(onNavigate) {
           <span class="trending-name">${stock.name}</span>
         </div>
         <div class="trending-right">
+          ${price ? `<span class="trending-price">${price}</span>` : ''}
           <span class="trending-change ${stock.changePct != null ? (stock.changePct >= 0 ? 'hwl-change--pos' : 'hwl-change--neg') : 'hwl-change--loading'}">${changePct}</span>
           <span class="trending-badge ${badgeClass}">${t(ratingKey)}</span>
         </div>

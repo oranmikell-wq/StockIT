@@ -501,9 +501,15 @@
   flex-shrink: 0;
 }
 
-.trending-change {
+.trending-price {
   font-size: 12px;
   font-weight: 600;
+  color: var(--text-2);
+}
+
+.trending-change {
+  font-size: 12px;
+  font-weight: 700;
   flex-shrink: 0;
   min-width: 44px;
   text-align: end;
@@ -670,8 +676,8 @@
 .mover-sym   { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.2; }
 .mover-name  { font-size: 11px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
 .mover-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.mover-price { font-size: 12px; font-weight: 600; color: var(--text); }
-.mover-pct   { font-size: 12px; font-weight: 700; min-width: 52px; text-align: end; }
+.mover-price { font-size: 12px; font-weight: 600; color: var(--text-2); }
+.mover-pct   { font-size: 12px; font-weight: 700; min-width: 44px; text-align: end; }
 .mover-pct.positive { color: var(--green); }
 .mover-pct.negative { color: var(--red); }
 
@@ -1059,17 +1065,6 @@
   .market-change { font-size: 12px; }
 
   .trending-section { background: none; }
-  .trending-list { gap: 6px; }
-  .trending-item {
-    padding: 7px 10px;
-    border-radius: 8px;
-    gap: 6px;
-  }
-  .trending-symbol { font-size: 12px; min-width: 38px; }
-  .trending-name   { font-size: 10px; }
-  .trending-change { font-size: 11px; }
-  .trending-badge  { font-size: 8px; padding: 1px 5px; }
-  .trending-rank   { font-size: 10px; width: 12px; }
 
   .history-section { min-width: 0; }
 
@@ -1280,10 +1275,16 @@
   flex-shrink: 0;
 }
 
-.hwl-change {
+.hwl-price {
   font-size: 12px;
   font-weight: 600;
-  min-width: 52px;
+  color: var(--text-2);
+}
+
+.hwl-change {
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 44px;
   text-align: end;
 }
 .hwl-change--loading { color: var(--text-3); }

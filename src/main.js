@@ -88,6 +88,7 @@ function renderHomeWatchlist() {
           <span class="hwl-name">${item.name || ''}</span>
         </div>
         <div class="hwl-right">
+          <span class="hwl-price" id="hwl-price-${item.symbol}"></span>
           <span class="hwl-change hwl-change--loading" id="hwl-change-${item.symbol}">…</span>
           <span class="wl-badge ${badgeCls}">${t(ratingKey)}</span>
         </div>
@@ -98,17 +99,24 @@ function renderHomeWatchlist() {
     el.addEventListener('click', () => navigateTo('results', el.dataset.symbol));
   });
 
-  // Async: fetch change % for each item
+  // Async: fetch price + change % for each item
   items.forEach(async item => {
     try {
       const quote = await fetchIndexQuote(item.symbol);
-      const el = document.getElementById(`hwl-change-${item.symbol}`);
-      if (!el || quote?.changePct == null) { if (el) el.textContent = ''; return; }
+      const priceEl  = document.getElementById(`hwl-price-${item.symbol}`);
+      const changeEl = document.getElementById(`hwl-change-${item.symbol}`);
+      if (quote?.price != null && priceEl) {
+        priceEl.textContent = `$${Number(quote.price).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+      }
+      if (!changeEl || quote?.changePct == null) { if (changeEl) changeEl.textContent = ''; return; }
       const pct  = quote.changePct;
       const sign = pct >= 0 ? '+' : '';
-      el.textContent = `${sign}${pct.toFixed(2)}%`;
-      el.className   = `hwl-change ${pct >= 0 ? 'hwl-change--pos' : 'hwl-change--neg'}`;
-    } catch { const el = document.getElementById(`hwl-change-${item.symbol}`); if (el) el.textContent = ''; }
+      changeEl.textContent = `${sign}${pct.toFixed(2)}%`;
+      changeEl.className   = `hwl-change ${pct >= 0 ? 'hwl-change--pos' : 'hwl-change--neg'}`;
+    } catch {
+      const el = document.getElementById(`hwl-change-${item.symbol}`);
+      if (el) el.textContent = '';
+    }
   });
 }
 
