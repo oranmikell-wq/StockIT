@@ -192,25 +192,28 @@ async function _fetchRSS(rssUrl, sourceName) {
     const res  = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
     const data = await res.json();
     if (data.status !== 'ok' || !data.items?.length) return [];
-    return data.items.slice(0, 6).map(item => ({
-      headline: item.title?.trim() || '',
-      url:      item.link?.trim() || '',
-      source:   sourceName,
-      datetime: new Date(item.pubDate || Date.now()).getTime(),
-      image:    item.thumbnail || item.enclosure?.link || null,
-    })).filter(n => n.headline && n.url);
+    return data.items.slice(0, 8).map(item => {
+      const raw  = item.title?.trim() || '';
+      const dash = raw.lastIndexOf(' - ');
+      const headline = dash > 0 ? raw.slice(0, dash) : raw;
+      const source   = dash > 0 ? raw.slice(dash + 3) : (item.author?.trim() || sourceName);
+      return {
+        headline,
+        url:      item.link?.trim() || '',
+        source,
+        datetime: new Date(item.pubDate || Date.now()).getTime(),
+        image:    item.thumbnail || item.enclosure?.link || null,
+      };
+    }).filter(n => n.headline && n.url);
   } catch { return []; }
 }
 
 async function _fetchLocalNews(container) {
-  // Israeli financial RSS feeds via rss2json.com
+  // Google News RSS — searches return articles from Globes, Bizportal, TheMarker, etc.
   const rssSources = [
-    { url: 'https://www.bizportal.co.il/rss/feed',                                      name: 'ביזפורטל' },
-    { url: 'https://www.globes.co.il/webservice/rss/rssfeeder.asmx/GetFeed?iID=1111',   name: 'גלובס' },
-    { url: 'https://www.globes.co.il/webservice/rss/rssfeeder.asmx/GetFeed?iID=1010',   name: 'גלובס' },
-    { url: 'https://www.ynet.co.il/Integration/StoryRss3084.xml',                       name: 'ynet כלכלה' },
-    { url: 'https://rss.walla.co.il/feed/22',                                           name: 'וואלה כלכלה' },
-    { url: 'https://www.maariv.co.il/rss/rss.aspx?Zone=104',                            name: 'מעריב כלכלה' },
+    { url: 'https://news.google.com/rss/search?q=בורסה+תל+אביב+מניות&hl=iw&gl=IL&ceid=IL:iw',     name: 'שוק ההון' },
+    { url: 'https://news.google.com/rss/search?q=גלובס+שוק+ההון&hl=iw&gl=IL&ceid=IL:iw',          name: 'גלובס' },
+    { url: 'https://news.google.com/rss/search?q=ביזפורטל+מניות+השקעות&hl=iw&gl=IL&ceid=IL:iw',   name: 'ביזפורטל' },
   ];
 
   const results = await Promise.all(rssSources.map(src => _fetchRSS(src.url, src.name)));
