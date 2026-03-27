@@ -277,7 +277,6 @@ let _marketDataLoaded = false;
 function navigateTo(page, symbol = null) {
   _navigateTo(page, symbol, {
     loadResults,
-    renderWatchlist,
     renderCompare,
   });
   if (page === 'home') renderHomeWatchlist();
@@ -685,7 +684,6 @@ function bindEvents() {
   document.getElementById('btn-back')?.addEventListener('click', () => navigateTo('home'));
   document.getElementById('btn-back-err')?.addEventListener('click', () => navigateTo('home'));
   document.getElementById('btn-back-compare')?.addEventListener('click', () => navigateTo('home'));
-  document.getElementById('btn-back-watchlist')?.addEventListener('click', () => navigateTo('home'));
   document.getElementById('btn-back-about')?.addEventListener('click', () => navigateTo('home'));
 
   // Top-bar nav items

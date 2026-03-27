@@ -103,10 +103,6 @@
         <button class="tb-nav-btn nav-btn" data-page="market" title="ניתוח שוק">
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3.5" height="6" rx="0.6" stroke="currentColor" stroke-width="1.5"/><rect x="6.3" y="5" width="3.5" height="10" rx="0.6" stroke="currentColor" stroke-width="1.5"/><rect x="11.5" y="1" width="3.5" height="14" rx="0.6" stroke="currentColor" stroke-width="1.5"/></svg>
         </button>
-        <button class="tb-nav-btn nav-btn" data-page="watchlist" title="Watchlist">
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9L4.4 13l.7-4L2.2 6.2l4-.6L8 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-          <span id="wl-count-badge" class="wl-count-badge" style="display:none">0</span>
-        </button>
         <button class="tb-nav-btn nav-btn" data-page="about" title="About">
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.6"/><line x1="8" y1="7" x2="8" y2="11.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="4.8" r="0.9" fill="currentColor"/></svg>
         </button>
@@ -499,11 +495,6 @@
   </div>
 
   <!-- ===== WATCHLIST PAGE ===== -->
-  <div id="page-watchlist" class="page">
-    <button id="btn-back-watchlist" class="icon-btn back-btn page-back-btn">←</button>
-    <div id="watchlist-content" class="watchlist-content"></div>
-  </div>
-
   <!-- ===== ABOUT US PAGE ===== -->
   <div id="page-about" class="page">
     <button id="btn-back-about" class="icon-btn back-btn page-back-btn">←</button>
@@ -643,7 +634,7 @@
   <!-- ===== IN-APP NOTIFICATION ===== -->
   <div id="notification" class="notification hidden"></div>
 
-  <script type="module" src="src/main.js?v=38"></script>
+  <script type="module" src="src/main.js?v=39"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
