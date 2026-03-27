@@ -222,7 +222,7 @@ async function fetchFinnhubFundamentals(symbol) {
   const from = new Date().toISOString().slice(0, 10);
   const to   = new Date(Date.now() + 270 * 86400000).toISOString().slice(0, 10);
 
-  const [profileRaw, metricRaw, earningsRaw, recommendRaw, priceTargetRaw] = await Promise.all([
+  const [profileRaw, metricRaw, earningsRaw, recommendRaw, priceTargetRaw, epsHistRaw] = await Promise.all([
     fetchWithTimeout(`${base}/stock/profile2?symbol=${encodeURIComponent(symbol)}&token=${key}`, 8000)
       .then(r => r.ok ? r.json() : null).catch(() => null),
     fetchWithTimeout(`${base}/stock/metric?symbol=${encodeURIComponent(symbol)}&metric=all&token=${key}`, 8000)
@@ -232,6 +232,8 @@ async function fetchFinnhubFundamentals(symbol) {
     fetchWithTimeout(`${base}/stock/recommendation?symbol=${encodeURIComponent(symbol)}&token=${key}`, 8000)
       .then(r => r.ok ? r.json() : null).catch(() => null),
     fetchWithTimeout(`${base}/stock/price-target?symbol=${encodeURIComponent(symbol)}&token=${key}`, 8000)
+      .then(r => r.ok ? r.json() : null).catch(() => null),
+    fetchWithTimeout(`${base}/stock/earnings?symbol=${encodeURIComponent(symbol)}&limit=4&token=${key}`, 8000)
       .then(r => r.ok ? r.json() : null).catch(() => null),
   ]);
 
@@ -266,9 +268,18 @@ async function fetchFinnhubFundamentals(symbol) {
   const epsGrowth = m.epsGrowth3Y ?? m.epsBasicExclExtraItemsTTM ?? null;
   const revGrowth = m.revenueGrowthTTMYoy ?? m.revenueGrowth3Y ?? null;
   const debtEq    = m.longTermDebt_equityAnnual ?? m.totalDebt_totalEquityAnnual ?? null;
-  const instPct   = m.institutionalOwnershipPercentage != null ? m.institutionalOwnershipPercentage / 100 : null;
+  const instPct      = m.institutionalOwnershipPercentage != null ? m.institutionalOwnershipPercentage / 100 : null;
   const roe          = m.roeTTM != null ? m.roeTTM / 100 : null;   // convert % → decimal
   const currentRatio = m.currentRatioAnnual ?? m.currentRatioQuarterly ?? null;
+  // New fields for 4-family model
+  const operatingMarginFinnhub = m.operatingProfitMarginTTM ?? m.operatingProfitMarginAnnual ?? null; // already in %
+  const insiderPctFinnhub      = m.insiderOwnershipPercentage != null ? m.insiderOwnershipPercentage / 100 : null;
+  // EPS Surprise: most recent quarter with both actual + estimate
+  const epsHistArr  = Array.isArray(epsHistRaw) ? epsHistRaw : [];
+  const latestEPS   = epsHistArr.find(e => e.actual != null && e.estimate != null && e.estimate !== 0);
+  const epsSurprise = latestEPS
+    ? ((latestEPS.actual - latestEPS.estimate) / Math.abs(latestEPS.estimate)) * 100
+    : null;
 
   return {
     summaryDetail: {
@@ -281,6 +292,7 @@ async function fetchFinnhubFundamentals(symbol) {
     defaultKeyStatistics: {
       priceToSalesTrailing12Months: ps,
       heldPercentInstitutions:      instPct,
+      heldPercentInsiders:          insiderPctFinnhub,
       pegRatio:                     null,   // Finnhub metric=all doesn't provide PEG
     },
     financialData: {
@@ -290,6 +302,7 @@ async function fetchFinnhubFundamentals(symbol) {
       returnOnEquity:          roe,
       currentRatio:            currentRatio,
       freeCashflow:            m.freeCashFlowTTM != null ? m.freeCashFlowTTM * 1e6 : null,
+      operatingMargins:        operatingMarginFinnhub != null ? operatingMarginFinnhub / 100 : null,
       targetMeanPrice:         priceTargetRaw?.targetMean   ?? null,
       targetHighPrice:         priceTargetRaw?.targetHigh   ?? null,
       targetLowPrice:          priceTargetRaw?.targetLow    ?? null,
@@ -307,6 +320,7 @@ async function fetchFinnhubFundamentals(symbol) {
     },
     _finnhubAnalystScore: analystScore,
     _finnhubSource: true,
+    _epsSurprise: epsSurprise,
   };
 }
 
@@ -746,6 +760,18 @@ export function parseAllData({ meta, yfFund, stats, ratings, target, earning, ne
   const tdInstPct = sst.percent_held_by_institutions ?? null;
   const instPct   = yfInstPct ?? tdInstPct ?? finviz?.instOwn ?? null;
 
+  // New fields for 4-family scoring model
+  const rawOperatingMargin = yfFin.operatingMargins?.raw ?? yfFin.operatingMargins ?? null;
+  const operatingMargin    = rawOperatingMargin != null ? rawOperatingMargin * 100 : null; // store as %
+
+  const rawInsiderPct  = yfDef.heldPercentInsiders?.raw ?? yfDef.heldPercentInsiders ?? null;
+  const insiderOwnership = rawInsiderPct != null ? rawInsiderPct * 100 : null; // store as %
+
+  const rawShortFloat = yfDef.shortPercentOfFloat?.raw ?? yfDef.shortPercentOfFloat ?? null;
+  const shortFloat    = rawShortFloat != null ? rawShortFloat * 100 : null; // store as %
+
+  const epsSurprise = yfFund?._epsSurprise ?? null;
+
   const analystMean  = yfFin.recommendationMean?.raw ?? yfFin.recommendationMean ?? null;
   const analystCount = yfFin.numberOfAnalystOpinions?.raw ?? yfFin.numberOfAnalystOpinions ?? null;
   // Use Finnhub/FMP analyst score if Yahoo/TwelveData ratings are unavailable
@@ -798,6 +824,7 @@ export function parseAllData({ meta, yfFund, stats, ratings, target, earning, ne
     debtEquity, earningsDate,
     instPct, epsGrowth, revenueGrowth,
     peg, roe, currentRatio, fcf,
+    operatingMargin, insiderOwnership, shortFloat, epsSurprise,
     newsItems,
   };
 }

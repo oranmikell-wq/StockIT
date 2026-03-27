@@ -464,7 +464,7 @@ async function loadResults(symbol) {
     // If the user navigated to a different stock while this was loading, discard
     if (activeLoadSymbol !== symbol) return;
 
-    const scored = calcScore(data, h5);
+    const scored = calcScore(data, h5, fullStockData?.indicators ?? {});
     currentStock = { ...data, ...scored };
 
     if (offline && cacheDate) {

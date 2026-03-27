@@ -1,13 +1,13 @@
 // AnalysisTables.js
-// Renders two unified analysis tables: Fundamental + Technical
-// Each row shows: name + ⓘ | score (0–100) or status (YES/NO/NEUTRAL) | expandable description
+// Renders four family-based analysis tables: Growth | Valuation | Quality | Technical
+// Each section header shows the family weight and family score (0–100).
 
-import { t } from '../utils/i18n.js?v=4';
+import { t } from '../utils/i18n.js?v=5';
 import { calcSMA, yahooChart } from '../services/StockService.js';
-import { getSectorKey } from '../utils/scoring.js';
+import { getSectorKey, FAMILY_WEIGHTS, GROWTH_WEIGHTS, VALUATION_WEIGHTS, QUALITY_WEIGHTS, TECHNICAL_WEIGHTS } from '../utils/scoring.js';
 import { initInfoButtons } from './InfoPopup.js';
 
-// ── Sector averages (P/E and P/S) ──────────────────────────────
+// ── Sector averages (P/E and P/S) for checklist rows ─────────────
 const INDUSTRY_PE_AVG = {
   technology: 28, financials: 14, energy: 12, healthcare: 22,
   real_estate: 35, consumer: 22, industrials: 20, communication: 22,
@@ -19,8 +19,7 @@ const INDUSTRY_PS_AVG = {
   utilities: 2, materials: 1, default: 3,
 };
 
-// ── Contextual description builder ──────────────────────────────
-
+// ── Contextual description builder ───────────────────────────────
 function buildContextualDesc(key, score, dataItems, data) {
   const vals = dataItems.length ? dataItems.join(' · ') : null;
   let ctx = '';
@@ -32,9 +31,55 @@ function buildContextualDesc(key, score, dataItems, data) {
     case 'revenue':
       ctx = score == null ? '' : score >= 66 ? t('ctxStrongRevenue') : score >= 41 ? t('ctxMidRevenue') : t('ctxWeakRevenue');
       break;
+    case 'epsSurprise':
+      if (data?.epsSurprise != null) {
+        ctx = data.epsSurprise > 5 ? t('ctxPositiveSurprise')
+            : data.epsSurprise < -5 ? t('ctxNegativeSurprise')
+            : t('ctxNeutralSurprise');
+      }
+      break;
+    case 'peg':
+      if (data?.peg != null) ctx = data.peg < 1 ? t('ctxPEGCheap') : data.peg <= 2 ? t('ctxPEGFair') : t('ctxPEGExpensive');
+      break;
+    case 'fcf':
+      if (data?.fcf != null) ctx = data.fcf >= 0 ? t('ctxFCFPositive') : t('ctxFCFNegative');
+      break;
     case 'multiples':
+    case 'peOnly':
       ctx = score == null ? '' : score >= 66 ? t('ctxValuationLow') : score >= 41 ? t('ctxValuationFair') : t('ctxValuationHigh');
       break;
+    case 'operatingMargin':
+      ctx = score == null ? '' : score >= 70 ? t('ctxHighOpMargin') : score >= 40 ? t('ctxMidOpMargin') : t('ctxLowOpMargin');
+      break;
+    case 'insiderOwnership':
+      ctx = score == null ? '' : score >= 75 ? t('ctxHighInsider') : score >= 50 ? t('ctxMidInsider') : t('ctxLowInsider');
+      break;
+    case 'roe':
+      if (data?.roe != null) ctx = data.roe >= 20 ? t('ctxROEHigh') : data.roe >= 15 ? t('ctxROEGood') : data.roe >= 10 ? t('ctxROEMid') : t('ctxROELow');
+      break;
+    case 'currentRatio':
+      if (data?.currentRatio != null) {
+        const cr = data.currentRatio;
+        ctx = cr >= 2 ? t('ctxCRExcellent') : cr >= 1.5 ? t('ctxCRGood') : cr >= 1 ? t('ctxCROk') : t('ctxCRRisk');
+      }
+      break;
+    case 'ma200':
+      ctx = score == null ? '' : score >= 60 ? t('ctxAboveMA200') : t('ctxBelowMA200');
+      break;
+    case 'distFromHigh':
+      ctx = score == null ? '' : score >= 66 ? t('ctxNearHigh52w') : t('ctxFarHigh52w');
+      break;
+    case 'shortFloat':
+      ctx = score == null ? '' : score >= 70 ? t('ctxLowShort') : t('ctxHighShort');
+      break;
+    case 'rsiScore': {
+      const rsiMatch = vals?.match(/RSI[:\s]+(\d+\.?\d*)/);
+      const rsi = rsiMatch ? parseFloat(rsiMatch[1]) : null;
+      ctx = rsi != null ? (rsi > 70 ? t('ctxRSIOverbought') : rsi < 30 ? t('ctxRSIOversold') : t('ctxRSINeutral'))
+          : score == null ? '' : score >= 66 ? t('ctxHighMomentum') : score >= 41 ? t('ctxRSINeutral') : t('ctxLowMomentum');
+      break;
+    }
+    // Legacy display-only
     case 'analysts':
       ctx = score == null ? '' : score >= 66 ? t('ctxBullishConsensus') : score >= 41 ? t('ctxNeutralConsensus') : t('ctxBearishConsensus');
       break;
@@ -47,33 +92,11 @@ function buildContextualDesc(key, score, dataItems, data) {
     case 'debt':
       ctx = score == null ? '' : score >= 66 ? t('ctxLowDebt') : score >= 41 ? t('ctxMidDebt') : t('ctxHighDebt');
       break;
-    case 'technical': {
-      const rsiMatch = vals?.match(/RSI[:\s]+(\d+\.?\d*)/);
-      const rsi = rsiMatch ? parseFloat(rsiMatch[1]) : null;
-      ctx = rsi != null ? (rsi > 70 ? t('ctxRSIOverbought') : rsi < 30 ? t('ctxRSIOversold') : t('ctxRSINeutral'))
-          : score == null ? '' : score >= 66 ? t('ctxHighMomentum') : score >= 41 ? t('ctxRSINeutral') : t('ctxLowMomentum');
-      break;
-    }
     case 'ath':
       ctx = score == null ? '' : score >= 66 ? t('ctxNearHigh') : t('ctxFarFromHigh');
       break;
     case 'highs':
       ctx = score == null ? '' : score >= 66 ? t('ctxManyHighs') : t('ctxFewHighs');
-      break;
-    case 'peg':
-      if (data?.peg != null) ctx = data.peg < 1 ? t('ctxPEGCheap') : data.peg <= 2 ? t('ctxPEGFair') : t('ctxPEGExpensive');
-      break;
-    case 'currentRatio':
-      if (data?.currentRatio != null) {
-        const cr = data.currentRatio;
-        ctx = cr >= 2 ? t('ctxCRExcellent') : cr >= 1.5 ? t('ctxCRGood') : cr >= 1 ? t('ctxCROk') : t('ctxCRRisk');
-      }
-      break;
-    case 'roe':
-      if (data?.roe != null) ctx = data.roe >= 20 ? t('ctxROEHigh') : data.roe >= 15 ? t('ctxROEGood') : data.roe >= 10 ? t('ctxROEMid') : t('ctxROELow');
-      break;
-    case 'fcf':
-      if (data?.fcf != null) ctx = data.fcf >= 0 ? t('ctxFCFPositive') : t('ctxFCFNegative');
       break;
     default:
       ctx = '';
@@ -82,91 +105,56 @@ function buildContextualDesc(key, score, dataItems, data) {
   if (vals && ctx) return `${vals} — ${ctx}`;
   if (vals) return vals;
   if (ctx) return ctx;
-  return t('criteria_' + key + '_desc');
+  return t('criteria_' + key + '_desc') || '';
 }
 
-// ── Row builders ────────────────────────────────────────────────
-
-/**
- * Scored row: Indicator | Score | Status | Explanation
- */
-function criteriaRow(key, score, descText, dataItems = [], data = null) {
-  const hasData    = score != null;
-  const scoreNum   = hasData ? Math.round(score) : '—';
-  const statusCls  = !hasData ? 'score-none' : score >= 66 ? 'score-high' : score >= 41 ? 'score-mid' : 'score-low';
-  const statusText = !hasData ? t('noData') : score >= 66 ? t('statusHigh') : score >= 41 ? t('statusMid') : t('statusLow');
-  const barColor   = !hasData ? 'var(--border)' : score >= 66 ? 'var(--green)' : score >= 41 ? 'var(--yellow)' : 'var(--red)';
-  const descLine   = buildContextualDesc(key, score, dataItems, data);
-  return `
-    <tr class="at-tr">
-      <td class="at-td-name">
-        <span class="at-name">${t('criteria_' + key)}</span>
-        <button class="info-icon-btn" data-info="crit_${key}" aria-label="info">i</button>
-      </td>
-      <td class="at-td-score">
-        <div class="at-score-wrap">
-          <span class="at-score-num">${scoreNum}</span>
-          ${hasData ? `<div class="at-bar-track"><div class="at-bar" style="width:${score}%;background:${barColor}"></div></div>` : ''}
-        </div>
-      </td>
-      <td class="at-td-status">
-        <span class="criteria-score-badge ${statusCls}">${statusText}</span>
-      </td>
-      <td class="at-td-desc">${descLine}</td>
-    </tr>`;
-}
-
-/**
- * Checklist row: Indicator | — | YES/NO/NEUTRAL | Explanation
- */
-function checklistRow(name, infoKey, statusType, statusLabel, insight, score) {
-  const statusCls  = statusType === 'YES' ? 'score-high' : statusType === 'NO' ? 'score-low' : statusType === 'NEUTRAL' ? 'score-mid' : 'score-none';
-  const badgeText  = statusLabel || (statusType === 'YES' ? '✓' : statusType === 'NO' ? '✗' : statusType === 'NEUTRAL' ? '~' : 'N/A');
-  const descLine   = insight || '—';
-  return `
-    <tr class="at-tr">
-      <td class="at-td-name">
-        <span class="at-name">${name}</span>
-        <button class="info-icon-btn" data-info="${infoKey}" aria-label="info">i</button>
-      </td>
-      <td class="at-td-score">—</td>
-      <td class="at-td-status">
-        <span class="criteria-score-badge ${statusCls}">${badgeText}</span>
-      </td>
-      <td class="at-td-desc">${descLine}</td>
-    </tr>`;
-}
-
-// ── Section wrapper ─────────────────────────────────────────────
-function sectionHTML(titleKey, rows) {
-  return `
-    <h2 class="section-title at-section-title">${t(titleKey)}</h2>
-    <table class="at-table">
-      <thead>
-        <tr class="at-thead-tr">
-          <th class="at-th at-th-name">${t('colIndicator')}</th>
-          <th class="at-th at-th-score">${t('colScore')}</th>
-          <th class="at-th at-th-status">${t('colStatus')}</th>
-          <th class="at-th at-th-desc">${t('colExplanation')}</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-}
-
-// ── Raw data helpers (same as CriteriaTable.js) ─────────────────
+// ── Raw data helpers ──────────────────────────────────────────────
 function rawDataFor(key, scored, data) {
   switch (key) {
     case 'eps':
       return data.epsGrowth != null ? [`${t('criteriaEpsGrowthLabel')}: ${data.epsGrowth.toFixed(1)}%`] : [];
+    case 'revenue':
+      return data.revenueGrowth != null ? [`${t('criteriaRevenueGrowthLabel')}: ${data.revenueGrowth.toFixed(1)}%`] : [];
+    case 'epsSurprise':
+      return data.epsSurprise != null ? [`Surprise: ${data.epsSurprise > 0 ? '+' : ''}${data.epsSurprise.toFixed(1)}%`] : [];
+    case 'peg':
+      return data.peg != null ? [`PEG: ${data.peg.toFixed(2)}`] : [];
+    case 'fcf': {
+      if (data.fcf == null) return [];
+      const abs = Math.abs(data.fcf);
+      const fmt = abs >= 1e9 ? `${(data.fcf / 1e9).toFixed(1)}B`
+                : abs >= 1e6 ? `${(data.fcf / 1e6).toFixed(0)}M`
+                : `${data.fcf.toFixed(0)}`;
+      return [`FCF: $${fmt}`];
+    }
+    case 'peOnly':
     case 'multiples':
       return [
         data.pe != null ? (data.pe > 0 ? `P/E: ${data.pe.toFixed(1)}` : 'P/E: N/A') : null,
         data.pb && data.pb > 0 ? `P/B: ${data.pb.toFixed(1)}` : null,
         data.ps && data.ps > 0 ? `P/S: ${data.ps.toFixed(1)}` : null,
       ].filter(Boolean);
-    case 'revenue':
-      return data.revenueGrowth != null ? [`${t('criteriaRevenueGrowthLabel')}: ${data.revenueGrowth.toFixed(1)}%`] : [];
+    case 'operatingMargin':
+      return data.operatingMargin != null ? [`Margin: ${data.operatingMargin.toFixed(1)}%`] : [];
+    case 'insiderOwnership':
+      return data.insiderOwnership != null ? [`Insider: ${data.insiderOwnership.toFixed(1)}%`] : [];
+    case 'roe':
+      return data.roe != null ? [`ROE: ${data.roe.toFixed(1)}%`] : [];
+    case 'currentRatio':
+      return data.currentRatio != null ? [`CR: ${data.currentRatio.toFixed(2)}`] : [];
+    case 'ma200':
+      return data.price != null && scored.criteria?.ma200 != null
+        ? [`Price vs MA200: ${((data.price / (scored._ma200 || data.price)) * 100 - 100).toFixed(1)}%`]
+        : [];
+    case 'distFromHigh':
+      return data.price != null && data.high52w != null
+        ? [`52W High: $${data.high52w.toFixed(2)}`, `Dist: ${(((data.price - data.high52w) / data.high52w) * 100).toFixed(1)}%`]
+        : [];
+    case 'shortFloat':
+      return data.shortFloat != null ? [`Short: ${data.shortFloat.toFixed(1)}%`] : [];
+    case 'rsiScore':
+      return scored.technicals?.rsi != null ? [`RSI: ${scored.technicals.rsi.toFixed(1)}`] : [];
+    // Legacy
     case 'analysts': {
       if (data.analystMean != null) {
         const labelKeys = ['', 'analystStrongBuy', 'analystBuy', 'analystHold', 'analystUnderperform', 'analystSell'];
@@ -187,51 +175,101 @@ function rawDataFor(key, scored, data) {
     case 'momentum':
       return [
         data.changePct != null && `${t('criteriaDailyChange')}: ${data.changePct.toFixed(2)}%`,
-        data.high52w   && `${t('criteria52wHigh')}: ${data.high52w.toFixed(2)}`,
       ].filter(Boolean);
     case 'institutional':
       return data.instPct != null ? [`Holdings: ${(data.instPct * 100).toFixed(1)}%`] : [];
     case 'debt':
       return data.debtEquity != null ? [`D/E: ${data.debtEquity.toFixed(2)}`] : [];
-    case 'technical':
-      return [
-        scored.technicals?.rsi  != null && `RSI: ${scored.technicals.rsi.toFixed(1)}`,
-        scored.technicals?.macd != null && `MACD: ${scored.technicals.macd.toFixed(2)}`,
-      ].filter(Boolean);
     case 'ath':
       return [
-        data.price    != null && data.high52w != null && `52w High: $${data.high52w.toFixed(2)}`,
-        data.price    != null && `${t('distFromHigh')}: ${data.high52w ? (((data.price - data.high52w) / data.high52w) * 100).toFixed(1) + '%' : 'N/A'}`,
+        data.price != null && data.high52w != null && `52W High: $${data.high52w.toFixed(2)}`,
+        data.price != null && `${t('distFromHigh')}: ${data.high52w ? (((data.price - data.high52w) / data.high52w) * 100).toFixed(1) + '%' : 'N/A'}`,
       ].filter(Boolean);
     case 'highs':
       return scored.technicals?.highs
-        ? [`1Y: ${scored.technicals.highs.y1 ?? 0}×`, `3Y: ${scored.technicals.highs.y3 ?? 0}×`, `5Y: ${scored.technicals.highs.y5 ?? 0}×`]
+        ? [`1Y: ${scored.technicals.highs.y1 ?? 0}×`, `3Y: ${scored.technicals.highs.y3 ?? 0}×`]
         : [];
-    case 'peg':
-      return data.peg != null ? [`PEG: ${data.peg.toFixed(2)}`] : [];
-    case 'currentRatio':
-      return data.currentRatio != null ? [`${data.currentRatio.toFixed(2)}`] : [];
-    case 'roe':
-      return data.roe != null ? [`ROE: ${data.roe.toFixed(1)}%`] : [];
-    case 'fcf':
-      if (data.fcf == null) return [];
-      const fcfAbs = Math.abs(data.fcf);
-      const fcfFmt = fcfAbs >= 1e9 ? `${(data.fcf / 1e9).toFixed(1)}B`
-                   : fcfAbs >= 1e6 ? `${(data.fcf / 1e6).toFixed(0)}M`
-                   : `${data.fcf.toFixed(0)}`;
-      return [`FCF: $${fcfFmt}`];
     default:
       return [];
   }
 }
 
-// ── Main render ─────────────────────────────────────────────────
+// ── Row builders ──────────────────────────────────────────────────
+function criteriaRow(key, score, dataItems = [], data = null) {
+  const hasData    = score != null;
+  const scoreNum   = hasData ? Math.round(score) : '—';
+  const statusCls  = !hasData ? 'score-none' : score >= 66 ? 'score-high' : score >= 41 ? 'score-mid' : 'score-low';
+  const statusText = !hasData ? t('noData') : score >= 66 ? t('statusHigh') : score >= 41 ? t('statusMid') : t('statusLow');
+  const barColor   = !hasData ? 'var(--border)' : score >= 66 ? 'var(--green)' : score >= 41 ? 'var(--yellow)' : 'var(--red)';
+  const descLine   = buildContextualDesc(key, score, dataItems, data);
+  const nameKey    = 'criteria_' + key;
+  const name       = t(nameKey) || key;
+  const infoKey    = `crit_${key}`;
+  return `
+    <tr class="at-tr">
+      <td class="at-td-name">
+        <span class="at-name">${name}</span>
+        <button class="info-icon-btn" data-info="${infoKey}" aria-label="info">i</button>
+      </td>
+      <td class="at-td-score">
+        <div class="at-score-wrap">
+          <span class="at-score-num">${scoreNum}</span>
+          ${hasData ? `<div class="at-bar-track"><div class="at-bar" style="width:${score}%;background:${barColor}"></div></div>` : ''}
+        </div>
+      </td>
+      <td class="at-td-status">
+        <span class="criteria-score-badge ${statusCls}">${statusText}</span>
+      </td>
+      <td class="at-td-desc">${descLine}</td>
+    </tr>`;
+}
 
+function checklistRow(name, infoKey, statusType, statusLabel, insight) {
+  const statusCls  = statusType === 'YES' ? 'score-high' : statusType === 'NO' ? 'score-low' : statusType === 'NEUTRAL' ? 'score-mid' : 'score-none';
+  const badgeText  = statusLabel || (statusType === 'YES' ? '✓' : statusType === 'NO' ? '✗' : statusType === 'NEUTRAL' ? '~' : 'N/A');
+  return `
+    <tr class="at-tr">
+      <td class="at-td-name">
+        <span class="at-name">${name}</span>
+        <button class="info-icon-btn" data-info="${infoKey}" aria-label="info">i</button>
+      </td>
+      <td class="at-td-score">—</td>
+      <td class="at-td-status">
+        <span class="criteria-score-badge ${statusCls}">${badgeText}</span>
+      </td>
+      <td class="at-td-desc">${insight || '—'}</td>
+    </tr>`;
+}
+
+// ── Section wrapper with family score ────────────────────────────
+function sectionHTML(titleKey, familyScore, rows) {
+  const scoreDisplay = familyScore != null ? Math.round(familyScore) : '—';
+  const scoreCls = familyScore == null ? 'score-none' : familyScore >= 66 ? 'score-high' : familyScore >= 41 ? 'score-mid' : 'score-low';
+  return `
+    <div class="at-family-header">
+      <h2 class="section-title at-section-title">${t(titleKey)}</h2>
+      <span class="criteria-score-badge ${scoreCls} at-family-score">${scoreDisplay}</span>
+    </div>
+    <table class="at-table">
+      <thead>
+        <tr class="at-thead-tr">
+          <th class="at-th at-th-name">${t('colIndicator')}</th>
+          <th class="at-th at-th-score">${t('colScore')}</th>
+          <th class="at-th at-th-status">${t('colStatus')}</th>
+          <th class="at-th at-th-desc">${t('colExplanation')}</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ── Main render ───────────────────────────────────────────────────
 /**
  * renderAnalysisTables(fundamentalEl, technicalEl, scored, data, history, indicators)
  *
- * Renders two unified tables: Fundamental + Technical.
- * The SPY row is updated asynchronously after the initial render.
+ * Renders 4 family sections:
+ *   fundamentalEl → Growth + Valuation
+ *   technicalEl   → Quality + Technical
  */
 export async function renderAnalysisTables(fundamentalEl, technicalEl, scored, data, history, indicators) {
   if (!fundamentalEl && !technicalEl) return;
@@ -239,63 +277,66 @@ export async function renderAnalysisTables(fundamentalEl, technicalEl, scored, d
   const closes       = (history || []).map(h => h.value).filter(v => v != null && v > 0);
   const currentPrice = data.price;
   const sectorKey    = getSectorKey(data.sector);
+  const families     = scored.families || {};
 
-  // ── FUNDAMENTAL rows ─────────────────────────────────────────
-  const FUNDAMENTAL_CRITERIA = ['eps', 'multiples', 'revenue', 'analysts', 'institutional', 'debt', 'peg', 'currentRatio', 'roe', 'fcf'];
-  let fundRows = '';
-
-  for (const key of FUNDAMENTAL_CRITERIA) {
-    const score = scored.criteria[key];
-    fundRows += criteriaRow(key, score, '', rawDataFor(key, scored, data), data);
+  // ── GROWTH rows ──────────────────────────────────────────────
+  let growthRows = '';
+  const growthCriteria = ['epsSurprise', 'eps', 'revenue'];
+  for (const key of growthCriteria) {
+    growthRows += criteriaRow(key, scored.criteria[key], rawDataFor(key, scored, data), data);
   }
 
-  // P/E vs Sector (checklist item → Fundamental)
+  // ── VALUATION rows ───────────────────────────────────────────
+  let valRows = '';
+  // PEG (50%)
+  valRows += criteriaRow('peg', scored.criteria.peg, rawDataFor('peg', scored, data), data);
+  // FCF (30%)
+  valRows += criteriaRow('fcf', scored.criteria.fcf, rawDataFor('fcf', scored, data), data);
+  // P/E only (20%) — display P/E, P/B, P/S for context
+  valRows += criteriaRow('peOnly', scored.criteria.peOnly, rawDataFor('multiples', scored, data), data);
+
+  // P/E vs Sector (checklist item)
   const industryAvgPE = INDUSTRY_PE_AVG[sectorKey] || INDUSTRY_PE_AVG.default;
   const industryAvgPS = INDUSTRY_PS_AVG[sectorKey] || INDUSTRY_PS_AVG.default;
   const sectorLabel   = data.sector || '';
-
   if (data.pe != null && data.pe > 0) {
     const ratio = data.pe / industryAvgPE;
     let vType, vLabel, vInsight;
-    if (ratio <= 0.8) {
-      vType = 'YES'; vLabel = t('sc_cheap');
-      vInsight = t('sc_i_pe_cheap', { pe: data.pe.toFixed(1), pct: ((1 - ratio) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPE });
-    } else if (ratio <= 1.2) {
-      vType = 'NEUTRAL'; vLabel = t('sc_fair');
-      vInsight = t('sc_i_pe_fair', { pe: data.pe.toFixed(1), sector: sectorLabel, avg: industryAvgPE });
-    } else {
-      vType = 'NO'; vLabel = t('sc_expensive');
-      vInsight = t('sc_i_pe_expensive', { pe: data.pe.toFixed(1), pct: ((ratio - 1) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPE });
-    }
-    fundRows += checklistRow(t('sc_pe_vs_sector'), 'sc_pe_sector', vType, vLabel, vInsight);
+    if (ratio <= 0.8)       { vType = 'YES';     vLabel = t('sc_cheap');     vInsight = t('sc_i_pe_cheap',    { pe: data.pe.toFixed(1), pct: ((1 - ratio) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPE }); }
+    else if (ratio <= 1.2)  { vType = 'NEUTRAL'; vLabel = t('sc_fair');      vInsight = t('sc_i_pe_fair',     { pe: data.pe.toFixed(1), sector: sectorLabel, avg: industryAvgPE }); }
+    else                    { vType = 'NO';      vLabel = t('sc_expensive'); vInsight = t('sc_i_pe_expensive', { pe: data.pe.toFixed(1), pct: ((ratio - 1) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPE }); }
+    valRows += checklistRow(t('sc_pe_vs_sector'), 'sc_pe_sector', vType, vLabel, vInsight);
   } else if (data.ps != null && data.ps > 0) {
     const ratio = data.ps / industryAvgPS;
     let vType, vLabel, vInsight;
-    if (ratio <= 0.8) {
-      vType = 'YES'; vLabel = t('sc_cheap');
-      vInsight = t('sc_i_ps_cheap', { ps: data.ps.toFixed(1), pct: ((1 - ratio) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPS });
-    } else if (ratio <= 1.2) {
-      vType = 'NEUTRAL'; vLabel = t('sc_fair');
-      vInsight = t('sc_i_ps_fair', { ps: data.ps.toFixed(1), sector: sectorLabel, avg: industryAvgPS });
-    } else {
-      vType = 'NO'; vLabel = t('sc_expensive');
-      vInsight = t('sc_i_ps_expensive', { ps: data.ps.toFixed(1), pct: ((ratio - 1) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPS });
-    }
-    fundRows += checklistRow(t('sc_ps_vs_sector'), 'sc_pe_sector', vType, vLabel, vInsight);
-  } else {
-    fundRows += checklistRow(t('sc_pe_vs_sector'), 'sc_pe_sector', 'NA', null, t('sc_i_pe_nodata'));
+    if (ratio <= 0.8)      { vType = 'YES';     vLabel = t('sc_cheap');     vInsight = t('sc_i_ps_cheap',     { ps: data.ps.toFixed(1), pct: ((1 - ratio) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPS }); }
+    else if (ratio <= 1.2) { vType = 'NEUTRAL'; vLabel = t('sc_fair');      vInsight = t('sc_i_ps_fair',      { ps: data.ps.toFixed(1), sector: sectorLabel, avg: industryAvgPS }); }
+    else                   { vType = 'NO';      vLabel = t('sc_expensive'); vInsight = t('sc_i_ps_expensive',  { ps: data.ps.toFixed(1), pct: ((ratio - 1) * 100).toFixed(0), sector: sectorLabel, avg: industryAvgPS }); }
+    valRows += checklistRow(t('sc_ps_vs_sector'), 'sc_pe_sector', vType, vLabel, vInsight);
   }
+
+  // ── QUALITY rows ─────────────────────────────────────────────
+  let qualRows = '';
+  const qualityCriteria = ['operatingMargin', 'insiderOwnership', 'roe', 'currentRatio'];
+  for (const key of qualityCriteria) {
+    qualRows += criteriaRow(key, scored.criteria[key], rawDataFor(key, scored, data), data);
+  }
+  // Bonus display rows (not in scoring model but informative)
+  qualRows += criteriaRow('debt',        scored.criteria.debt,        rawDataFor('debt',        scored, data), data);
+  qualRows += criteriaRow('institutional', scored.criteria.institutional, rawDataFor('institutional', scored, data), data);
 
   // ── TECHNICAL rows ───────────────────────────────────────────
-  const TECHNICAL_CRITERIA = ['momentum', 'technical', 'ath', 'highs'];
   let techRows = '';
+  // MA200 position (40%)
+  techRows += criteriaRow('ma200', scored.criteria.ma200, rawDataFor('ma200', scored, data), data);
+  // Distance from 52W High (25%)
+  techRows += criteriaRow('distFromHigh', scored.criteria.distFromHigh, rawDataFor('distFromHigh', scored, data), data);
+  // Short Float (20%)
+  techRows += criteriaRow('shortFloat', scored.criteria.shortFloat, rawDataFor('shortFloat', scored, data), data);
+  // RSI (15%)
+  techRows += criteriaRow('rsiScore', scored.criteria.rsiScore, rawDataFor('rsiScore', scored, data), data);
 
-  for (const key of TECHNICAL_CRITERIA) {
-    const score = scored.criteria[key];
-    techRows += criteriaRow(key, score, '', rawDataFor(key, scored, data), data);
-  }
-
-  // MA150
+  // MA150 checklist
   const ma150 = calcSMA(closes, 150);
   if (ma150 != null && currentPrice != null) {
     const above = currentPrice > ma150;
@@ -306,7 +347,7 @@ export async function renderAnalysisTables(fundamentalEl, technicalEl, scored, d
     techRows += checklistRow(t('sc_ma150'), 'sc_ma150', 'NA', null, t('sc_i_ma_nodata', { n: 150 }));
   }
 
-  // MA200
+  // MA200 checklist
   if (indicators?.ma200 != null && currentPrice != null) {
     const above = indicators.priceAboveMA200;
     const pct   = Math.abs((currentPrice / indicators.ma200 - 1) * 100).toFixed(1);
@@ -343,7 +384,10 @@ export async function renderAnalysisTables(fundamentalEl, technicalEl, scored, d
       ? t('sc_i_dbl_found', { v: dbl.variance, r: dbl.recovery, msg: dbl.confirmed ? t('sc_i_dbl_confirmed') : t('sc_i_dbl_forming') })
       : t('sc_i_dbl_none'));
 
-  // SPY placeholder (async)
+  // Analyst recommendations (bonus display row)
+  techRows += criteriaRow('analysts', scored.criteria.analysts, rawDataFor('analysts', scored, data), data);
+
+  // SPY drawdown placeholder (async)
   const spyId = `at-spy-${Date.now()}`;
   techRows += `
     <tr class="at-tr" id="${spyId}">
@@ -358,17 +402,21 @@ export async function renderAnalysisTables(fundamentalEl, technicalEl, scored, d
       <td class="at-td-desc at-spy-desc">—</td>
     </tr>`;
 
-  // ── Render ──────────────────────────────────────────────────
+  // ── Render ───────────────────────────────────────────────────
   if (fundamentalEl) {
-    fundamentalEl.innerHTML = sectionHTML('analysisFundamental', fundRows);
+    fundamentalEl.innerHTML =
+      sectionHTML('analysisFamilyGrowth', families.growth, growthRows) +
+      sectionHTML('analysisFamilyValuation', families.valuation, valRows);
     initInfoButtons(fundamentalEl);
   }
   if (technicalEl) {
-    technicalEl.innerHTML = sectionHTML('analysisTechnical', techRows);
+    technicalEl.innerHTML =
+      sectionHTML('analysisFamilyQuality', families.quality, qualRows) +
+      sectionHTML('analysisFamilyTechnical', families.technical, techRows);
     initInfoButtons(technicalEl);
   }
 
-  // ── Async: fetch SPY ────────────────────────────────────────
+  // ── Async: fetch SPY ─────────────────────────────────────────
   try {
     const spyRaw    = await yahooChart('SPY', '1y', '1d');
     const spyCloses = (spyRaw?.chart?.result?.[0]?.indicators?.quote?.[0]?.close || []).filter(v => v != null && v > 0);
@@ -382,16 +430,9 @@ export async function renderAnalysisTables(fundamentalEl, technicalEl, scored, d
       const diff          = stockDrawdown - spyDrawdown;
 
       let spyType, spyLabel, spyInsight;
-      if (diff < -3) {
-        spyType = 'YES'; spyLabel = t('sc_stronger');
-        spyInsight = t('sc_i_spy_stronger', { stock: stockDrawdown.toFixed(1), spy: spyDrawdown.toFixed(1), diff: Math.abs(diff).toFixed(1) });
-      } else if (diff > 3) {
-        spyType = 'NO'; spyLabel = t('sc_weaker');
-        spyInsight = t('sc_i_spy_weaker', { stock: stockDrawdown.toFixed(1), spy: spyDrawdown.toFixed(1), diff: diff.toFixed(1) });
-      } else {
-        spyType = 'NEUTRAL'; spyLabel = t('sc_in_line');
-        spyInsight = t('sc_i_spy_inline', { stock: stockDrawdown.toFixed(1), spy: spyDrawdown.toFixed(1) });
-      }
+      if (diff < -3)      { spyType = 'YES'; spyLabel = t('sc_stronger'); spyInsight = t('sc_i_spy_stronger', { stock: stockDrawdown.toFixed(1), spy: spyDrawdown.toFixed(1), diff: Math.abs(diff).toFixed(1) }); }
+      else if (diff > 3)  { spyType = 'NO';  spyLabel = t('sc_weaker');   spyInsight = t('sc_i_spy_weaker',   { stock: stockDrawdown.toFixed(1), spy: spyDrawdown.toFixed(1), diff: diff.toFixed(1) }); }
+      else                { spyType = 'NEUTRAL'; spyLabel = t('sc_in_line'); spyInsight = t('sc_i_spy_inline', { stock: stockDrawdown.toFixed(1), spy: spyDrawdown.toFixed(1) }); }
 
       const spyRow = document.getElementById(spyId);
       if (spyRow) {
@@ -402,10 +443,10 @@ export async function renderAnalysisTables(fundamentalEl, technicalEl, scored, d
         if (desc)  { desc.textContent = spyInsight; }
       }
     }
-  } catch { /* SPY unavailable — keep N/A state */ }
+  } catch { /* SPY unavailable */ }
 }
 
-// ── Pattern detection (from StrategyChecklist.js) ───────────────
+// ── Pattern detection ─────────────────────────────────────────────
 
 export function countNewHighs(closes) {
   if (!closes || closes.length < 5) return 0;
