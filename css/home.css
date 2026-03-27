@@ -1358,3 +1358,19 @@
   color: var(--text-3);
   margin-top: 3px;
 }
+
+/* ===== MARKET ANALYSIS PAGE ===== */
+.market-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.market-page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}

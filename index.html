@@ -57,7 +57,7 @@
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script src="https://s3.tradingview.com/tv.js"></script>
   <link rel="stylesheet" href="css/main.css?v=33" />
-  <link rel="stylesheet" href="css/home.css?v=48" />
+  <link rel="stylesheet" href="css/home.css?v=49" />
   <link rel="stylesheet" href="css/results.css?v=27" />
   <link rel="stylesheet" href="css/compare.css?v=12" />
 </head>
@@ -99,6 +99,9 @@
       <nav class="tb-nav">
         <button class="tb-nav-btn nav-btn" data-page="home" title="Home">
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2l6 4.5V14H10v-3H6v3H2V6.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="tb-nav-btn nav-btn" data-page="market" title="ניתוח שוק">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3.5" height="6" rx="0.6" stroke="currentColor" stroke-width="1.5"/><rect x="6.3" y="5" width="3.5" height="10" rx="0.6" stroke="currentColor" stroke-width="1.5"/><rect x="11.5" y="1" width="3.5" height="14" rx="0.6" stroke="currentColor" stroke-width="1.5"/></svg>
         </button>
         <button class="tb-nav-btn nav-btn" data-page="watchlist" title="Watchlist">
           <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9L4.4 13l.7-4L2.2 6.2l4-.6L8 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
@@ -183,57 +186,21 @@
           </div>
 
           <div class="aaii-col">
-            <!-- Fear & Greed + Sector Performance — side by side -->
-            <div class="fng-sector-row">
-              <section class="fng-section">
-                <h2 class="section-title" data-i18n="sectionFearGreed">Fear &amp; Greed</h2>
-                <div class="fng-card">
-                  <div class="fng-toggle" dir="ltr">
-                    <button class="fng-tab active" data-fng="stocks" data-i18n="fng_title">Stocks</button>
-                    <button class="fng-tab" data-fng="crypto" data-i18n="cryptoFngTab">Crypto</button>
-                  </div>
-                  <div id="fng-container" class="fng-container">
-                    <div class="fng-skeleton"></div>
-                  </div>
-                  <div id="fng-crypto-container" class="fng-container hidden">
-                    <div class="fng-skeleton"></div>
-                  </div>
+            <!-- Home Market News -->
+            <section class="home-news-section">
+              <h2 class="section-title" data-i18n="sectionHomeNews">חדשות שוק</h2>
+              <div class="sidebar-card home-news-card">
+                <div class="home-news-tabs">
+                  <button class="home-news-tab active" data-tab="global" data-i18n="newsGlobal">עולמי</button>
+                  <button class="home-news-tab" data-tab="local" data-i18n="newsLocal">מקומי</button>
                 </div>
-              </section>
-
-              <section class="sector-section">
-                <h2 class="section-title" data-i18n="sectionSectorPerf">SECTOR PERFORMANCE</h2>
-                <div class="sector-card">
-                  <div id="sector-container"><div class="macro-skeleton"></div></div>
-                </div>
-              </section>
-            </div>
-
-            <!-- AAII Sentiment Survey -->
-            <section class="aaii-section">
-              <h2 class="section-title" data-i18n="aaii_title">סקר סנטימנט AAII</h2>
-              <div class="aaii-card">
-                <div id="aaii-container" class="aaii-container">
-                  <div class="aaii-skeleton"></div>
-                </div>
+                <div id="home-news-global" class="home-news-list"><div class="macro-skeleton"></div></div>
+                <div id="home-news-local" class="home-news-list" style="display:none"><div class="macro-skeleton"></div></div>
               </div>
             </section>
           </div>
         </div>
       </div>
-
-      <!-- Home Market News -->
-      <section class="home-news-section">
-        <h2 class="section-title" data-i18n="sectionHomeNews">חדשות שוק</h2>
-        <div class="sidebar-card home-news-card">
-          <div class="home-news-tabs">
-            <button class="home-news-tab active" data-tab="global" data-i18n="newsGlobal">עולמי</button>
-            <button class="home-news-tab" data-tab="local" data-i18n="newsLocal">מקומי</button>
-          </div>
-          <div id="home-news-global" class="home-news-list"><div class="macro-skeleton"></div></div>
-          <div id="home-news-local" class="home-news-list" style="display:none"><div class="macro-skeleton"></div></div>
-        </div>
-      </section>
 
       <div class="sidebar">
         <section class="market-section">
@@ -327,6 +294,43 @@
         -->
 
       </div>
+    </main>
+  </div>
+
+  <!-- ===== MARKET ANALYSIS PAGE ===== -->
+  <div id="page-market" class="page">
+    <main class="market-main">
+      <h1 class="section-title market-page-title" data-i18n="sectionMarketAnalysis">ניתוח שוק</h1>
+
+      <!-- Fear & Greed + Sector Performance side by side -->
+      <div class="fng-sector-row">
+        <section class="fng-section">
+          <h2 class="section-title" data-i18n="sectionFearGreed">Fear &amp; Greed</h2>
+          <div class="fng-card">
+            <div class="fng-toggle" dir="ltr">
+              <button class="fng-tab active" data-fng="stocks" data-i18n="fng_title">Stocks</button>
+              <button class="fng-tab" data-fng="crypto" data-i18n="cryptoFngTab">Crypto</button>
+            </div>
+            <div id="fng-container" class="fng-container"><div class="fng-skeleton"></div></div>
+            <div id="fng-crypto-container" class="fng-container hidden"><div class="fng-skeleton"></div></div>
+          </div>
+        </section>
+
+        <section class="sector-section">
+          <h2 class="section-title" data-i18n="sectionSectorPerf">SECTOR PERFORMANCE</h2>
+          <div class="sector-card">
+            <div id="sector-container"><div class="macro-skeleton"></div></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- AAII Sentiment Survey -->
+      <section class="aaii-section">
+        <h2 class="section-title" data-i18n="aaii_title">סקר סנטימנט AAII</h2>
+        <div class="aaii-card">
+          <div id="aaii-container" class="aaii-container"><div class="aaii-skeleton"></div></div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -642,7 +646,7 @@
   <!-- ===== IN-APP NOTIFICATION ===== -->
   <div id="notification" class="notification hidden"></div>
 
-  <script type="module" src="src/main.js?v=37"></script>
+  <script type="module" src="src/main.js?v=38"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {

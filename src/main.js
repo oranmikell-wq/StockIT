@@ -1,6 +1,6 @@
 // main.js — entry point, orchestrates all modules
 
-import { applyTranslations, toggleLang, t } from './utils/i18n.js?v=4';
+import { applyTranslations, toggleLang, t } from './utils/i18n.js?v=5';
 import { fetchAllData, fetchHistory, fetchStockFullData, fetchIndexQuote, fetchProxy, fetchProxyRaw } from './services/StockService.js';
 import { calcScore } from './utils/scoring.js';
 import { calcSummaryScore, renderSummaryGauge } from './components/SummaryGauge.js';
@@ -272,6 +272,8 @@ function renderHistory() {
   _renderHistory(navigateTo);
 }
 
+let _marketDataLoaded = false;
+
 function navigateTo(page, symbol = null) {
   _navigateTo(page, symbol, {
     loadResults,
@@ -279,6 +281,14 @@ function navigateTo(page, symbol = null) {
     renderCompare,
   });
   if (page === 'home') renderHomeWatchlist();
+  if (page === 'market' && !_marketDataLoaded) {
+    _marketDataLoaded = true;
+    loadFearGreed();
+    loadCryptoFearGreed();
+    loadAAII();
+    loadSectorPerformance();
+    applyTranslations();
+  }
 }
 
 function removeFromWatchlistBound(symbol) {
