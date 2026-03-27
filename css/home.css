@@ -1397,17 +1397,10 @@
   width: 100%;
 }
 
-.tp-header {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
 .tp-subtitle {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-3);
+  margin: 0 0 8px;
 }
 
 .tp-list {
