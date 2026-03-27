@@ -1,7 +1,7 @@
 // main.js — entry point, orchestrates all modules
 
 import { applyTranslations, toggleLang, t } from './utils/i18n.js?v=4';
-import { fetchAllData, fetchHistory, fetchStockFullData, fetchIndexQuote, fetchProxy } from './services/StockService.js';
+import { fetchAllData, fetchHistory, fetchStockFullData, fetchIndexQuote, fetchProxy, fetchProxyRaw } from './services/StockService.js';
 import { calcScore } from './utils/scoring.js';
 import { calcSummaryScore, renderSummaryGauge } from './components/SummaryGauge.js';
 
@@ -166,17 +166,82 @@ async function _fetchGlobalNews(container) {
   }
 }
 
-async function _fetchLocalNews(container) {
+function _parseRSS(xmlText, sourceName) {
   try {
-    const data  = await fetchProxy(`https://query1.finance.yahoo.com/v1/finance/search?q=TA35.TA&newsCount=8&enableNavLinks=false`);
-    const items = (data?.news || []).map(n => ({
-      headline: n.title,
-      url:      n.link,
-      image:    n.thumbnail?.resolutions?.[0]?.url || null,
-      source:   n.publisher,
-      datetime: (n.providerPublishTime || 0) * 1000,
-    }));
+    const xml   = new DOMParser().parseFromString(xmlText, 'text/xml');
+    const nodes = Array.from(xml.querySelectorAll('item'));
+    return nodes.slice(0, 6).map(item => {
+      const enclosure = item.querySelector('enclosure');
+      const mediaContent = item.querySelector('content');
+      const image = enclosure?.getAttribute('url') || mediaContent?.getAttribute('url') || null;
+      return {
+        headline: item.querySelector('title')?.textContent?.trim() || '',
+        url:      item.querySelector('link')?.textContent?.trim() ||
+                  item.querySelector('guid')?.textContent?.trim() || '',
+        source:   item.querySelector('source')?.textContent?.trim() || sourceName,
+        datetime: new Date(item.querySelector('pubDate')?.textContent || Date.now()).getTime(),
+        image,
+      };
+    }).filter(n => n.headline && n.url);
+  } catch { return []; }
+}
+
+async function _fetchRSS(rssUrl, sourceName) {
+  try {
+    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+    const res  = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
+    const data = await res.json();
+    if (data.status !== 'ok' || !data.items?.length) return [];
+    return data.items.slice(0, 6).map(item => ({
+      headline: item.title?.trim() || '',
+      url:      item.link?.trim() || '',
+      source:   sourceName,
+      datetime: new Date(item.pubDate || Date.now()).getTime(),
+      image:    item.thumbnail || item.enclosure?.link || null,
+    })).filter(n => n.headline && n.url);
+  } catch { return []; }
+}
+
+async function _fetchLocalNews(container) {
+  // Israeli financial RSS feeds via rss2json.com
+  const rssSources = [
+    { url: 'https://www.globes.co.il/webservice/rss/rssfeeder.asmx/GetFeed?iID=1111', name: 'גלובס' },
+    { url: 'https://www.globes.co.il/webservice/rss/rssfeeder.asmx/GetFeed?iID=1010', name: 'גלובס שוק' },
+    { url: 'https://www.themarker.com/rss/cmlink/1.4530584',                           name: 'TheMarker' },
+    { url: 'https://www.themarker.com/rss/',                                           name: 'TheMarker' },
+    { url: 'https://www.calcalist.co.il/rss/AjaxPage,7340,L-3684,00.xml',             name: 'כלכליסט' },
+    { url: 'https://www.calcalist.co.il/rss/',                                         name: 'כלכליסט' },
+    { url: 'https://www.bizportal.co.il/rss/feed',                                    name: 'Bizportal' },
+  ];
+
+  const results = await Promise.all(rssSources.map(src => _fetchRSS(src.url, src.name)));
+  const seen    = new Set();
+  const items   = results.flat()
+    .filter(n => n.headline && n.url && !seen.has(n.url) && seen.add(n.url))
+    .sort((a, b) => b.datetime - a.datetime)
+    .slice(0, 10);
+
+  if (items.length) {
     _renderHomeNewsItems(container, items);
+    return;
+  }
+
+  // Fallback: Finnhub news for major Israeli-listed companies
+  try {
+    const key  = localStorage.getItem('bon-finnhub-key') || 'd6qup2hr01qgdhqcgpbgd6qup2hr01qgdhqcgpc0';
+    const to   = new Date().toISOString().split('T')[0];
+    const from = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const syms = ['TEVA', 'NICE', 'CHKP', 'ICL', 'WIX', 'MNDY', 'CYBR'];
+    const all  = await Promise.all(
+      syms.map(s => fetchProxy(`https://finnhub.io/api/v1/company-news?symbol=${s}&from=${from}&to=${to}&token=${key}`)
+        .then(d => (Array.isArray(d) ? d : []).slice(0, 2)).catch(() => []))
+    );
+    const fallback = all.flat()
+      .filter(n => n.headline && n.url)
+      .sort((a, b) => b.datetime - a.datetime)
+      .slice(0, 10)
+      .map(n => ({ headline: n.headline, url: n.url, image: n.image || null, source: n.source, datetime: n.datetime * 1000 }));
+    _renderHomeNewsItems(container, fallback);
   } catch {
     container.innerHTML = `<p style="color:var(--text-3);font-size:13px;padding:12px 14px">${t('noData')}</p>`;
   }

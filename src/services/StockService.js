@@ -391,6 +391,12 @@ export async function fetchProxy(url) {
   return JSON.parse(text);
 }
 
+export async function fetchProxyRaw(url) {
+  const res = await fetchWithTimeout(proxyUrl(url));
+  if (!res.ok) throw new Error(res.status);
+  return res.text();
+}
+
 export async function yahooChart(symbol, range = '1d', interval = '1d') {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=${interval}&includePrePost=false`;
   return fetchProxy(url);
