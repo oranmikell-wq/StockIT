@@ -1319,6 +1319,10 @@
 
 .home-news-list { padding: 4px 0; }
 
+#home-news-local .home-news-item { direction: rtl; text-align: right; }
+#home-news-local .home-news-item .home-news-thumb { order: 1; }
+#home-news-local .home-news-item .home-news-body  { order: 0; }
+
 .home-news-item {
   display: flex;
   align-items: flex-start;
