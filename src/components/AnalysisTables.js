@@ -406,12 +406,12 @@ export async function renderAnalysisTables(fundamentalEl, technicalEl, scored, d
   if (fundamentalEl) {
     fundamentalEl.innerHTML =
       sectionHTML('analysisFamilyGrowth', families.growth, growthRows) +
-      sectionHTML('analysisFamilyValuation', families.valuation, valRows);
+      sectionHTML('analysisFamilyValuation', families.valuation, valRows) +
+      sectionHTML('analysisFamilyQuality', families.quality, qualRows);
     initInfoButtons(fundamentalEl);
   }
   if (technicalEl) {
     technicalEl.innerHTML =
-      sectionHTML('analysisFamilyQuality', families.quality, qualRows) +
       sectionHTML('analysisFamilyTechnical', families.technical, techRows);
     initInfoButtons(technicalEl);
   }
