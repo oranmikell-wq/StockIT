@@ -439,10 +439,12 @@ async function loadForex() {
 }
 
 // ── Results ────────────────────────────────────────────
-async function loadResults(symbol) {
+async function loadResults(symbol, isRefresh = false) {
   activeLoadSymbol = symbol;
-  document.getElementById('results-loading').style.display = 'flex';
-  document.getElementById('results-content').classList.add('hidden');
+  if (!isRefresh) {
+    document.getElementById('results-loading').style.display = 'flex';
+    document.getElementById('results-content').classList.add('hidden');
+  }
   document.getElementById('results-error').classList.add('hidden');
   document.getElementById('offline-banner').classList.add('hidden');
 
@@ -538,13 +540,18 @@ async function loadResults(symbol) {
     // AI Insight — runs async, silently hides itself on error
     renderAIInsight(data.newsItems, symbol);
 
-    autoRefreshTimer = setInterval(() => loadResults(symbol), 15 * 60 * 1000);
+    autoRefreshTimer = setInterval(() => loadResults(symbol, true), 15 * 60 * 1000);
 
   } catch (e) {
     document.getElementById('results-loading').style.display = 'none';
-    document.getElementById('results-error').classList.remove('hidden');
-    document.getElementById('error-msg').textContent =
-      e.message === 'no_data' ? t('stockNotFound') : e.message;
+    if (isRefresh) {
+      // Silent failure on auto-refresh — keep showing existing data
+      document.getElementById('results-content').classList.remove('hidden');
+    } else {
+      document.getElementById('results-error').classList.remove('hidden');
+      document.getElementById('error-msg').textContent =
+        e.message === 'no_data' ? t('stockNotFound') : e.message;
+    }
   }
 }
 

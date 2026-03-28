@@ -632,32 +632,32 @@
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 14px 16px;
+  padding: 0;
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 .movers-header {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 4px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
 }
 .movers-tab {
   background: none;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 20px;
-  padding: 5px 14px;
+  padding: 4px 14px;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-3);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
-.movers-tab.active {
-  background: var(--bg-2);
-  color: var(--text);
-  border-color: var(--text-3);
-}
-.movers-list { display: flex; flex-direction: column; gap: 6px; }
+.movers-tab.active              { background: var(--green); color: #fff; }
+.movers-tab:hover:not(.active)  { background: var(--bg-3); color: var(--text); }
+.movers-list { display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; }
 .mover-row {
   display: flex;
   align-items: center;
@@ -1087,6 +1087,7 @@
   border-radius: var(--radius-lg);
   padding: 12px 14px 8px;
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
 /* Skeleton */
@@ -1215,10 +1216,13 @@
   .aaii-seg-txt    { font-size: 9px; padding: 0 3px; }
 }
 
-/* Market page — AAII block is 1/3 width, reduce text to fit */
-.market-blocks-row .aaii-seg     { overflow: visible; position: relative; }
-.market-blocks-row .aaii-seg-txt { font-size: 9px; padding: 0 2px; }
-.market-blocks-row .aaii-row-label { flex: 0 0 90px; font-size: 10.5px; }
+/* Market page — AAII block is 1/3 width, reduce text to fit, prevent overflow */
+.market-blocks-row .aaii-seg       { overflow: visible; position: relative; }
+.market-blocks-row .aaii-seg-txt   { font-size: 9px; padding: 0 2px; }
+.market-blocks-row .aaii-row-label { flex: 0 0 80px; font-size: 10px; }
+.market-blocks-row .aaii-bar-annot { display: none; }
+.market-blocks-row .aaii-card      { overflow: hidden; }
+.market-blocks-row .aaii-row-bar   { min-width: 0; overflow: hidden; }
 
 /* RTL */
 [dir="rtl"] .aaii-row    { flex-direction: row-reverse; }
@@ -1373,9 +1377,11 @@
 
 /* ===== MARKET ANALYSIS PAGE ===== */
 .market-main {
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px 20px 40px;
+  box-sizing: border-box;
 }
 .market-blocks-row {
   display: flex;
@@ -1390,6 +1396,8 @@
 }
 @media (max-width: 900px) {
   .market-blocks-row { flex-direction: column; }
+  .market-blocks-row .fng-section { max-width: 480px; }
+  .market-blocks-row .fng-gauge-wrap { max-width: 280px; margin: 0 auto; }
 }
 
 /* ===== TOP PICKS SECTION ===== */

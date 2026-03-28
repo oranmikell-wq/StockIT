@@ -1,6 +1,6 @@
 // MarketMovers.js — Market Status, Commodities, Sectors, Gainers/Losers
 
-import { fetchIndexQuote } from '../services/StockService.js';
+import { fetchIndexQuote, fetchProxy } from '../services/StockService.js';
 import { t } from '../utils/i18n.js?v=5';
 
 // ── 1. Market Status (calculated from ET clock, no API) ──────────────────
@@ -125,27 +125,36 @@ export async function loadSectorPerformance() {
   }).join('');
 }
 
-// ── 5. Gainers & Losers — Yahoo Finance screener ─────────────────────────
-async function fetchScreener(scrId) {
-  const url = `https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?scrIds=${scrId}&count=5`;
-  const proxies = [
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-  ];
-  for (const proxied of proxies) {
-    const ctrl  = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 8000);
-    try {
-      const res  = await fetch(proxied, { signal: ctrl.signal });
-      clearTimeout(timer);
-      let json = await res.json();
-      // allorigins wraps response in { contents: "..." }
-      if (typeof json?.contents === 'string') json = JSON.parse(json.contents);
-      const quotes = json?.finance?.result?.[0]?.quotes ?? [];
-      if (quotes.length) return quotes;
-    } catch { clearTimeout(timer); }
-  }
-  return [];
+// ── 5. Gainers & Losers — derived from curated S&P 500 quote batch ────────
+const MOVER_UNIVERSE = [
+  ['AAPL','Apple'],['MSFT','Microsoft'],['NVDA','NVIDIA'],['GOOGL','Alphabet'],
+  ['AMZN','Amazon'],['META','Meta'],['TSLA','Tesla'],['AVGO','Broadcom'],
+  ['JPM','JPMorgan'],['V','Visa'],['UNH','UnitedHealth'],['LLY','Eli Lilly'],
+  ['XOM','ExxonMobil'],['COST','Costco'],['HD','Home Depot'],['JNJ','Johnson & Johnson'],
+  ['BAC','Bank of America'],['NFLX','Netflix'],['AMD','AMD'],['GS','Goldman Sachs'],
+];
+
+async function fetchMoverQuotes() {
+  const results = await Promise.allSettled(
+    MOVER_UNIVERSE.map(async ([sym, fallbackName]) => {
+      const url  = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=1d&interval=1d&includePrePost=false`;
+      const data = await fetchProxy(url);
+      const meta = data?.chart?.result?.[0]?.meta;
+      if (!meta?.regularMarketPrice) return null;
+      const price = meta.regularMarketPrice;
+      const prev  = meta.chartPreviousClose ?? meta.previousClose ?? null;
+      const changePct = (prev && prev !== 0) ? ((price - prev) / prev) * 100 : null;
+      return {
+        symbol:  sym,
+        shortName: meta.longName ?? meta.shortName ?? fallbackName,
+        regularMarketPrice: price,
+        regularMarketChangePercent: changePct,
+      };
+    })
+  );
+  return results
+    .filter(r => r.status === 'fulfilled' && r.value?.regularMarketChangePercent != null)
+    .map(r => r.value);
 }
 
 function renderMoverList(list, el) {
@@ -153,10 +162,10 @@ function renderMoverList(list, el) {
     el.innerHTML = `<p class="macro-error">${t('moversDataUnavailable')}</p>`;
     return;
   }
-  el.innerHTML = list.map((q, i) => {
-    const pct  = q.regularMarketChangePercent ?? 0;
-    const cls  = pct >= 0 ? 'positive' : 'negative';
-    const sign = pct >= 0 ? '+' : '';
+  el.innerHTML = list.map(q => {
+    const pct   = q.regularMarketChangePercent ?? 0;
+    const cls   = pct >= 0 ? 'positive' : 'negative';
+    const sign  = pct >= 0 ? '+' : '';
     const price = (q.regularMarketPrice ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
     return `<div class="mover-row" role="button" tabindex="0" onclick="window.navigateTo && navigateTo('results', '${q.symbol}')" title="View ${q.symbol}">
       <div class="mover-left">
@@ -176,15 +185,7 @@ export async function loadMovers() {
   const lEl = document.getElementById('losers-container');
   if (!gEl && !lEl) return;
 
-  const [gainers, losers] = await Promise.all([
-    fetchScreener('day_gainers'),
-    fetchScreener('day_losers'),
-  ]);
-
-  if (gEl) renderMoverList(gainers, gEl);
-  if (lEl) renderMoverList(losers,  lEl);
-
-  // Tab switching
+  // Tab switching (wired up immediately so tabs work even before data loads)
   document.querySelectorAll('.movers-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.movers-tab').forEach(b => b.classList.remove('active'));
@@ -194,4 +195,18 @@ export async function loadMovers() {
       lEl?.classList.toggle('hidden', tab !== 'losers');
     });
   });
+
+  const quotes = await fetchMoverQuotes();
+  if (!quotes.length) {
+    if (gEl) renderMoverList([], gEl);
+    if (lEl) renderMoverList([], lEl);
+    return;
+  }
+
+  const sorted  = [...quotes].sort((a, b) => (b.regularMarketChangePercent ?? 0) - (a.regularMarketChangePercent ?? 0));
+  const gainers = sorted.slice(0, 5);
+  const losers  = [...quotes].sort((a, b) => (a.regularMarketChangePercent ?? 0) - (b.regularMarketChangePercent ?? 0)).slice(0, 5);
+
+  if (gEl) renderMoverList(gainers, gEl);
+  if (lEl) renderMoverList(losers,  lEl);
 }
