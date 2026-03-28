@@ -15,7 +15,7 @@ const UNIVERSE = [
 ];
 
 const PICKS_KEY = 'bon-toppicks-v4';
-const PICKS_TTL = 60 * 60 * 1000; // 1 hour
+const PICKS_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const SCORE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 function picksFromCache() {
