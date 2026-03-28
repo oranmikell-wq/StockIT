@@ -3,7 +3,7 @@
 import { applyTranslations, toggleLang, t } from './utils/i18n.js?v=5';
 import { fetchAllData, fetchHistory, fetchStockFullData, fetchIndexQuote, fetchProxy, fetchProxyRaw } from './services/StockService.js';
 import { calcScore } from './utils/scoring.js';
-import { calcSummaryScore, renderSummaryGauge } from './components/SummaryGauge.js';
+import { renderSummaryGauge } from './components/SummaryGauge.js';
 
 import { renderCriteriaTable } from './components/CriteriaTable.js';
 import { renderStrategyChecklist, countNewHighs } from './components/StrategyChecklist.js';

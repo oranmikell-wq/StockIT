@@ -1,118 +1,11 @@
-// SummaryGauge.js
-// Animated SVG gauge with 4-factor scoring:
-//   20% RSI(14) | 30% Moving Averages | 25% Valuation (P/E or P/S) | 25% Relative Strength
-//   Growth/Pre-profit mode: 20% RSI | 30% MA | 15% Valuation (P/S) | 35% RS
+// SummaryGauge.js — Animated SVG speedometer gauge
 
 import { t } from '../utils/i18n.js?v=5';
-import { getSectorKey, SECTOR_PS, normalizeInverse } from '../utils/scoring.js';
 import { initInfoButtons } from './InfoPopup.js';
 
 // ── SVG geometry constants ────────────────────────────────
 const CX = 150, CY = 158, R = 110;
 const DASHLEN = Math.PI * R; // full semicircle arc length ≈ 345.58
-
-// ═════════════════════════════════════════════════════════
-// SCORING
-// ═════════════════════════════════════════════════════════
-
-/**
- * Calculate a summary score from 4 weighted factors.
- *
- * @param  {Object} data        - Parsed stock quote (price, pe, high52w, …)
- * @param  {Object} indicators  - From fetchStockFullData: {rsi14, priceAboveMA50, priceAboveMA200, goldenCross}
- * @returns {{ score, rating, isPartial, breakdown }}
- */
-export function calcSummaryScore(data, indicators) {
-  const scores = {};
-
-  // ── 1. RSI 14 (20%) ──────────────────────────────────
-  const rsi = indicators?.rsi14;
-  if (rsi != null) {
-    if      (rsi < 30) scores.rsi = 80;  // oversold  — potential entry
-    else if (rsi < 45) scores.rsi = 75;  // below mid — healthy
-    else if (rsi < 55) scores.rsi = 60;  // neutral
-    else if (rsi < 65) scores.rsi = 50;  // approaching overbought
-    else if (rsi < 75) scores.rsi = 28;  // overbought
-    else               scores.rsi = 10;  // very overbought
-  }
-
-  // ── 2. Moving Averages (30%) ─────────────────────────
-  const { priceAboveMA50, priceAboveMA200, goldenCross } = indicators || {};
-  if (priceAboveMA50 != null || priceAboveMA200 != null) {
-    if      (priceAboveMA50 && priceAboveMA200 && goldenCross) scores.ma = 100;
-    else if (priceAboveMA50 && priceAboveMA200)                scores.ma = 80;
-    else if (priceAboveMA50)                                   scores.ma = 55;
-    else if (priceAboveMA200)                                  scores.ma = 38;
-    else                                                       scores.ma = 10;
-  }
-
-  // ── 3. Valuation: P/E primary, P/S vs sector as fallback for unprofitable stocks ──
-  let valuationMetric = null;
-  const pe = data?.pe;
-  if (pe != null && pe > 0) {
-    valuationMetric = 'pe';
-    if      (pe < 10) scores.pe = 92;
-    else if (pe < 15) scores.pe = 82;
-    else if (pe < 20) scores.pe = 72;
-    else if (pe < 25) scores.pe = 60;
-    else if (pe < 35) scores.pe = 42;
-    else if (pe < 50) scores.pe = 24;
-    else              scores.pe = 10;
-  } else if (data?.ps != null && data.ps > 0) {
-    valuationMetric = 'ps';
-    const sectorKey = getSectorKey(data?.sector);
-    scores.pe = Math.round(normalizeInverse(data.ps, SECTOR_PS[sectorKey] || SECTOR_PS.default));
-  }
-
-  // ── 4. Relative Strength ─────────────────────────────
-  // 52-week position (70%) + daily momentum (30%)
-  const { price, high52w, low52w, changePct } = data || {};
-  if (price != null && high52w != null && low52w != null) {
-    const range    = high52w - low52w;
-    const posScore = range > 0 ? Math.round((price - low52w) / range * 100) : 50;
-    const momScore = changePct != null
-      ? Math.min(100, Math.max(0, Math.round((changePct + 5) / 10 * 100)))
-      : posScore;
-    scores.rs = Math.round(posScore * 0.70 + momScore * 0.30);
-  }
-
-  // ── Growth/Pre-profit detection ───────────────────────
-  // A stock is "growth profile" when PE is unavailable or negative
-  const isGrowthProfile = (pe == null || pe <= 0);
-
-  // ── Dynamic weights based on profile ─────────────────
-  let WEIGHTS;
-  if (!isGrowthProfile) {
-    // Normal: P/E available
-    WEIGHTS = { rsi: 0.20, ma: 0.30, pe: 0.25, rs: 0.25 };
-  } else if (valuationMetric === 'ps') {
-    // Growth + P/S available: reduce valuation, boost RS
-    WEIGHTS = { rsi: 0.20, ma: 0.30, pe: 0.15, rs: 0.35 };
-  } else {
-    // Growth + no valuation at all: redistribute 25% equally to MA and RS
-    WEIGHTS = { rsi: 0.20, ma: 0.375, rs: 0.425 };
-  }
-
-  // ── Weighted sum (skip missing factors) ──────────────
-  let totalWeight = 0, weightedSum = 0;
-  for (const [key, s] of Object.entries(scores)) {
-    if (WEIGHTS[key] != null) {
-      weightedSum += s * WEIGHTS[key];
-      totalWeight += WEIGHTS[key];
-    }
-  }
-
-  const finalScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : null;
-  const isPartial  = Object.keys(scores).length < Object.keys(WEIGHTS).length;
-
-  let rating = 'wait';
-  if (finalScore != null) {
-    if      (finalScore >= 66) rating = 'buy';
-    else if (finalScore < 41)  rating = 'sell';
-  }
-
-  return { score: finalScore, rating, isPartial, breakdown: scores, valuationMetric, isGrowthProfile, weights: WEIGHTS };
-}
 
 // ═════════════════════════════════════════════════════════
 // COLOR HELPERS
