@@ -126,7 +126,7 @@ function renderChip(pick) {
   chip.innerHTML = `
     <div class="tp-chip-top">
       <span class="tp-sym">${pick.symbol}</span>
-      <span class="tp-badge ${b.cls}">${b.emoji}</span>
+      <span class="tp-badge ${b.cls}">${pick.score}</span>
     </div>
     <div class="tp-name">${shortName}</div>
     <div class="tp-bottom">
