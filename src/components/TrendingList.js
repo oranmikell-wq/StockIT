@@ -1,7 +1,7 @@
 // TrendingList.js — trending stocks list on home page
 
-import { fetchStockFullData, fetchTrending } from '../services/StockService.js';
-import { calcSummaryScore } from './SummaryGauge.js';
+import { fetchStockFullData, fetchTrending, fetchAllData, fetchHistory } from '../services/StockService.js';
+import { calcScore } from '../utils/scoring.js';
 import { t } from '../utils/i18n.js?v=5';
 
 const TRENDING_NAMES = {
@@ -56,10 +56,13 @@ export async function loadTrending(onNavigate) {
     for (let i = 0; i < symbols.length; i++) {
       const sym = symbols[i];
       try {
-        const fullData  = await fetchStockFullData(sym);
-        const data       = fullData.quote;
-        const indicators = fullData.indicators ?? null;
-        const scored     = calcSummaryScore(data, indicators);
+        const [fullData, { data }, history] = await Promise.all([
+          fetchStockFullData(sym),
+          fetchAllData(sym, true),
+          fetchHistory(sym, '5Y').catch(() => []),
+        ]);
+        const indicators = fullData.indicators ?? {};
+        const scored = calcScore(data, history ?? [], indicators);
         lastTrendingData[i] = { ...data, ...scored };
         renderTrendingList(onNavigate);
       } catch (e) {

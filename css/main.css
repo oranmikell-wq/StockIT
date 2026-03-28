@@ -664,6 +664,10 @@ body {
 .badge-wait { color: var(--yellow); font-weight: 700; }
 .badge-sell { color: var(--red);    font-weight: 700; }
 
+.badge-buy-bg  { background: rgba(34,197,94,0.15);  color: #22c55e; font-weight: 700; border-radius: 20px; padding: 2px 8px; font-size: 11px; }
+.badge-wait-bg { background: rgba(245,158,11,0.15); color: #f59e0b; font-weight: 700; border-radius: 20px; padding: 2px 8px; font-size: 11px; }
+.badge-sell-bg { background: rgba(220,38,38,0.15);  color: #dc2626; font-weight: 700; border-radius: 20px; padding: 2px 8px; font-size: 11px; }
+
 /* ===== FOOTER ===== */
 .app-footer {
   background: #18181b;
