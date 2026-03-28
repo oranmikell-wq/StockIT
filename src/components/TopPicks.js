@@ -5,7 +5,7 @@
 
 import { t } from '../utils/i18n.js?v=5';
 import { calcScore } from '../utils/scoring.js';
-import { yahooFundamentals, yahooChart, parseAllData } from '../services/StockService.js';
+import { yahooFundamentals, yahooChart, parseAllData, fetchHistory } from '../services/StockService.js';
 import { cacheGet } from '../services/CacheService.js';
 
 // ── Curated universe (30 well-known S&P 500 stocks across sectors) ──────────
@@ -18,7 +18,7 @@ const UNIVERSE = [
 ];
 
 // ── Cache key & TTL (1 hour) ─────────────────────────────────────────────────
-const PICKS_KEY = 'bon-toppicks';
+const PICKS_KEY = 'bon-toppicks-v2'; // v2: includes 5Y history for accurate scoring
 const PICKS_TTL = 60 * 60 * 1000; // 1 hour
 
 function picksFromCache() {
@@ -41,21 +41,28 @@ function picksToCache(picks) {
 async function fetchQuick(symbol) {
   // 1. Use existing 15-min price cache if available
   const cached = cacheGet(symbol);
-  if (cached) return cached;
+  const cachedData = cached || null;
 
-  // 2. Fetch Yahoo chart + fundamentals in parallel
-  const [chartRaw, yfFund] = await Promise.allSettled([
-    yahooChart(symbol, '1d', '1d'),
-    yahooFundamentals(symbol),
-  ]);
+  let data = cachedData;
+  if (!data) {
+    // Fetch Yahoo chart + fundamentals in parallel
+    const [chartRaw, yfFund] = await Promise.allSettled([
+      yahooChart(symbol, '1d', '1d'),
+      yahooFundamentals(symbol),
+    ]);
 
-  const meta = chartRaw.status === 'fulfilled'
-    ? chartRaw.value?.chart?.result?.[0]?.meta
-    : null;
-  if (!meta?.regularMarketPrice) return null;
+    const meta = chartRaw.status === 'fulfilled'
+      ? chartRaw.value?.chart?.result?.[0]?.meta
+      : null;
+    if (!meta?.regularMarketPrice) return null;
 
-  const fund = yfFund.status === 'fulfilled' ? yfFund.value : null;
-  return parseAllData({ meta, yfFund: fund, stats: null, ratings: null, target: null, earning: null, newsResp: null, finviz: null }, symbol);
+    const fund = yfFund.status === 'fulfilled' ? yfFund.value : null;
+    data = parseAllData({ meta, yfFund: fund, stats: null, ratings: null, target: null, earning: null, newsResp: null, finviz: null }, symbol);
+  }
+
+  // 2. Fetch 5Y price history for accurate scoring (same as results page)
+  const history = await fetchHistory(symbol, '5Y').catch(() => []);
+  return { data, history };
 }
 
 // ── Score all stocks in batches of 5 ─────────────────────────────────────────
@@ -70,9 +77,9 @@ async function scoreUniverse() {
     settled.forEach((res, idx) => {
       const sym = batch[idx];
       if (res.status !== 'fulfilled' || !res.value) return;
-      const data = res.value;
+      const { data, history } = res.value;
       try {
-        const scored = calcScore(data, [], {});
+        const scored = calcScore(data, history ?? [], {});
         if (scored.score != null) {
           results.push({
             symbol: sym,
