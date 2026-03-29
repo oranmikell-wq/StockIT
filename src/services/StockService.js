@@ -514,6 +514,9 @@ export async function yahooFundamentals(symbol) {
   } catch {}
 
   // ── 2. v7/finance/quote (flat response, may be blocked) ─────────────────
+  // v7 is missing heldPercentInsiders, shortPercentOfFloat, pegRatio — always
+  // fall through to v10 so those fields get populated. Save v7 as fallback.
+  let v7Result = null;
   try {
     const fields = [
       'trailingPE','forwardPE','marketCap','beta','priceToBook',
@@ -529,12 +532,13 @@ export async function yahooFundamentals(symbol) {
       `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbol)}&fields=${fields}`
     );
     const q = raw7?.quoteResponse?.result?.[0];
-    if (q?.symbol) return _v7ToV10(q);
+    if (q?.symbol) v7Result = _v7ToV10(q);
   } catch {}
 
   // ── 3. v10/quoteSummary via worker crumb-auth ────────────────────────────
   // The Cloudflare Worker now performs the Yahoo Finance cookie+crumb handshake
   // automatically before forwarding the v10 request.
+  // v10 returns all modules including heldPercentInsiders, shortPercentOfFloat, etc.
   const modules = 'summaryDetail,defaultKeyStatistics,financialData,assetProfile,calendarEvents';
   for (const host of ['query1', 'query2']) {
     try {
@@ -545,6 +549,9 @@ export async function yahooFundamentals(symbol) {
       if (result && !raw?.quoteSummary?.error) return result;
     } catch {}
   }
+
+  // v10 failed — return v7 partial data if we have it
+  if (v7Result) return v7Result;
 
   return null;
 }
