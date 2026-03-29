@@ -268,7 +268,13 @@ function navigateTo(page, symbol = null) {
   _navigateTo(page, symbol, {
     loadResults,
   });
-  if (page === 'home') renderHomeWatchlist();
+  if (page === 'home') {
+    renderHomeWatchlist();
+    // Re-render Top Picks if cache was invalidated (e.g. after visiting speedometer)
+    if (!localStorage.getItem('bon-toppicks-v5')) {
+      renderTopPicks(document.getElementById('top-picks-section'));
+    }
+  }
   if (page === 'market' && !_marketDataLoaded) {
     _marketDataLoaded = true;
     loadFearGreed();
