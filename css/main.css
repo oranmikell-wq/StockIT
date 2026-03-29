@@ -742,6 +742,29 @@ body {
   flex-wrap: wrap;
 }
 
+/* ===== ABOUT / PRIVACY PAGES ===== */
+.about-content {
+  padding: 24px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.about-logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+.about-section {
+  margin-bottom: 20px;
+}
+.about-text {
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.65;
+  margin: 0 0 8px;
+}
+
 /* ===== PRIVACY POLICY ===== */
 .privacy-h2 {
   font-size: 14px;
