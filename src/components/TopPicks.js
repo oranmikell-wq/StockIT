@@ -14,9 +14,8 @@ const UNIVERSE = [
   'XOM','NEE','CAT',
 ];
 
-const PICKS_KEY = 'bon-toppicks-v4';
+const PICKS_KEY = 'bon-toppicks-v5';
 const PICKS_TTL = 24 * 60 * 60 * 1000; // 24 hours
-const SCORE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 function picksFromCache() {
   try {
@@ -67,6 +66,8 @@ async function scoreUniverse() {
       if (!data) return null;
       const scored = calcScore(data, history ?? [], {});
       if (scored.score == null) return null;
+      // Save so future loads use this consistent score (until speedometer overwrites it)
+      try { localStorage.setItem(`bon-score-${sym.toUpperCase()}`, JSON.stringify({ score: scored.score, rating: scored.rating, ts: Date.now() })); } catch {}
       return { symbol: sym, name: data.name ?? sym, score: scored.score, rating: scored.rating, price: data.price, changePct: data.changePct };
     }));
 

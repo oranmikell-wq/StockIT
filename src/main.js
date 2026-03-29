@@ -455,7 +455,7 @@ async function loadResults(symbol, isRefresh = false) {
     try {
       localStorage.setItem(`bon-score-${symbol.toUpperCase()}`, JSON.stringify({ score: scored.score, rating: scored.rating, ts: Date.now() }));
       // Invalidate Top Picks cache so it picks up the fresh score on next home visit
-      localStorage.removeItem('bon-toppicks-v4');
+      localStorage.removeItem('bon-toppicks-v5');
     } catch {}
 
     if (offline && cacheDate) {
