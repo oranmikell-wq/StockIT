@@ -32,14 +32,14 @@ function picksToCache(picks) {
   try { localStorage.setItem(PICKS_KEY, JSON.stringify({ picks, ts: Date.now() })); } catch {}
 }
 
-// Read score saved by the results page speedometer
+// Read score saved by the results page speedometer.
+// No TTL — always prefer the exact speedometer score over a fresh skipFund recompute.
 function getCachedScore(symbol) {
   try {
     const raw = localStorage.getItem(`bon-score-${symbol.toUpperCase()}`);
     if (!raw) return null;
-    const { score, rating, ts } = JSON.parse(raw);
-    if (Date.now() - ts < SCORE_TTL) return { score, rating };
-    return null;
+    const { score, rating } = JSON.parse(raw);
+    return { score, rating };
   } catch { return null; }
 }
 
@@ -59,9 +59,9 @@ async function scoreUniverse() {
         return { symbol: sym, name: data.name ?? sym, score: cached.score, rating: cached.rating, price: data.price, changePct: data.changePct };
       }
 
-      // Fallback: compute from scratch (same as results page)
+      // Fallback: compute from scratch with full fundamentals (stock never visited)
       const [{ data }, history] = await Promise.all([
-        fetchAllData(sym, true),
+        fetchAllData(sym, false),
         fetchHistory(sym, '5Y').catch(() => []),
       ]);
       if (!data) return null;
